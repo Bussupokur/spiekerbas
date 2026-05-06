@@ -534,13 +534,9 @@
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
     padding: clamp(3rem,8vh,6rem) clamp(2rem,10vw,10rem);
+    padding-bottom: 5rem;
     max-width: 680px; margin: 0 auto;
     gap: clamp(2rem,4vh,3.5rem);
-  }
-  #making-header {
-    position: absolute; top: 7%; right: 6%;
-    font-size: clamp(11px,1.1vw,13px); font-weight: 300;
-    letter-spacing: 0.3em; color: var(--cream-dim); text-transform: lowercase;
   }
   #making-text {
     font-size: clamp(15px,1.8vw,22px); font-weight: 300;
@@ -682,7 +678,6 @@
 <div id="portal">
   <canvas id="portal-canvas"></canvas>
   <div id="portal-inner">
-    <div id="portal-name">spiekerbas</div>
     <div class="door" data-door="making">Büssüpökür</div>
     <div class="door-divider"></div>
     <div class="door" data-door="projects">projects</div>
@@ -731,7 +726,6 @@
 <div id="connect-page">
   <canvas id="connect-canvas"></canvas>
   <div id="connect-inner">
-    <div id="connect-header">spiekerbas &nbsp;·&nbsp; connect</div>
     <div id="connect-reasons">
       <div class="connect-reason">work inquiry</div>
       <div class="connect-reason">creative collaboration</div>
@@ -1356,8 +1350,7 @@ document.getElementById('projects-back').addEventListener('click', closeProjects
   <canvas id="projects-canvas"></canvas>
   <div id="projects-inner">
     <div id="projects-header">
-      <div id="projects-title">spiekerbas &nbsp;·&nbsp; projects</div>
-      <button id="projects-back" title="back to corridor">
+        <button id="projects-back" title="back to corridor">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
           <circle cx="8" cy="8" r="7" stroke="rgba(235,220,195,0.4)" stroke-width="0.8"/>
           <line x1="8" y1="11.5" x2="8" y2="4.5" stroke="rgba(235,220,195,0.6)" stroke-width="0.8"/>
