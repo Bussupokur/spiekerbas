@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>spiekerbas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Cormorant:ital,wght@0,300;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --cream: rgba(235, 220, 195, 0.9);
+    --cream-dim: rgba(235, 220, 195, 0.5);
+    --cream-faint: rgba(235, 220, 195, 0.25);
+    --dark: #13110e;
+  }
+
+  html { scroll-behavior: auto; }
+
+  body {
+    background: var(--dark);
+    font-family: 'Cormorant Garamond', serif;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  /* ── ARRIVAL SCREEN ── */
+  #arrival {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+  }
+
+  #painting {
+    position: absolute;
+    inset: 0;
+    background-image: url('https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?w=1920&q=85');
+    background-size: cover;
+    background-position: center 40%;
+    will-change: opacity;
+  }
+
+  #paint-veil {
+    position: absolute;
+    inset: 0;
+    background: var(--dark);
+    opacity: 0;
+    will-change: opacity;
+  }
+
+  #name {
+    position: absolute;
+    top: 7%;
+    right: 6%;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(11px, 1.1vw, 13px);
+    letter-spacing: 0.3em;
+    color: var(--cream);
+    text-transform: lowercase;
+    opacity: 0;
+    animation: namefade 2s ease 0.8s forwards;
+  }
+
+  @keyframes namefade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  #scroll-hint {
+    position: absolute;
+    bottom: 7%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    opacity: 0;
+    animation: namefade 2s ease 2s forwards;
+    transition: opacity 0.8s ease;
+  }
+
+  #scroll-hint span {
+    font-size: 10px;
+    letter-spacing: 0.28em;
+    color: var(--cream-dim);
+    text-transform: lowercase;
+    font-weight: 300;
+  }
+
+  .scroll-bar {
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, var(--cream-faint), transparent);
+    animation: pulse 2.2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.3; transform: scaleY(0.7); }
+    50% { opacity: 1; transform: scaleY(1); }
+  }
+
+  /* ── SENTENCE ── */
+  #sentence-wrap {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.4rem;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  #line-nl {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-style: italic;
+    font-size: clamp(18px, 2.6vw, 32px);
+    color: var(--cream);
+    letter-spacing: 0.03em;
+    line-height: 1.5;
+    text-align: center;
+    padding: 0 2rem;
+  }
+
+  #line-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-style: italic;
+    font-size: clamp(13px, 1.7vw, 21px);
+    color: var(--cream-dim);
+    letter-spacing: 0.06em;
+    line-height: 1.5;
+    text-align: center;
+    padding: 0 2rem;
+    opacity: 0;
+  }
+
+  /* ── COLOUR PICKER ── */
+  #picker-wrap {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2.2rem;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  #picker-question {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+  #picker-question .q-nl {
+    font-size: clamp(15px, 1.8vw, 22px);
+    letter-spacing: 0.08em;
+    color: var(--cream);
+    text-transform: lowercase;
+    font-weight: 300;
+    font-style: italic;
+  }
+  #picker-question .q-en {
+    font-size: clamp(11px, 1.2vw, 14px);
+    letter-spacing: 0.18em;
+    color: var(--cream-dim);
+    text-transform: lowercase;
+    font-weight: 300;
+    font-style: italic;
+    opacity: 0;
+    transition: opacity 1.6s ease;
+  }
+
+  #wheel-wrap {
+    position: relative;
+    width: 170px;
+    height: 170px;
+  }
+
+  #wheel {
+    width: 170px;
+    height: 170px;
+    border-radius: 50%;
+    cursor: crosshair;
+    border: 1px solid rgba(235,220,195,0.12);
+    display: block;
+  }
+
+  #wheel-dot {
+    position: absolute;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.85);
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    display: none;
+    box-shadow: 0 1px 8px rgba(0,0,0,0.6);
+    transition: background 0.1s;
+  }
+
+  #glow-ring {
+    position: absolute;
+    inset: -12px;
+    border-radius: 50%;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+
+  #enter-btn {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(12px, 1.3vw, 15px);
+    letter-spacing: 0.35em;
+    color: var(--cream-dim);
+    text-transform: lowercase;
+    background: none;
+    border: none;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 1.4s ease, transform 1.4s ease, color 0.4s ease;
+    padding: 0.6rem 1.2rem;
+  }
+
+  #enter-btn:hover { color: var(--cream); }
+  #enter-btn.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+  /* soft glow overlay on arrival when colour picked */
+  #colour-glow {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1.8s ease;
+  }
+
+  /* ── PORTAL SCREEN ── */
+  #portal {
+    position: fixed;
+    inset: 0;
+    z-index: 5;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1.8s ease;
+    overflow: hidden;
+  }
+
+  #portal.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  #portal-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  #portal-inner {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(2.5rem, 5vh, 4rem);
+    pointer-events: auto;
+    padding-bottom: 5rem;
+  }
+
+  #portal-name {
+    position: absolute;
+    top: 7%;
+    right: 6%;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(11px, 1.1vw, 13px);
+    letter-spacing: 0.3em;
+    color: var(--cream-dim);
+    text-transform: lowercase;
+  }
+
+  .door {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(22px, 3.5vw, 44px);
+    letter-spacing: 0.18em;
+    color: var(--cream-dim);
+    text-transform: lowercase;
+    cursor: pointer;
+    text-decoration: none;
+    display: block;
+    transition: color 0.5s ease, letter-spacing 0.5s ease;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(14px);
+    pointer-events: auto;
+  }
+
+  .door:hover {
+    color: var(--cream);
+    letter-spacing: 0.26em;
+  }
+
+  .door.appear {
+    animation: doorin 1.2s ease forwards;
+  }
+
+  @keyframes doorin {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .door-divider {
+    width: 1px;
+    height: 0;
+    background: var(--cream-faint);
+    opacity: 0;
+    transition: height 1.2s ease, opacity 1s ease;
+  }
+
+  .door-divider.appear {
+    height: clamp(20px, 3vh, 32px);
+    opacity: 1;
+  }
+
+  #back-btn {
+    position: absolute;
+    bottom: 7%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 1s ease 1.5s, transform 0.4s ease;
+    padding: 0.5rem;
+  }
+
+  #back-btn:hover {
+    transform: translateX(-50%) scale(1.2);
+  }
+
+  #back-btn:hover svg circle,
+  #back-btn:hover svg line,
+  #back-btn:hover svg polyline {
+    stroke: rgba(235,220,195,0.8);
+  }
+
+  #back-btn.visible {
+    opacity: 1;
+  }
+
+  /* ── PROJECTS PAGE ── */
+  #projects-page {
+    position: fixed;
+    inset: 0;
+    z-index: 8;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1.6s ease;
+  }
+
+  #projects-page.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  #projects-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  #projects-inner {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+    padding: clamp(3rem, 8vh, 6rem) clamp(2rem, 8vw, 7rem);
+    scrollbar-width: none;
+  }
+
+  #projects-inner::-webkit-scrollbar { display: none; }
+
+  #projects-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: clamp(3rem, 6vh, 5rem);
+  }
+
+  #projects-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(11px, 1.1vw, 13px);
+    letter-spacing: 0.3em;
+    color: var(--cream-dim);
+    text-transform: lowercase;
+  }
+
+  #projects-back {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.3rem;
+    opacity: 0.5;
+    transition: opacity 0.4s ease;
+  }
+
+  #projects-back:hover { opacity: 1; }
+
+  .project-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: baseline;
+    gap: 2rem;
+    padding: clamp(1.4rem, 3vh, 2.2rem) 0;
+    border-top: 0.5px solid rgba(235,220,195,0.12);
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: border-color 0.4s ease;
+  }
+
+  .project-row:last-child {
+    border-bottom: 0.5px solid rgba(235,220,195,0.12);
+  }
+
+  .project-row:hover { border-color: rgba(235,220,195,0.3); }
+  .project-row:hover .project-name { color: var(--cream); letter-spacing: 0.08em; }
+  .project-row:hover .project-summary { color: var(--cream-dim); }
+
+  .project-row.appear {
+    animation: rowin 0.9s ease forwards;
+  }
+
+  @keyframes rowin {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .project-left { display: flex; flex-direction: column; gap: 0.55rem; }
+
+  .project-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(20px, 2.8vw, 36px);
+    letter-spacing: 0.05em;
+    color: var(--cream-dim);
+    text-transform: lowercase;
+    transition: color 0.4s ease, letter-spacing 0.4s ease;
+  }
+
+  .project-summary {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-style: italic;
+    font-size: clamp(13px, 1.4vw, 17px);
+    color: rgba(235,220,195,0.3);
+    letter-spacing: 0.03em;
+    line-height: 1.5;
+    max-width: 55ch;
+    transition: color 0.4s ease;
+  }
+
+  .project-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.4rem;
+  }
+
+  .project-status {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(10px, 1vw, 12px);
+    letter-spacing: 0.22em;
+    text-transform: lowercase;
+    white-space: nowrap;
+  }
+
+  .status-progress { color: rgba(235,220,195,0.55); }
+  .status-concept  { color: rgba(235,220,195,0.3); }
+
+  .subscribe-btn {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(10px, 0.9vw, 11px);
+    letter-spacing: 0.2em;
+    text-transform: lowercase;
+    color: rgba(235,220,195,0.35);
+    background: none;
+    border: 0.5px solid rgba(235,220,195,0.2);
+    padding: 0.3rem 0.7rem;
+    cursor: pointer;
+    transition: color 0.3s ease, border-color 0.3s ease;
+    white-space: nowrap;
+  }
+
+  .subscribe-btn:hover {
+    color: var(--cream-dim);
+    border-color: rgba(235,220,195,0.5);
+  }
+
+
+  /* ── MAKING PAGE ── */
+  #making-page {
+    position: fixed;
+    inset: 0;
+    z-index: 7;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1.6s ease;
+    overflow: hidden;
+  }
+  #making-page.visible { opacity: 1; pointer-events: auto; }
+  #making-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  #making-inner {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: clamp(3rem,8vh,6rem) clamp(2rem,10vw,10rem);
+    max-width: 680px; margin: 0 auto;
+    gap: clamp(2rem,4vh,3.5rem);
+  }
+  #making-header {
+    position: absolute; top: 7%; right: 6%;
+    font-size: clamp(11px,1.1vw,13px); font-weight: 300;
+    letter-spacing: 0.3em; color: var(--cream-dim); text-transform: lowercase;
+  }
+  #making-text {
+    font-size: clamp(15px,1.8vw,22px); font-weight: 300;
+    font-style: italic; line-height: 2;
+    color: var(--cream-dim); letter-spacing: 0.03em;
+    text-align: center;
+  }
+  #making-text em {
+    font-style: normal; color: var(--cream);
+    letter-spacing: 0.18em;
+  }
+  #making-door {
+    display: inline-block;
+    font-size: clamp(12px,1.3vw,15px); font-weight: 300;
+    letter-spacing: 0.28em; color: var(--cream-faint);
+    text-transform: lowercase; text-decoration: none;
+    border-bottom: 0.5px solid rgba(235,220,195,0.15);
+    padding-bottom: 0.2rem;
+    transition: color 0.5s ease, border-color 0.5s ease;
+    cursor: pointer;
+  }
+  #making-door:hover { color: var(--cream-dim); border-color: rgba(235,220,195,0.4); }
+  #making-back {
+    position: absolute; bottom: 7%; left: 50%;
+    transform: translateX(-50%);
+    background: none; border: none; cursor: pointer;
+    opacity: 0.35; transition: opacity 0.4s ease, transform 0.3s ease;
+    padding: 0.5rem;
+  }
+  #making-back:hover { opacity: 0.8; transform: translateX(-50%) scale(1.15); }
+
+  /* ── CONNECT PAGE ── */
+  #connect-page {
+    position: fixed;
+    inset: 0;
+    z-index: 7;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1.6s ease;
+    overflow: hidden;
+  }
+  #connect-page.visible { opacity: 1; pointer-events: auto; }
+  #connect-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  #connect-inner {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: clamp(2.5rem,5vh,4rem);
+  }
+  #connect-header {
+    position: absolute; top: 7%; right: 6%;
+    font-size: clamp(11px,1.1vw,13px); font-weight: 300;
+    letter-spacing: 0.3em; color: var(--cream-dim); text-transform: lowercase;
+  }
+  #connect-reasons {
+    display: flex; flex-direction: column;
+    gap: 1.1rem; align-items: center;
+  }
+  .connect-reason {
+    font-size: clamp(12px,1.3vw,15px); font-weight: 300;
+    letter-spacing: 0.22em; color: var(--cream-dim);
+    text-transform: lowercase; text-align: center;
+  }
+  #connect-divider {
+    width: 1px; height: clamp(28px,5vh,48px);
+    background: linear-gradient(to bottom, var(--cream-faint), transparent);
+  }
+  #connect-address {
+    text-align: center;
+    display: flex; flex-direction: column; gap: 0.5rem;
+  }
+  .address-label {
+    text-align: center;
+    display: flex; flex-direction: column; gap: 0.35rem;
+  }
+  .label-nl {
+    font-size: clamp(13px,1.4vw,17px); font-weight: 300;
+    font-style: italic; letter-spacing: 0.08em;
+    color: var(--cream-dim); text-transform: lowercase;
+  }
+  .label-en {
+    font-size: clamp(10px,0.95vw,12px); font-weight: 300;
+    letter-spacing: 0.25em; color: var(--cream-faint);
+    text-transform: lowercase;
+  }
+  .address-lines {
+    font-size: clamp(13px,1.5vw,18px); font-weight: 300;
+    font-style: italic; color: var(--cream);
+    letter-spacing: 0.05em; line-height: 1.8;
+    text-align: center;
+  }
+  #connect-back {
+    position: absolute; bottom: 7%; left: 50%;
+    transform: translateX(-50%);
+    background: none; border: none; cursor: pointer;
+    opacity: 0.35; transition: opacity 0.4s ease, transform 0.3s ease;
+    padding: 0.5rem;
+  }
+  #connect-back:hover { opacity: 0.8; transform: translateX(-50%) scale(1.15); }
+
+</style>
+</head>
+<body>
+
+<!-- ARRIVAL -->
+<div id="arrival">
+  <div id="painting">
+    <div id="paint-veil"></div>
+  </div>
+  <div id="colour-glow"></div>
+
+  <div id="name">spiekerbas</div>
+
+  <div id="sentence-wrap">
+    <div id="line-nl"></div>
+    <div id="line-en"></div>
+  </div>
+
+  <div id="picker-wrap">
+    <div id="picker-question">
+      <span class="q-nl">wat is je favoriete kleur</span>
+      <span class="q-en">what is your favourite colour</span>
+    </div>
+    <div id="wheel-wrap">
+      <canvas id="wheel" width="170" height="170"></canvas>
+      <div id="glow-ring"></div>
+      <div id="wheel-dot"></div>
+    </div>
+    <button id="enter-btn">enter</button>
+  </div>
+
+  <div id="scroll-hint">
+    <div class="scroll-bar"></div>
+    <span>scroll</span>
+  </div>
+</div>
+
+<!-- PORTAL -->
+<div id="portal">
+  <canvas id="portal-canvas"></canvas>
+  <div id="portal-inner">
+    <div id="portal-name">spiekerbas</div>
+    <div class="door" data-door="making">Büssüpökür</div>
+    <div class="door-divider"></div>
+    <div class="door" data-door="projects">projects</div>
+    <div class="door-divider"></div>
+    <div class="door" data-door="work">work</div>
+    <div class="door-divider"></div>
+    <div class="door" data-door="connect">connect</div>
+  </div>
+  <button id="back-btn" title="return to the beginning">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="8" cy="8" r="7" stroke="rgba(235,220,195,0.35)" stroke-width="0.8"/>
+      <line x1="8" y1="4.5" x2="8" y2="11.5" stroke="rgba(235,220,195,0.55)" stroke-width="0.8"/>
+      <polyline points="5.5,7 8,4.5 10.5,7" stroke="rgba(235,220,195,0.55)" stroke-width="0.8" fill="none" stroke-linejoin="round"/>
+    </svg>
+  </button>
+</div>
+
+
+<!-- MAKING PAGE -->
+<div id="making-page">
+  <canvas id="making-canvas"></canvas>
+  <div id="making-inner">
+    <div id="making-text">
+      Büssüpökür<br><br>
+      <em>Creatief in woord en daad</em><br><br>
+      Ik wil graag wat rebelleren,<br>
+      een beetje de chaos in de orde respecteren,<br>
+      erenen uitproberen.<br>
+      Niet normaal of anders in zijn redenatie rondzweven.<br>
+      Een vrije interpretatie aan het leven geven<br>
+      en in de illusies van de ongeschreven regels<br>
+      vrij voortbewegen.
+    </div>
+    <div id="making-door" onclick="window.open('https://bsspkr.com','_blank')">Büssüpökür &nbsp;→</div>
+  </div>
+  <button id="making-back" title="back to corridor">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <circle cx="8" cy="8" r="7" stroke="rgba(235,220,195,0.35)" stroke-width="0.8"/>
+          <line x1="8" y1="11.5" x2="8" y2="4.5" stroke="rgba(235,220,195,0.55)" stroke-width="0.8"/>
+          <polyline points="5.5,7 8,4.5 10.5,7" stroke="rgba(235,220,195,0.55)" stroke-width="0.8" fill="none" stroke-linejoin="round"/>
+        </svg>
+  </button>
+</div>
+
+<!-- CONNECT PAGE -->
+<div id="connect-page">
+  <canvas id="connect-canvas"></canvas>
+  <div id="connect-inner">
+    <div id="connect-header">spiekerbas &nbsp;·&nbsp; connect</div>
+    <div id="connect-reasons">
+      <div class="connect-reason">work inquiry</div>
+      <div class="connect-reason">creative collaboration</div>
+      <div class="connect-reason">project &nbsp;·&nbsp; ideas</div>
+    </div>
+    <div id="connect-divider"></div>
+    <div id="connect-address">
+      <div class="address-label">
+        <span class="label-nl">stuur een brief</span><br>
+        <span class="label-en">send a letter</span>
+      </div>
+      <div class="address-lines">
+        spiekerbas<br>
+        postbus (volgt)<br>
+        nederland
+      </div>
+    </div>
+  </div>
+  <button id="connect-back" title="back to corridor">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <circle cx="8" cy="8" r="7" stroke="rgba(235,220,195,0.35)" stroke-width="0.8"/>
+          <line x1="8" y1="11.5" x2="8" y2="4.5" stroke="rgba(235,220,195,0.55)" stroke-width="0.8"/>
+          <polyline points="5.5,7 8,4.5 10.5,7" stroke="rgba(235,220,195,0.55)" stroke-width="0.8" fill="none" stroke-linejoin="round"/>
+        </svg>
+  </button>
+</div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+// ── UTILS ──
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function ease(t){return t<0.5?2*t*t:-1+(4-2*t)*t;}
+function hslToHex(h,s,l){
+  s/=100;l/=100;
+  const k=n=>(n+h/30)%12,a=s*Math.min(l,1-l);
+  const f=n=>Math.round((l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1))))*255);
+  return '#'+[f(0),f(8),f(4)].map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+
+// ── STATE ──
+const isDutch = navigator.language && navigator.language.toLowerCase().startsWith('nl');
+let scrollLocked = false;
+let phase = 'scroll'; // scroll | sentence | picker | portal
+let pickedHSL = null;
+let touchStartY = 0;
+
+// ── ELEMENTS ──
+const paintVeil = document.getElementById('paint-veil');
+const scrollHint = document.getElementById('scroll-hint');
+const sentenceWrap = document.getElementById('sentence-wrap');
+const lineEn = document.getElementById('line-en');
+const pickerWrap = document.getElementById('picker-wrap');
+const enterBtn = document.getElementById('enter-btn');
+const colourGlow = document.getElementById('colour-glow');
+const portal = document.getElementById('portal');
+const wheelCanvas = document.getElementById('wheel');
+const wheelDot = document.getElementById('wheel-dot');
+const glowRing = document.getElementById('glow-ring');
+const wc = wheelCanvas.getContext('2d');
+
+// ── SCROLL TRACKING (virtual) ──
+let virtualScroll = 0;
+const SCROLL_MAX = 600;
+
+function applyScroll(delta) {
+  if (scrollLocked) return;
+  virtualScroll = clamp(virtualScroll + delta, 0, SCROLL_MAX);
+  const p = virtualScroll / SCROLL_MAX;
+  const easedP = ease(p);
+  paintVeil.style.opacity = easedP;
+  scrollHint.style.opacity = p < 0.05 ? 0.7 : clamp(0.7 - p * 2, 0, 0.7);
+
+  if (p >= 1 && phase === 'scroll') {
+    scrollLocked = true;
+    phase = 'sentence';
+    pickSentence();
+    setTimeout(showSentence, 300);
+  }
+}
+
+window.addEventListener('wheel', e => {
+  if (document.getElementById('projects-page').classList.contains('visible')) return;
+  e.preventDefault();
+  applyScroll(e.deltaY * 0.6);
+}, { passive: false });
+
+window.addEventListener('touchstart', e => {
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
+
+window.addEventListener('touchmove', e => {
+  if (phase === 'portal') return;
+  e.preventDefault();
+  const dy = touchStartY - e.touches[0].clientY;
+  touchStartY = e.touches[0].clientY;
+  applyScroll(dy * 1.2);
+}, { passive: false });
+
+// ── SENTENCE ──
+const sentences = [
+  { nl: 'het meeste wat ik doe gebeurt tussen de zinnen', en: 'most of what I do happens between sentences' },
+  { nl: 'ik ontwerp met woorden', en: 'I design with words' },
+  { nl: 'ideeën hebben een vorm nodig om te bestaan', en: 'ideas need a shape to exist' },
+  { nl: 'ik ben hier om te verkennen', en: 'I exist to explore' },
+  { nl: 'het concept komt voor het canvas', en: 'the concept comes before the canvas' },
+];
+
+let currentSentence = null;
+
+function pickSentence() {
+  const pool = sentences.filter(s => s !== currentSentence);
+  currentSentence = pool[Math.floor(Math.random() * pool.length)];
+  document.getElementById('line-nl').textContent = currentSentence.nl;
+  document.getElementById('line-en').textContent = currentSentence.en;
+}
+
+function showSentence() {
+  scrollHint.style.transition = 'opacity 0.6s ease';
+  scrollHint.style.opacity = 0;
+  setTimeout(() => scrollHint.style.display = 'none', 700);
+  sentenceWrap.style.transition = 'opacity 1.4s ease';
+  sentenceWrap.style.opacity = 1;
+
+  if (!isDutch) {
+    setTimeout(() => {
+      lineEn.style.transition = 'opacity 1.6s ease';
+      lineEn.style.opacity = 1;
+    }, 2000);
+  }
+
+  const holdTime = isDutch ? 3200 : 5200;
+  setTimeout(fadeSentence, holdTime);
+}
+
+function fadeSentence() {
+  sentenceWrap.style.transition = 'opacity 2s ease';
+  sentenceWrap.style.opacity = 0;
+  setTimeout(showPicker, 2200);
+}
+
+// ── COLOUR WHEEL ──
+function drawWheel() {
+  const cx = 85, cy = 85, r = 82;
+  for (let angle = 0; angle < 360; angle++) {
+    const start = (angle - 1) * Math.PI / 180;
+    const end = (angle + 1) * Math.PI / 180;
+    const grad = wc.createRadialGradient(cx, cy, 0, cx, cy, r);
+    grad.addColorStop(0, `hsla(${angle},0%,88%,1)`);
+    grad.addColorStop(0.45, `hsla(${angle},90%,55%,1)`);
+    grad.addColorStop(1, `hsla(${angle},80%,12%,1)`);
+    wc.beginPath();
+    wc.moveTo(cx, cy);
+    wc.arc(cx, cy, r, start, end);
+    wc.closePath();
+    wc.fillStyle = grad;
+    wc.fill();
+  }
+}
+drawWheel();
+
+function getHSLFromWheel(x, y) {
+  const cx = 85, cy = 85, r = 82;
+  const dx = x - cx, dy = y - cy;
+  const dist = Math.sqrt(dx*dx + dy*dy);
+  if (dist > r) return null;
+  const h = (Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360;
+  const s = clamp(dist / r, 0, 1) * 90;
+  const l = 55 - (dist / r) * 38;
+  return { h, s, l };
+}
+
+function handleWheelPick(clientX, clientY) {
+  const rect = wheelCanvas.getBoundingClientRect();
+  const sx = 170 / rect.width;
+  const sy = 170 / rect.height;
+  const x = (clientX - rect.left) * sx;
+  const y = (clientY - rect.top) * sy;
+  const hsl = getHSLFromWheel(x, y);
+  if (!hsl) return;
+
+  pickedHSL = hsl;
+  const hex = hslToHex(hsl.h, hsl.s, hsl.l);
+
+  wheelDot.style.display = 'block';
+  wheelDot.style.left = ((clientX - rect.left) / rect.width * 100) + '%';
+  wheelDot.style.top = ((clientY - rect.top) / rect.height * 100) + '%';
+  wheelDot.style.background = hex;
+
+  glowRing.style.opacity = 1;
+  glowRing.style.background = `radial-gradient(circle, ${hex}44 0%, transparent 70%)`;
+
+  colourGlow.style.background = `radial-gradient(ellipse at 50% 60%, ${hex}28 0%, transparent 65%)`;
+  colourGlow.style.opacity = 1;
+
+  if (!enterBtn.classList.contains('visible')) {
+    setTimeout(() => enterBtn.classList.add('visible'), 300);
+  }
+}
+
+wheelCanvas.addEventListener('click', e => handleWheelPick(e.clientX, e.clientY));
+wheelCanvas.addEventListener('mousemove', e => { if (e.buttons === 1) handleWheelPick(e.clientX, e.clientY); });
+wheelCanvas.addEventListener('touchstart', e => { e.preventDefault(); handleWheelPick(e.touches[0].clientX, e.touches[0].clientY); }, { passive: false });
+wheelCanvas.addEventListener('touchmove', e => { e.preventDefault(); handleWheelPick(e.touches[0].clientX, e.touches[0].clientY); }, { passive: false });
+
+// ── SHOW PICKER ──
+function showPicker() {
+  phase = 'picker';
+  pickerWrap.style.transition = 'opacity 1.6s ease';
+  pickerWrap.style.opacity = 1;
+  pickerWrap.style.pointerEvents = 'auto';
+  setTimeout(() => {
+    const qEn = document.querySelector('.q-en');
+    if (qEn) qEn.style.opacity = 1;
+  }, 1800);
+}
+
+// ── ENTER PORTAL ──
+enterBtn.addEventListener('click', () => {
+  if (!pickedHSL) return;
+  phase = 'portal';
+  document.getElementById('arrival').style.transition = 'opacity 1.6s ease';
+  document.getElementById('arrival').style.opacity = 0;
+  setTimeout(() => {
+    document.getElementById('arrival').style.display = 'none';
+    portal.classList.add('visible');
+    startPortal(pickedHSL);
+    setTimeout(() => {
+      animateDoors();
+      setTimeout(() => document.getElementById('back-btn').classList.add('visible'), 1200);
+    }, 600);
+  }, 1700);
+});
+
+// ── PORTAL LIQUID ──
+const pc = document.getElementById('portal-canvas');
+const ctx = pc.getContext('2d');
+let pt = 0, portalH = 0, portalS = 0, portalL = 0;
+let raf = null;
+
+function resizePortal() {
+  pc.width = window.innerWidth;
+  pc.height = window.innerHeight;
+}
+resizePortal();
+window.addEventListener('resize', resizePortal);
+
+function startPortal(hsl) {
+  portalH = hsl.h;
+  portalS = hsl.s;
+  portalL = hsl.l;
+  animatePortal();
+}
+
+function animatePortal() {
+  pt += 0.0022;
+  const w = pc.width, h = pc.height;
+  ctx.clearRect(0, 0, w, h);
+
+  // base: tinted dark, not pure black
+  const baseL = clamp(portalL * 0.35, 8, 22);
+  ctx.fillStyle = `hsl(${portalH},${clamp(portalS*0.4,10,35)}%,${baseL}%)`;
+  ctx.fillRect(0, 0, w, h);
+
+  // large central wash — colour really comes through
+  const washGrad = ctx.createRadialGradient(w*0.5, h*0.5, 0, w*0.5, h*0.5, Math.max(w,h)*0.9);
+  washGrad.addColorStop(0,   `hsla(${portalH},${clamp(portalS,40,90)}%,${clamp(portalL*1.1,28,58)}%,0.6)`);
+  washGrad.addColorStop(0.5, `hsla(${portalH},${clamp(portalS*0.8,30,80)}%,${clamp(portalL*0.8,20,45)}%,0.3)`);
+  washGrad.addColorStop(1,   `hsla(${portalH},${clamp(portalS*0.4,10,40)}%,10%,0)`);
+  ctx.fillStyle = washGrad;
+  ctx.fillRect(0, 0, w, h);
+
+  const blobs = [
+    { xf: 0.28 + 0.22 * Math.sin(pt * 0.65),      yf: 0.28 + 0.18 * Math.cos(pt * 0.48),      rf: 0.70, dH: 0,   alpha: 0.55 },
+    { xf: 0.70 + 0.18 * Math.cos(pt * 0.52),      yf: 0.62 + 0.22 * Math.sin(pt * 0.70),      rf: 0.60, dH: 20,  alpha: 0.45 },
+    { xf: 0.48 + 0.26 * Math.sin(pt * 0.40 + 1),  yf: 0.82 + 0.14 * Math.cos(pt * 0.80),      rf: 0.52, dH: -16, alpha: 0.40 },
+    { xf: 0.14 + 0.12 * Math.cos(pt * 1.05),      yf: 0.55 + 0.22 * Math.sin(pt * 0.60),      rf: 0.44, dH: 12,  alpha: 0.35 },
+    { xf: 0.82 + 0.14 * Math.sin(pt * 0.88 + 2),  yf: 0.22 + 0.16 * Math.cos(pt * 0.58 + 1),  rf: 0.40, dH: -24, alpha: 0.32 },
+    { xf: 0.55 + 0.20 * Math.cos(pt * 0.75 + 3),  yf: 0.45 + 0.20 * Math.sin(pt * 0.42 + 2),  rf: 0.36, dH: 32,  alpha: 0.28 },
+  ];
+
+  blobs.forEach(b => {
+    const bH = (portalH + b.dH + 360) % 360;
+    const bS = clamp(portalS * 1.05, 35, 95);
+    const bL = clamp(portalL * 1.15, 28, 65);
+    const gx = b.xf * w, gy = b.yf * h;
+    const gr = b.rf * Math.max(w, h);
+    const grad = ctx.createRadialGradient(gx, gy, 0, gx, gy, gr);
+    grad.addColorStop(0,    `hsla(${bH},${bS}%,${bL}%,${b.alpha})`);
+    grad.addColorStop(0.45, `hsla(${bH},${bS}%,${bL}%,${b.alpha * 0.35})`);
+    grad.addColorStop(1,    `hsla(${bH},${bS}%,${bL}%,0)`);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+  });
+
+  raf = requestAnimationFrame(animatePortal);
+}
+
+// ── DOOR ANIMATION ──
+function animateDoors() {
+  const doors = document.querySelectorAll('.door');
+  const dividers = document.querySelectorAll('.door-divider');
+  doors.forEach((d, i) => {
+    d.style.animationDelay = (i * 0.22 + 0.1) + 's';
+    d.classList.add('appear');
+  });
+  dividers.forEach((d, i) => {
+    setTimeout(() => d.classList.add('appear'), (i * 220 + 300));
+  });
+}
+
+// ── BACK BUTTON ──
+document.getElementById('back-btn').addEventListener('click', () => {
+  cancelAnimationFrame(raf);
+  portal.style.transition = 'opacity 1.2s ease';
+  portal.style.opacity = 0;
+  setTimeout(() => {
+    portal.classList.remove('visible');
+    portal.style.opacity = '';
+    // reset doors
+    document.querySelectorAll('.door').forEach(d => d.classList.remove('appear'));
+    document.querySelectorAll('.door-divider').forEach(d => d.classList.remove('appear'));
+    document.getElementById('back-btn').classList.remove('visible');
+    // reset arrival
+    const arrival = document.getElementById('arrival');
+    arrival.style.display = '';
+    arrival.style.opacity = 0;
+    arrival.style.transition = 'opacity 1.2s ease';
+    // reset state
+    virtualScroll = 0;
+    scrollLocked = false;
+    phase = 'scroll';
+    currentSentence = null;
+    pickedHSL = null;
+    paintVeil.style.opacity = 0;
+    sentenceWrap.style.opacity = 0;
+    sentenceWrap.style.transition = '';
+    lineEn.style.opacity = 0;
+    pickerWrap.style.opacity = 0;
+    pickerWrap.style.pointerEvents = 'none';
+    colourGlow.style.opacity = 0;
+    enterBtn.classList.remove('visible');
+    document.getElementById('wheel-dot').style.display = 'none';
+    document.getElementById('glow-ring').style.opacity = 0;
+    scrollHint.style.display = '';
+    scrollHint.style.opacity = 0.7;
+    setTimeout(() => {
+      arrival.style.opacity = 1;
+      window.addEventListener('scroll', onScroll, { passive: true });
+    }, 100);
+  }, 1300);
+});
+
+
+// ── PROJECTS PAGE ──
+const projectsPage = document.getElementById('projects-page');
+const projectsCanvas = document.getElementById('projects-canvas');
+const pc2 = projectsCanvas.getContext('2d');
+let pt2 = Math.random() * 100;
+let raf2 = null;
+let proj_H = 0, proj_S = 0, proj_L = 0;
+
+function resizeProjectsCanvas() {
+  projectsCanvas.width = window.innerWidth;
+  projectsCanvas.height = window.innerHeight;
+}
+resizeProjectsCanvas();
+window.addEventListener('resize', resizeProjectsCanvas);
+
+function animateProjectsBg() {
+  pt2 += 0.0018;
+  const w = projectsCanvas.width, h = projectsCanvas.height;
+  pc2.clearRect(0, 0, w, h);
+
+  // moodier, darker base
+  const darkL = clamp(proj_L * 0.2, 5, 15);
+  pc2.fillStyle = `hsl(${proj_H},${clamp(proj_S*0.35,8,28)}%,${darkL}%)`;
+  pc2.fillRect(0, 0, w, h);
+
+  // subtle central wash
+  const wash = pc2.createRadialGradient(w*0.5, h*0.4, 0, w*0.5, h*0.4, Math.max(w,h)*0.8);
+  wash.addColorStop(0,   `hsla(${proj_H},${clamp(proj_S*0.7,20,65)}%,${clamp(proj_L*0.7,14,32)}%,0.45)`);
+  wash.addColorStop(0.6, `hsla(${proj_H},${clamp(proj_S*0.4,12,45)}%,${clamp(proj_L*0.5,10,22)}%,0.18)`);
+  wash.addColorStop(1,   `hsla(${proj_H},10%,5%,0)`);
+  pc2.fillStyle = wash;
+  pc2.fillRect(0, 0, w, h);
+
+  const blobs = [
+    { xf: 0.22 + 0.18*Math.sin(pt2*0.58),     yf: 0.25+0.16*Math.cos(pt2*0.42),     rf:0.60, dH:0,   a:0.30 },
+    { xf: 0.75 + 0.16*Math.cos(pt2*0.46),     yf: 0.60+0.20*Math.sin(pt2*0.63),     rf:0.52, dH:18,  a:0.24 },
+    { xf: 0.50 + 0.24*Math.sin(pt2*0.35+1),   yf: 0.80+0.12*Math.cos(pt2*0.70),     rf:0.46, dH:-14, a:0.22 },
+    { xf: 0.10 + 0.10*Math.cos(pt2*0.95),     yf: 0.55+0.20*Math.sin(pt2*0.52),     rf:0.38, dH:10,  a:0.18 },
+    { xf: 0.85 + 0.12*Math.sin(pt2*0.80+2),   yf: 0.18+0.14*Math.cos(pt2*0.50+1),   rf:0.34, dH:-20, a:0.16 },
+  ];
+
+  blobs.forEach(b => {
+    const bH = (proj_H + b.dH + 360) % 360;
+    const bS = clamp(proj_S * 0.80, 20, 72);
+    const bL = clamp(proj_L * 0.75, 14, 40);
+    const gx = b.xf*w, gy = b.yf*h, gr = b.rf*Math.max(w,h);
+    const g = pc2.createRadialGradient(gx, gy, 0, gx, gy, gr);
+    g.addColorStop(0,    `hsla(${bH},${bS}%,${bL}%,${b.a})`);
+    g.addColorStop(0.45, `hsla(${bH},${bS}%,${bL}%,${b.a*0.3})`);
+    g.addColorStop(1,    `hsla(${bH},${bS}%,${bL}%,0)`);
+    pc2.fillStyle = g;
+    pc2.fillRect(0, 0, w, h);
+  });
+
+  raf2 = requestAnimationFrame(animateProjectsBg);
+}
+
+// ── PROJECTS SCROLL ──
+const projectsInner = document.getElementById('projects-inner');
+
+projectsInner.addEventListener('wheel', e => {
+  e.stopPropagation();
+}, { passive: true });
+
+projectsInner.addEventListener('touchstart', e => {
+  e.stopPropagation();
+}, { passive: true });
+
+projectsInner.addEventListener('touchmove', e => {
+  e.stopPropagation();
+}, { passive: true });
+
+function openProjectsPage() {
+  if (!pickedHSL) return;
+  proj_H = pickedHSL.h;
+  proj_S = pickedHSL.s;
+  proj_L = pickedHSL.l;
+
+  // start canvas before showing page
+  animateProjectsBg();
+
+  // fade portal out first
+  portal.style.transition = 'opacity 0.8s ease';
+  portal.style.opacity = 0;
+
+  setTimeout(() => {
+    portal.style.pointerEvents = 'none';
+
+    // reset any inline opacity so CSS transition takes over
+    projectsPage.style.removeProperty('opacity');
+    projectsPage.style.removeProperty('transition');
+    projectsPage.classList.add('visible');
+
+    // animate rows in after page appears
+    setTimeout(() => {
+      const rows = document.querySelectorAll('.project-row');
+      rows.forEach((r, i) => {
+        r.style.animationDelay = (i * 0.14) + 's';
+        r.classList.remove('appear');
+        void r.offsetWidth;
+        r.classList.add('appear');
+      });
+    }, 400);
+  }, 900);
+}
+
+function closeProjectsPage() {
+  projectsPage.style.transition = 'opacity 1.0s ease';
+  projectsPage.style.opacity = 0;
+  cancelAnimationFrame(raf2);
+  raf2 = null;
+  setTimeout(() => {
+    projectsPage.classList.remove('visible');
+    projectsPage.style.transition = '';
+    projectsPage.style.removeProperty('opacity');
+    document.querySelectorAll('.project-row').forEach(r => r.classList.remove('appear'));
+    // restore portal
+    portal.style.transition = 'opacity 1.0s ease';
+    portal.style.opacity = 1;
+    portal.style.pointerEvents = 'auto';
+  }, 1100);
+}
+
+
+// ── MAKING PAGE ──
+const makingPage = document.getElementById('making-page');
+const makingCanvas = document.getElementById('making-canvas');
+const mc = makingCanvas.getContext('2d');
+let mt = Math.random() * 100, mRaf = null, mH=0, mS=0, mL=0;
+
+function resizeMaking(){ makingCanvas.width=window.innerWidth; makingCanvas.height=window.innerHeight; }
+resizeMaking(); window.addEventListener('resize', resizeMaking);
+
+function loopMaking(){
+  mt += 0.0015;
+  const w=makingCanvas.width, h=makingCanvas.height;
+  mc.clearRect(0,0,w,h);
+  mc.fillStyle=`hsl(${mH},${clamp(mS*.25,5,18)}%,${clamp(mL*.15,3,11)}%)`;
+  mc.fillRect(0,0,w,h);
+  const wg=mc.createRadialGradient(w*.5,h*.5,0,w*.5,h*.5,Math.max(w,h)*.75);
+  wg.addColorStop(0,`hsla(${mH},${clamp(mS*.6,15,55)}%,${clamp(mL*.55,10,26)}%,0.35)`);
+  wg.addColorStop(1,`hsla(${mH},10%,5%,0)`);
+  mc.fillStyle=wg; mc.fillRect(0,0,w,h);
+  [{xf:.3+.2*Math.sin(mt*.5),yf:.35+.18*Math.cos(mt*.38),rf:.55,dH:0,a:.22},
+   {xf:.7+.18*Math.cos(mt*.44),yf:.6+.2*Math.sin(mt*.6),rf:.48,dH:15,a:.18},
+   {xf:.5+.22*Math.sin(mt*.33+1),yf:.75+.14*Math.cos(mt*.68),rf:.42,dH:-12,a:.16},
+  ].forEach(b=>{
+    const bH=(mH+b.dH+360)%360,bS=clamp(mS*.7,15,60),bLl=clamp(mL*.65,10,30);
+    const gx=b.xf*w,gy=b.yf*h,gr=b.rf*Math.max(w,h);
+    const g=mc.createRadialGradient(gx,gy,0,gx,gy,gr);
+    g.addColorStop(0,`hsla(${bH},${bS}%,${bLl}%,${b.a})`);
+    g.addColorStop(1,`hsla(${bH},${bS}%,${bLl}%,0)`);
+    mc.fillStyle=g; mc.fillRect(0,0,w,h);
+  });
+  mRaf=requestAnimationFrame(loopMaking);
+}
+
+function openMaking(){
+  if(!pickedHSL) return;
+  mH=pickedHSL.h; mS=pickedHSL.s; mL=pickedHSL.l;
+  if(mRaf){cancelAnimationFrame(mRaf);mRaf=null;}
+  loopMaking();
+  portal.style.transition='opacity 0.8s ease';
+  portal.style.opacity=0;
+  setTimeout(()=>{
+    portal.style.pointerEvents='none';
+    makingPage.classList.add('visible');
+  },900);
+}
+
+function closeMaking(){
+  makingPage.classList.remove('visible');
+  cancelAnimationFrame(mRaf); mRaf=null;
+  setTimeout(()=>{
+    portal.style.transition='opacity 1s ease';
+    portal.style.opacity=1;
+    portal.style.pointerEvents='auto';
+  },400);
+}
+
+document.getElementById('making-back').addEventListener('click', closeMaking);
+
+// ── CONNECT PAGE ──
+const connectPage = document.getElementById('connect-page');
+const connectCanvas = document.getElementById('connect-canvas');
+const cc = connectCanvas.getContext('2d');
+let ct = Math.random() * 100, cRaf = null, cH=0, cS=0, cL=0;
+
+function resizeConnect(){ connectCanvas.width=window.innerWidth; connectCanvas.height=window.innerHeight; }
+resizeConnect(); window.addEventListener('resize', resizeConnect);
+
+function loopConnect(){
+  ct += 0.0012;
+  const w=connectCanvas.width, h=connectCanvas.height;
+  cc.clearRect(0,0,w,h);
+  cc.fillStyle=`hsl(${cH},${clamp(cS*.3,8,25)}%,${clamp(cL*.28,8,18)}%)`;
+  cc.fillRect(0,0,w,h);
+  const wg=cc.createRadialGradient(w*.5,h*.6,0,w*.5,h*.6,Math.max(w,h)*.8);
+  wg.addColorStop(0,`hsla(${cH},${clamp(cS*.7,20,70)}%,${clamp(cL*.8,18,40)}%,0.50)`);
+  wg.addColorStop(1,`hsla(${cH},8%,4%,0)`);
+  cc.fillStyle=wg; cc.fillRect(0,0,w,h);
+  [{xf:.35+.18*Math.sin(ct*.45),yf:.4+.2*Math.cos(ct*.35),rf:.5,dH:0,a:.32},
+   {xf:.65+.16*Math.cos(ct*.4),yf:.55+.18*Math.sin(ct*.55),rf:.44,dH:12,a:.26},
+  ].forEach(b=>{
+    const bH=(cH+b.dH+360)%360,bS=clamp(cS*.85,20,75),bLl=clamp(cL*.9,16,42);
+    const gx=b.xf*w,gy=b.yf*h,gr=b.rf*Math.max(w,h);
+    const g=cc.createRadialGradient(gx,gy,0,gx,gy,gr);
+    g.addColorStop(0,`hsla(${bH},${bS}%,${bLl}%,${b.a})`);
+    g.addColorStop(1,`hsla(${bH},${bS}%,${bLl}%,0)`);
+    cc.fillStyle=g; cc.fillRect(0,0,w,h);
+  });
+  cRaf=requestAnimationFrame(loopConnect);
+}
+
+function openConnect(){
+  if(!pickedHSL) return;
+  cH=pickedHSL.h; cS=pickedHSL.s; cL=pickedHSL.l;
+  if(cRaf){cancelAnimationFrame(cRaf);cRaf=null;}
+  loopConnect();
+  portal.style.transition='opacity 0.8s ease';
+  portal.style.opacity=0;
+  setTimeout(()=>{
+    portal.style.pointerEvents='none';
+    connectPage.classList.add('visible');
+  },900);
+}
+
+function closeConnect(){
+  connectPage.classList.remove('visible');
+  cancelAnimationFrame(cRaf); cRaf=null;
+  setTimeout(()=>{
+    portal.style.transition='opacity 1s ease';
+    portal.style.opacity=1;
+    portal.style.pointerEvents='auto';
+  },400);
+}
+
+document.getElementById('connect-back').addEventListener('click', closeConnect);
+
+// wire notify me buttons to connect page
+document.querySelectorAll('.subscribe-btn').forEach(btn => {
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    closeProjectsPage();
+    setTimeout(openConnect, 1200);
+  });
+});
+
+// wire doors in corridor via delegation on portal
+document.getElementById('portal-inner').addEventListener('click', e => {
+  const door = e.target.closest('.door');
+  if (!door) return;
+  const target = door.dataset.door;
+  if (target === 'projects') openProjectsPage();
+  if (target === 'making') openMaking();
+  if (target === 'connect') openConnect();
+});
+
+document.getElementById('projects-back').addEventListener('click', closeProjectsPage);
+
+
+});
+</script>
+
+<!-- PROJECTS PAGE -->
+<div id="projects-page">
+  <canvas id="projects-canvas"></canvas>
+  <div id="projects-inner">
+    <div id="projects-header">
+      <div id="projects-title">spiekerbas &nbsp;·&nbsp; projects</div>
+      <button id="projects-back" title="back to corridor">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <circle cx="8" cy="8" r="7" stroke="rgba(235,220,195,0.4)" stroke-width="0.8"/>
+          <line x1="8" y1="11.5" x2="8" y2="4.5" stroke="rgba(235,220,195,0.6)" stroke-width="0.8"/>
+          <polyline points="5.5,7 8,4.5 10.5,7" stroke="rgba(235,220,195,0.6)" stroke-width="0.8" fill="none" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="project-row" data-project="ubn">
+      <div class="project-left">
+        <div class="project-name">Universal Basic Nutrition</div>
+        <div class="project-summary">Global framework for guaranteed access to food and clean water. Nine topic domains.</div>
+      </div>
+      <div class="project-right">
+        <div class="project-status status-progress">in progress</div>
+        <button class="subscribe-btn" onclick="event.stopPropagation()">notify me</button>
+      </div>
+    </div>
+
+    <div class="project-row" data-project="line">
+      <div class="project-left">
+        <div class="project-name">The Line</div>
+        <div class="project-summary">Vertical community towers along existing infrastructure corridors. Speculative urbanism grounded in real constraints.</div>
+      </div>
+      <div class="project-right">
+        <div class="project-status status-progress">in progress</div>
+        <button class="subscribe-btn" onclick="event.stopPropagation()">notify me</button>
+      </div>
+    </div>
+
+    <div class="project-row" data-project="alpha">
+      <div class="project-left">
+        <div class="project-name">Project Alpha</div>
+        <div class="project-summary">Full stack AI-powered CMS. The Hub is use case one.</div>
+      </div>
+      <div class="project-right">
+        <div class="project-status status-progress">in progress</div>
+        <button class="subscribe-btn" onclick="event.stopPropagation()">notify me</button>
+      </div>
+    </div>
+
+    <div class="project-row" data-project="aitax">
+      <div class="project-left">
+        <div class="project-name">AI Tax</div>
+        <div class="project-summary">A social levy on AI token output. Independent framework for making AI companies pay their externalities.</div>
+      </div>
+      <div class="project-right">
+        <div class="project-status status-concept">concept</div>
+      </div>
+    </div>
+
+    <div class="project-row" data-project="eduself">
+      <div class="project-left">
+        <div class="project-name">EduSelf</div>
+        <div class="project-summary">AI-assisted project-based learning as a model for cognitive and personal development.</div>
+        <div class="project-summary">AI-assisted project-based learning as a model for cognitive and personal development.</div>
+      </div>
+      <div class="project-right">
+        <div class="project-status status-concept">concept</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
