@@ -799,6 +799,87 @@
     transition: opacity 1.4s ease;
   }
 
+
+  /* ── WAITING ROOM ── */
+  #waiting-room {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: #0a0908;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.4rem;
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity 1.8s ease;
+  }
+
+  #waiting-room.fade-out {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  #waiting-welcome {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(15px, 1.8vw, 22px);
+    font-weight: 300;
+    letter-spacing: 0.12em;
+    color: rgba(235,220,195,0.85);
+    text-align: center;
+    opacity: 0;
+    transition: opacity 1.8s ease;
+  }
+
+  #waiting-queue {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(14px, 1.6vw, 20px);
+    font-weight: 300;
+    font-style: italic;
+    letter-spacing: 0.06em;
+    color: rgba(235,220,195,0.65);
+    text-align: center;
+    opacity: 0;
+    transition: opacity 1.6s ease;
+  }
+
+  #waiting-queue-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(10px, 1.1vw, 13px);
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    color: rgba(235,220,195,0.3);
+    text-align: center;
+    opacity: 0;
+    transition: opacity 1.4s ease;
+    margin-top: 0.3rem;
+  }
+
+  #waiting-risk {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(14px, 1.6vw, 20px);
+    font-weight: 300;
+    font-style: italic;
+    letter-spacing: 0.08em;
+    color: rgba(235,220,195,0.7);
+    text-align: center;
+    opacity: 0;
+    transition: opacity 2s ease;
+  }
+
+  #waiting-risk-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(10px, 1.1vw, 13px);
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    color: rgba(235,220,195,0.3);
+    text-align: center;
+    opacity: 0;
+    transition: opacity 1.6s ease;
+    margin-top: 0.3rem;
+  }
+
 </style>
 </head>
 <body>
@@ -1678,6 +1759,58 @@ document.getElementById('info-ui').addEventListener('touchmove', e => {
 }, { passive: true });
 
 });
+
+// ── WAITING ROOM ──
+document.addEventListener('DOMContentLoaded', function() {
+  const room    = document.getElementById('waiting-room');
+  const welcome = document.getElementById('waiting-welcome');
+  const queue   = document.getElementById('waiting-queue');
+  const queueEn = document.getElementById('waiting-queue-en');
+  const risk    = document.getElementById('waiting-risk');
+  const riskEn  = document.getElementById('waiting-risk-en');
+
+  // random number 1-7
+  const n = Math.floor(Math.random() * 7) + 1;
+  const ordinals = ['eerste','tweede','derde','vierde','vijfde','zesde','zevende','achtste'];
+  const ordinalsEn = ['first','second','third','fourth','fifth','sixth','seventh','eighth'];
+
+  queue.textContent   = 'Er zijn nog ' + n + ' wachtende voor u.';
+  queueEn.textContent = 'You are ' + ordinalsEn[n] + ' in line.';
+
+  function fadeIn(el, delay) {
+    setTimeout(() => { el.style.opacity = 1; }, delay);
+  }
+  function fadeOut(el, delay) {
+    setTimeout(() => { el.style.opacity = 0; }, delay);
+  }
+
+  // sequence
+  fadeIn(welcome, 600);
+  fadeIn(queue,   1800);
+  fadeIn(queueEn, 2600);
+
+  // fade everything out
+  fadeOut(welcome, 5000);
+  fadeOut(queue,   5200);
+  fadeOut(queueEn, 5400);
+
+  // risk text fades in
+  fadeIn(risk,   6500);
+  fadeIn(riskEn, 7400);
+
+  // risk fades out
+  fadeOut(risk,   9500);
+  fadeOut(riskEn, 9700);
+
+  // waiting room fades out, site begins
+  setTimeout(() => {
+    room.classList.add('fade-out');
+    setTimeout(() => {
+      room.style.display = 'none';
+    }, 1900);
+  }, 11000);
+});
+
 </script>
 
 <!-- PROJECTS PAGE -->
@@ -1748,6 +1881,20 @@ document.getElementById('info-ui').addEventListener('touchmove', e => {
       </div>
     </div>
 
+  </div>
+</div>
+
+
+<!-- WAITING ROOM -->
+<div id="waiting-room">
+  <div id="waiting-welcome">Welkom bij spiekerbas.</div>
+  <div>
+    <div id="waiting-queue"></div>
+    <div id="waiting-queue-en"></div>
+  </div>
+  <div>
+    <div id="waiting-risk">Betreed op eigen risico.</div>
+    <div id="waiting-risk-en">enter at own risk</div>
   </div>
 </div>
 
