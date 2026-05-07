@@ -880,6 +880,33 @@
     margin-top: 0.3rem;
   }
 
+
+  /* ── SAFARI CONTINUE BUTTON ── */
+  #safari-continue {
+    position: absolute;
+    bottom: 12%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(11px, 1.2vw, 14px);
+    font-weight: 300;
+    letter-spacing: 0.3em;
+    color: rgba(235,220,195,0.6);
+    text-transform: lowercase;
+    background: none;
+    border: 0.5px solid rgba(235,220,195,0.2);
+    padding: 0.5rem 1.2rem;
+    cursor: pointer;
+    display: none;
+    opacity: 0;
+    transition: opacity 1.6s ease, color 0.3s ease, border-color 0.3s ease;
+    z-index: 5;
+  }
+  #safari-continue:hover {
+    color: rgba(235,220,195,0.9);
+    border-color: rgba(235,220,195,0.5);
+  }
+
 </style>
 </head>
 <body>
@@ -911,6 +938,7 @@
     <button id="enter-btn">enter</button>
   </div>
 
+  <button id="safari-continue">continue</button>
   <div id="scroll-hint">
     <div class="scroll-bar"></div>
     <span>scroll</span>
@@ -1116,11 +1144,42 @@ window.addEventListener('touchstart', e => {
 
 window.addEventListener('touchmove', e => {
   if (phase === 'portal') return;
+  const wr = document.getElementById('waiting-room');
+  if (wr && wr.style.display !== 'none' && !wr.classList.contains('fade-out')) return;
   e.preventDefault();
   const dy = touchStartY - e.touches[0].clientY;
   touchStartY = e.touches[0].clientY;
   applyScroll(dy * 1.2);
 }, { passive: false });
+
+
+// ── SAFARI DETECTION ──
+const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+if (isSafari) {
+  // hide scroll hint, show continue button after delay
+  scrollHint.style.display = 'none';
+  const safariBtn = document.getElementById('safari-continue');
+  setTimeout(() => {
+    safariBtn.style.display = 'block';
+    setTimeout(() => { safariBtn.style.opacity = 1; }, 50);
+  }, 2000);
+
+  safariBtn.addEventListener('click', () => {
+    safariBtn.style.opacity = 0;
+    setTimeout(() => { safariBtn.style.display = 'none'; }, 800);
+    // fade image then start sentence
+    const veil = document.getElementById('paint-veil');
+    veil.style.transition = 'opacity 1.8s ease';
+    veil.style.opacity = 1;
+    setTimeout(() => {
+      scrollLocked = true;
+      phase = 'sentence';
+      pickSentence();
+      setTimeout(showSentence, 300);
+    }, 1900);
+  });
+}
 
 // ── SENTENCE ──
 const sentences = [
@@ -1804,6 +1863,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // waiting room fades out, site begins
   setTimeout(() => {
+    room.style.pointerEvents = 'none';
     room.classList.add('fade-out');
     setTimeout(() => {
       room.style.display = 'none';
