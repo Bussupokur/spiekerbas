@@ -251,8 +251,7 @@
     z-index: 5;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 1.8s ease;
-    overflow: hidden;
+    transition: opacity 0.1s ease;
   }
 
   #portal.visible {
@@ -266,6 +265,7 @@
     width: 100%;
     height: 100%;
     pointer-events: none;
+    z-index: 1;
   }
 
   #portal-inner {
@@ -278,6 +278,7 @@
     gap: clamp(2.5rem, 5vh, 4rem);
     pointer-events: auto;
     padding-bottom: 5rem;
+    z-index: 5;
   }
 
   #portal-name {
@@ -316,6 +317,7 @@
 
   .door.appear {
     animation: doorin 1.2s ease forwards;
+    opacity: 1;
   }
 
   @keyframes doorin {
@@ -762,6 +764,41 @@
   }
   #connect-info-link:hover { color: var(--cream-dim); }
 
+
+  /* ── WELCOME TEXT ── */
+  #welcome-wrap {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 4;
+  }
+  #welcome-nl {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(20px, 3vw, 38px);
+    font-weight: 300;
+    font-style: italic;
+    letter-spacing: 0.06em;
+    color: var(--cream);
+    text-align: center;
+  }
+  #welcome-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(13px, 1.6vw, 20px);
+    font-weight: 300;
+    font-style: italic;
+    letter-spacing: 0.1em;
+    color: var(--cream-dim);
+    text-align: center;
+    opacity: 0;
+    transition: opacity 1.4s ease;
+  }
+
 </style>
 </head>
 <body>
@@ -802,6 +839,10 @@
 <!-- PORTAL -->
 <div id="portal">
   <canvas id="portal-canvas"></canvas>
+  <div id="welcome-wrap">
+    <div id="welcome-nl">Welkom in het portaal</div>
+    <div id="welcome-en">Choose your rabbithole</div>
+  </div>
   <div id="portal-inner">
     <div class="door" data-door="making">Büssüpökür</div>
     <div class="door-divider"></div>
@@ -1128,10 +1169,21 @@ enterBtn.addEventListener('click', () => {
     document.getElementById('arrival').style.display = 'none';
     portal.classList.add('visible');
     startPortal(pickedHSL);
+    // welcome text
+    const welcomeWrap = document.getElementById('welcome-wrap');
+    const welcomeEn   = document.getElementById('welcome-en');
+    welcomeWrap.style.transition = 'opacity 2.5s ease';
+    welcomeWrap.style.opacity = 1;
+    setTimeout(() => { welcomeEn.style.opacity = 1; }, 1400);
     setTimeout(() => {
-      animateDoors();
-      setTimeout(() => document.getElementById('back-btn').classList.add('visible'), 1200);
-    }, 600);
+      welcomeWrap.style.transition = 'opacity 1.4s ease';
+      welcomeWrap.style.opacity = 0;
+      setTimeout(() => {
+        welcomeWrap.style.display = 'none';
+        animateDoors();
+        setTimeout(() => document.getElementById('back-btn').classList.add('visible'), 1200);
+      }, 1500);
+    }, 3500);
   }, 1700);
 });
 
@@ -1201,6 +1253,11 @@ function animatePortal() {
 
 // ── DOOR ANIMATION ──
 function animateDoors() {
+  // first make sure all doors are reset
+  document.querySelectorAll('.door').forEach(d => {
+    d.classList.remove('appear');
+    d.style.opacity = '0';
+  });
   const doors = document.querySelectorAll('.door');
   const dividers = document.querySelectorAll('.door-divider');
   doors.forEach((d, i) => {
@@ -1224,6 +1281,10 @@ document.getElementById('back-btn').addEventListener('click', () => {
     document.querySelectorAll('.door').forEach(d => d.classList.remove('appear'));
     document.querySelectorAll('.door-divider').forEach(d => d.classList.remove('appear'));
     document.getElementById('back-btn').classList.remove('visible');
+    const ww = document.getElementById('welcome-wrap');
+    ww.style.display = '';
+    ww.style.opacity = 0;
+    document.getElementById('welcome-en').style.opacity = 0;
     // reset arrival
     const arrival = document.getElementById('arrival');
     arrival.style.display = '';
