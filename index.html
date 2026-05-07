@@ -584,7 +584,8 @@
     position: absolute; inset: 0;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    gap: clamp(2.5rem,5vh,4rem);
+    gap: clamp(1.5rem,3vh,2.5rem);
+    padding-bottom: 5rem;
   }
   #connect-header {
     position: absolute; top: 7%; right: 6%;
@@ -636,6 +637,130 @@
     padding: 0.5rem;
   }
   #connect-back:hover { opacity: 0.8; transform: translateX(-50%) scale(1.15); }
+
+
+  /* ── INFO PAGE ── */
+  #info-page {
+    position: fixed;
+    inset: 0;
+    z-index: 9;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1.4s ease;
+    overflow: hidden;
+  }
+  #info-page.visible { opacity: 1; pointer-events: auto; }
+  #info-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+  #info-ui {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: clamp(3rem,8vh,6rem) clamp(2rem,8vw,7rem) 6rem;
+  }
+  #info-ui::-webkit-scrollbar { display: none; }
+
+  #info-back {
+    position: fixed;
+    bottom: 5%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    opacity: 0.35;
+    transition: opacity 0.4s ease, transform 0.3s ease;
+    padding: 0.5rem;
+    z-index: 10;
+  }
+  #info-back:hover { opacity: 0.8; transform: translateX(-50%) scale(1.15); }
+
+  .info-section {
+    margin-bottom: clamp(3rem, 6vh, 5rem);
+    padding-bottom: clamp(3rem, 6vh, 5rem);
+    border-bottom: 0.5px solid rgba(235,220,195,0.10);
+  }
+  .info-section:last-of-type { border-bottom: none; }
+
+  .info-title {
+    font-size: clamp(13px,1.4vw,16px);
+    font-weight: 300;
+    letter-spacing: 0.22em;
+    color: var(--cream);
+    text-transform: lowercase;
+    margin-bottom: 1.8rem;
+  }
+
+  .info-body-nl {
+    font-size: clamp(14px,1.6vw,19px);
+    font-weight: 300;
+    font-style: italic;
+    line-height: 1.7;
+    color: var(--cream-dim);
+    letter-spacing: 0.02em;
+    margin-bottom: 0;
+    display: block;
+    overflow: hidden;
+  }
+
+  .info-body-en {
+    font-size: clamp(12px,1.3vw,15px);
+    font-weight: 300;
+    font-style: italic;
+    line-height: 1.9;
+    color: rgba(235,220,195,0.35);
+    letter-spacing: 0.02em;
+    display: none;
+    margin-bottom: 0;
+  }
+  .info-body-en.show { display: block; }
+
+  .info-toggle {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(10px,1vw,12px);
+    font-weight: 300;
+    letter-spacing: 0.25em;
+    text-transform: lowercase;
+    color: rgba(235,220,195,0.3);
+    background: none;
+    border: 0.5px solid rgba(235,220,195,0.15);
+    padding: 0.3rem 0.8rem;
+    cursor: pointer;
+    transition: color 0.3s ease, border-color 0.3s ease;
+    margin-top: 0.3rem;
+    display: inline-block;
+  }
+  .info-toggle:hover { color: var(--cream-dim); border-color: rgba(235,220,195,0.4); }
+  .info-body-nl { transition: opacity 0.6s ease; }
+  .info-body-nl.hidden { display: none; }
+
+  .info-link {
+    color: var(--cream-dim);
+    text-decoration: none;
+    border-bottom: 0.5px solid rgba(235,220,195,0.25);
+    transition: color 0.3s ease, border-color 0.3s ease;
+  }
+  .info-link:hover { color: var(--cream); border-color: rgba(235,220,195,0.6); }
+
+  /* info link in connect */
+  #connect-info-link {
+    font-size: clamp(10px,1vw,12px);
+    font-weight: 300;
+    letter-spacing: 0.25em;
+    color: rgba(235,220,195,0.22);
+    text-transform: lowercase;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    transition: color 0.4s ease;
+    display: block;
+    text-align: center;
+    margin-top: 0.5rem;
+  }
+  #connect-info-link:hover { color: var(--cream-dim); }
 
 </style>
 </head>
@@ -741,6 +866,7 @@
         nederland
       </div>
     </div>
+    <button id="connect-info-link">info</button>
   </div>
   <button id="connect-back" title="back to corridor">
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -748,6 +874,56 @@
           <line x1="8" y1="11.5" x2="8" y2="4.5" stroke="rgba(235,220,195,0.55)" stroke-width="0.8"/>
           <polyline points="5.5,7 8,4.5 10.5,7" stroke="rgba(235,220,195,0.55)" stroke-width="0.8" fill="none" stroke-linejoin="round"/>
         </svg>
+  </button>
+</div>
+
+<!-- INFO PAGE -->
+<div id="info-page">
+  <canvas id="info-canvas"></canvas>
+  <div id="info-ui">
+
+    <!-- SECTION 1: Project statement -->
+    <div class="info-section">
+      <div class="info-title">visie, ontwerp &amp; realisatie &nbsp;·&nbsp; spiekerbas 2026</div>
+      <div class="info-body-nl">
+        Ontwikkeling van een persoonlijke digitale identiteit vanuit een heldere visie: één website, drie expressies, één mens. Ontworpen als een typografische reis — stilte als ontwerpprincipe, beweging als expressie, taal als interface. De bezoeker wordt uitgenodigd, niet geleid. Het ontwerp filtert vanzelf.<br><br>
+        Elk detail is een keuze: geen formulieren, een brief. Geen menu, een corridor. Geen uitleg, de ervaring spreekt. Kleur als persoonlijk statement van de bezoeker. Taal als laag, niet als label.<br><br>
+        Gerealiseerd in samenwerking met Claude (Anthropic) en ChatGPT (OpenAI) als AI-uitvoeringspartners. Hosting Github en Vercel (public). Volledige creatieve, visuele en inhoudelijke controle — AI als instrument, niet als auteur.</div>
+      <div class="info-body-en" id="en-section1">
+        Development of a personal digital identity from a clear vision: one website, three expressions, one person. Designed as a typographic journey — silence as design principle, movement as expression, language as interface. The visitor is invited, not directed. The design filters by itself.<br><br>
+        Every detail is a choice: no forms, a letter. No menu, a corridor. No explanation, the experience speaks. Colour as the visitor's personal statement. Language as layer, not label.<br><br>
+        Realised in collaboration with Claude (Anthropic) and ChatGPT (OpenAI) as AI execution partners. Hosting Github and Vercel (public). Full creative, visual and editorial control — AI as instrument, not as author.
+      </div>
+      <button class="info-toggle" data-target="en-section1">in english</button>
+    </div>
+
+    <!-- SECTION 2: Privacy -->
+    <div class="info-section">
+      <div class="info-title">privacyverklaring &nbsp;·&nbsp; spiekerbas.xyz</div>
+      <div class="info-body-nl">
+        Deze website verzamelt geen persoonsgegevens. Er worden geen cookies geplaatst door deze website. Er wordt geen data opgeslagen, geen gedrag gevolgd en geen informatie gedeeld met derden.<br><br>
+        Deze website maakt gebruik van lettertypen die worden geladen via Google Fonts. Hierbij wordt uw IP-adres technisch overgedragen aan Google. Dit is de enige externe verbinding die deze website maakt.<br><br>
+        Vercel, de hostingpartij van deze website, kan technische gegevens verwerken ten behoeve van de werking van hun infrastructuur. Zie hiervoor het privacybeleid van Vercel.<br><br>
+        Links op deze website kunnen verwijzen naar externe websites. Deze website is niet verantwoordelijk voor de inhoud of het privacybeleid van die websites.<br><br>
+        Voor vragen over privacy kunt u een brief sturen naar het adres vermeld op de <span class="info-link" id="privacy-connect-link" style="cursor:pointer;">contactpagina</span>.</div>
+      <div class="info-body-en" id="en-section2">
+        <em style="font-size:0.85em; opacity:0.6;">The following is a translation of the Dutch privacy statement above. In case of any discrepancy, the Dutch version prevails.</em><br><br>
+        This website does not collect personal data. No cookies are placed by this website. No data is stored, no behaviour is tracked, and no information is shared with third parties.<br><br>
+        This website uses typefaces loaded via Google Fonts. This technically transfers your IP address to Google. This is the only external connection this website makes.<br><br>
+        Vercel, the hosting provider of this website, may process technical data for the functioning of their infrastructure. Please refer to Vercel's privacy policy for details.<br><br>
+        Links on this website may refer to external websites. This website is not responsible for the content or privacy policies of those websites.<br><br>
+        For privacy-related questions, you may send a letter to the address listed on the <span class="info-link" id="privacy-connect-link-en" style="cursor:pointer;">contact page</span>.
+      </div>
+      <button class="info-toggle" data-target="en-section2">in english</button>
+    </div>
+
+  </div>
+  <button id="info-back" title="back to connect">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="8" r="7" stroke="rgba(235,220,195,0.35)" stroke-width="0.8"/>
+      <line x1="8" y1="11.5" x2="8" y2="4.5" stroke="rgba(235,220,195,0.55)" stroke-width="0.8"/>
+      <polyline points="5.5,7 8,4.5 10.5,7" stroke="rgba(235,220,195,0.55)" stroke-width="0.8" fill="none" stroke-linejoin="round"/>
+    </svg>
   </button>
 </div>
 
@@ -1340,6 +1516,106 @@ document.getElementById('portal-inner').addEventListener('click', e => {
 document.getElementById('projects-back').addEventListener('click', closeProjectsPage);
 
 
+
+
+// ── INFO PAGE ──
+const infoPage = document.getElementById('info-page');
+const infoCanvas = document.getElementById('info-canvas');
+const ic = infoCanvas.getContext('2d');
+let iT = 0, iH = 0, iS = 0, iL = 0, iRaf = null;
+
+function resizeInfo(){ infoCanvas.width=window.innerWidth; infoCanvas.height=window.innerHeight; }
+resizeInfo(); window.addEventListener('resize', resizeInfo);
+
+function loopInfo(){
+  iT += 0.0012;
+  const w=infoCanvas.width, h=infoCanvas.height;
+  ic.clearRect(0,0,w,h);
+  ic.fillStyle=`hsl(${iH},${clamp(iS*.22,4,16)}%,${clamp(iL*.12,3,10)}%)`;
+  ic.fillRect(0,0,w,h);
+  const wg=ic.createRadialGradient(w*.5,h*.5,0,w*.5,h*.5,Math.max(w,h)*.8);
+  wg.addColorStop(0,`hsla(${iH},${clamp(iS*.6,15,55)}%,${clamp(iL*.55,10,26)}%,0.35)`);
+  wg.addColorStop(1,`hsla(${iH},8%,4%,0)`);
+  ic.fillStyle=wg; ic.fillRect(0,0,w,h);
+  [{xf:.3+.2*Math.sin(iT*.5),yf:.35+.18*Math.cos(iT*.38),rf:.55,dH:0,a:.20},
+   {xf:.7+.18*Math.cos(iT*.44),yf:.6+.2*Math.sin(iT*.6),rf:.48,dH:15,a:.16},
+   {xf:.5+.22*Math.sin(iT*.33+1),yf:.75+.14*Math.cos(iT*.68),rf:.42,dH:-12,a:.14},
+  ].forEach(b=>{
+    const bH=(iH+b.dH+360)%360,bS=clamp(iS*.7,12,55),bLl=clamp(iL*.6,8,28);
+    const gx=b.xf*w,gy=b.yf*h,gr=b.rf*Math.max(w,h);
+    const g=ic.createRadialGradient(gx,gy,0,gx,gy,gr);
+    g.addColorStop(0,`hsla(${bH},${bS}%,${bLl}%,${b.a})`);
+    g.addColorStop(1,`hsla(${bH},${bS}%,${bLl}%,0)`);
+    ic.fillStyle=g; ic.fillRect(0,0,w,h);
+  });
+  iRaf=requestAnimationFrame(loopInfo);
+}
+
+function openInfo(){
+  if(!pickedHSL) return;
+  iH=pickedHSL.h; iS=pickedHSL.s; iL=pickedHSL.l;
+  if(iRaf){cancelAnimationFrame(iRaf);iRaf=null;}
+  loopInfo();
+  infoPage.classList.add('visible');
+}
+
+function closeInfo(){
+  infoPage.classList.remove('visible');
+  cancelAnimationFrame(iRaf); iRaf=null;
+  // reset english sections
+  document.querySelectorAll('.info-body-en').forEach(el => el.classList.remove('show'));
+  document.querySelectorAll('.info-body-nl').forEach(el => el.classList.remove('hidden'));
+  document.querySelectorAll('.info-toggle').forEach(el => el.textContent = 'in english');
+}
+
+document.getElementById('info-back').addEventListener('click', closeInfo);
+
+document.getElementById('connect-info-link').addEventListener('click', () => {
+  openInfo();
+});
+
+// toggle language sections
+document.querySelectorAll('.info-toggle').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const section = btn.closest('.info-section');
+    const nl = section.querySelector('.info-body-nl');
+    const en = section.querySelector('.info-body-en');
+    const isShowingNl = !nl.classList.contains('hidden');
+
+    if (isShowingNl) {
+      nl.classList.add('hidden');
+      en.classList.add('show');
+      btn.textContent = 'in nederlands';
+    } else {
+      en.classList.remove('show');
+      nl.classList.remove('hidden');
+      btn.textContent = 'in english';
+    }
+  });
+});
+
+// privacy contact links go to connect
+['privacy-connect-link','privacy-connect-link-en'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('click', () => {
+    closeInfo();
+    setTimeout(() => {
+      openConnect();
+    }, 800);
+  });
+});
+
+// info scroll — don't let global wheel handler interfere
+document.getElementById('info-ui').addEventListener('wheel', e => {
+  e.stopPropagation();
+}, { passive: true });
+document.getElementById('info-ui').addEventListener('touchstart', e => {
+  e.stopPropagation();
+}, { passive: true });
+document.getElementById('info-ui').addEventListener('touchmove', e => {
+  e.stopPropagation();
+}, { passive: true });
+
 });
 </script>
 
@@ -1370,7 +1646,7 @@ document.getElementById('projects-back').addEventListener('click', closeProjects
 
     <div class="project-row" data-project="line">
       <div class="project-left">
-        <div class="project-name">The Line</div>
+        <div class="project-name">De Nieuwe Afsluitdijk</div>
         <div class="project-summary">Vertical community towers along existing infrastructure corridors. Speculative urbanism grounded in real constraints.</div>
       </div>
       <div class="project-right">
