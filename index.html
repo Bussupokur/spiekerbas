@@ -532,16 +532,17 @@
   #making-page.visible { opacity: 1; pointer-events: auto; }
   #making-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
   #making-inner {
-    position: absolute; inset: 0;
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 4.5rem;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    padding: clamp(3rem,8vh,6rem) clamp(2rem,10vw,10rem);
-    padding-bottom: 5rem;
-    max-width: 680px; margin: 0 auto;
+    align-items: center; justify-content: flex-start;
+    padding: clamp(4rem,10vh,7rem) clamp(2rem,10vw,10rem) 2rem;
     gap: clamp(2rem,4vh,3.5rem);
   }
   #making-text {
-    font-size: clamp(15px,1.8vw,22px); font-weight: 300;
+    font-size: clamp(17px,2.2vw,26px); font-weight: 300;
     font-style: italic; line-height: 2;
     color: var(--cream-dim); letter-spacing: 0.03em;
     text-align: center;
@@ -562,13 +563,14 @@
   }
   #making-door:hover { color: var(--cream-dim); border-color: rgba(235,220,195,0.4); }
   #making-back {
-    position: absolute; bottom: 7%; left: 50%;
-    transform: translateX(-50%);
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 4.5rem;
+    display: flex; align-items: center; justify-content: center;
     background: none; border: none; cursor: pointer;
-    opacity: 0.35; transition: opacity 0.4s ease, transform 0.3s ease;
-    padding: 0.5rem;
+    opacity: 0.35; transition: opacity 0.4s ease;
+    padding: 0;
   }
-  #making-back:hover { opacity: 0.8; transform: translateX(-50%) scale(1.15); }
+  #making-back:hover { opacity: 0.8; }
 
   /* ── CONNECT PAGE ── */
   #connect-page {
@@ -583,11 +585,13 @@
   #connect-page.visible { opacity: 1; pointer-events: auto; }
   #connect-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
   #connect-inner {
-    position: absolute; inset: 0;
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 4.5rem;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
     gap: clamp(1.5rem,3vh,2.5rem);
-    padding-bottom: 5rem;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   #connect-header {
     position: absolute; top: 7%; right: 6%;
@@ -599,7 +603,7 @@
     gap: 1.1rem; align-items: center;
   }
   .connect-reason {
-    font-size: clamp(12px,1.3vw,15px); font-weight: 300;
+    font-size: clamp(15px,1.8vw,20px); font-weight: 300;
     letter-spacing: 0.22em; color: var(--cream-dim);
     text-transform: lowercase; text-align: center;
   }
@@ -626,19 +630,20 @@
     text-transform: lowercase;
   }
   .address-lines {
-    font-size: clamp(13px,1.5vw,18px); font-weight: 300;
+    font-size: clamp(16px,2vw,24px); font-weight: 300;
     font-style: italic; color: var(--cream);
     letter-spacing: 0.05em; line-height: 1.8;
     text-align: center;
   }
   #connect-back {
-    position: absolute; bottom: 7%; left: 50%;
-    transform: translateX(-50%);
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 4.5rem;
+    display: flex; align-items: center; justify-content: center;
     background: none; border: none; cursor: pointer;
-    opacity: 0.35; transition: opacity 0.4s ease, transform 0.3s ease;
-    padding: 0.5rem;
+    opacity: 0.35; transition: opacity 0.4s ease;
+    padding: 0;
   }
-  #connect-back:hover { opacity: 0.8; transform: translateX(-50%) scale(1.15); }
+  #connect-back:hover { opacity: 0.8; }
 
 
   /* ── INFO PAGE ── */
@@ -880,6 +885,220 @@
     margin-top: 0.3rem;
   }
 
+
+  /* ── WORK PAGE ── */
+  #work-page {
+    position: fixed;
+    inset: 0;
+    z-index: 7;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1.4s ease;
+    overflow: hidden;
+  }
+  #work-page.visible { opacity: 1; pointer-events: auto; }
+  #work-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+  #work-ui {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    bottom: 5rem;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: clamp(3rem,8vh,6rem) clamp(2rem,8vw,7rem) 2rem;
+  }
+  #work-ui::-webkit-scrollbar { display: none; }
+
+  #work-footer {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    background: transparent;
+    z-index: 2;
+  }
+
+  #work-connect-link {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(10px,1vw,12px);
+    font-weight: 300;
+    letter-spacing: 0.25em;
+    color: rgba(235,220,195,0.25);
+    text-transform: lowercase;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    padding: 0.2rem;
+  }
+  #work-connect-link:hover { color: var(--cream-dim); }
+
+  #work-back {
+    background: none;
+    border: none;
+    cursor: pointer;
+    opacity: 0.35;
+    transition: opacity 0.4s ease, transform 0.3s ease;
+    padding: 0.3rem;
+  }
+  #work-back:hover { opacity: 0.8; transform: scale(1.15); }
+
+  .work-prose {
+    font-size: clamp(16px,2vw,23px);
+    font-weight: 300;
+    font-style: italic;
+    line-height: 1.9;
+    color: var(--cream-dim);
+    letter-spacing: 0.02em;
+    margin-bottom: 2rem;
+  }
+
+  .work-section-title {
+    font-size: clamp(11px,1.1vw,13px);
+    font-weight: 300;
+    letter-spacing: 0.3em;
+    color: rgba(235,220,195,0.4);
+    text-transform: lowercase;
+    margin-bottom: 1.4rem;
+    margin-top: 3rem;
+  }
+
+  .work-record {
+    font-size: clamp(15px,1.7vw,20px);
+    font-weight: 300;
+    font-style: italic;
+    line-height: 2;
+    color: rgba(235,220,195,0.45);
+    letter-spacing: 0.02em;
+    margin-bottom: 0.4rem;
+  }
+
+  /* reflection buttons */
+  #reflection-buttons {
+    display: flex;
+    gap: clamp(1.5rem,4vw,3rem);
+    margin-top: 3.5rem;
+    margin-bottom: 0;
+  }
+
+  .ref-btn {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(11px,1.2vw,14px);
+    font-weight: 300;
+    letter-spacing: 0.25em;
+    color: rgba(235,220,195,0.35);
+    text-transform: lowercase;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.4s ease;
+    position: relative;
+  }
+  .ref-btn::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0; right: 0;
+    height: 0.5px;
+    background: rgba(235,220,195,0.2);
+    transform: scaleX(0);
+    transition: transform 0.4s ease;
+  }
+  .ref-btn.active { color: var(--cream-dim); }
+  .ref-btn.active::after { transform: scaleX(1); }
+  .ref-btn:hover { color: var(--cream-dim); }
+
+  #reflection-text {
+    margin-top: 2rem;
+    font-size: clamp(13px,1.4vw,17px);
+    font-weight: 300;
+    font-style: italic;
+    line-height: 1.9;
+    color: rgba(235,220,195,0.45);
+    letter-spacing: 0.02em;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+    max-height: 0;
+    overflow: hidden;
+  }
+  #reflection-text.open {
+    opacity: 1;
+    max-height: 9999px;
+  }
+
+
+  /* ── REFLECTION PAGES ── */
+  .ref-page {
+    position: fixed;
+    inset: 0;
+    z-index: 11;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1.2s ease;
+    overflow: hidden;
+  }
+  .ref-page.visible { opacity: 1; pointer-events: auto; }
+  .ref-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+  .ref-page-ui {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    bottom: 4.5rem;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: clamp(3rem,8vh,6rem) clamp(2rem,8vw,7rem) 2rem;
+  }
+  .ref-page-ui::-webkit-scrollbar { display: none; }
+
+  .ref-page-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(13px,1.5vw,18px);
+    font-weight: 300;
+    font-style: italic;
+    line-height: 1.9;
+    color: rgba(235,220,195,0.55);
+    letter-spacing: 0.02em;
+    min-height: 2rem;
+  }
+
+  .ref-page-disclaimer {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(9px,0.9vw,11px);
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    color: rgba(235,220,195,0.2);
+    text-transform: lowercase;
+    margin-top: 3rem;
+    padding-bottom: 1rem;
+  }
+
+  .ref-page-footer {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 4.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }
+
+  .ref-page-back {
+    background: none;
+    border: none;
+    cursor: pointer;
+    opacity: 0.35;
+    transition: opacity 0.4s ease, transform 0.3s ease;
+    padding: 0.3rem;
+  }
+  .ref-page-back:hover { opacity: 0.8; transform: scale(1.15); }
+
 </style>
 </head>
 <body>
@@ -1047,6 +1266,122 @@
       <polyline points="5.5,7 8,4.5 10.5,7" stroke="rgba(235,220,195,0.55)" stroke-width="0.8" fill="none" stroke-linejoin="round"/>
     </svg>
   </button>
+</div>
+
+<!-- WORK PAGE -->
+<div id="work-page">
+  <canvas id="work-canvas"></canvas>
+  <div id="work-ui">
+    <div id="work-read-btn" style="display:none;opacity:0;position:absolute;inset:0;align-items:center;justify-content:center;transition:opacity 0.8s ease;">
+      <button style="font-family:'Cormorant Garamond',serif;font-size:clamp(12px,1.3vw,15px);font-weight:300;letter-spacing:0.35em;color:rgba(235,220,195,0.6);text-transform:lowercase;background:none;border:0.5px solid rgba(235,220,195,0.2);padding:0.6rem 1.4rem;cursor:pointer;transition:color 0.3s,border-color 0.3s;" onmouseover="this.style.color='rgba(235,220,195,0.95)';this.style.borderColor='rgba(235,220,195,0.5)'" onmouseout="this.style.color='rgba(235,220,195,0.6)';this.style.borderColor='rgba(235,220,195,0.2)'">read</button>
+    </div>
+    <div id="work-content" style="display:none;">
+    <div class="work-prose">
+      Thirty years of work that looks, on paper, like it has no common thread. A production facility in Zeewolde. Financial trading in Cyprus. Customer support, quality control, production planning, training, writing, compliance. Different industries, different countries, different roles.<br><br>
+      The thread is there. It just doesn't show up in job titles.<br><br>
+      In every role, I ended up being the one who understood the system, not just my part of it, but how it connected. Who noticed when something was wrong before it became a problem. Who could explain complex things clearly to people who needed to understand them. Who wrote the manual, built the process, trained the team, then looked for what else needed fixing.<br><br>
+      I work best at the intersection of thinking and making. Give me a problem with no obvious solution and room to move and I will find the approach nobody else considered. I am not a specialist. I am someone who makes specialists more effective.
+    </div>
+
+    <div class="work-prose">
+      INFP.<br>
+      For those who know what that means, that's enough. For those who don't: I live by values, not by rules. I think in patterns and possibilities before I think in tasks. I feel the work, which means I do it better when it matters, and worse when it doesn't. I am idealistic enough to believe things can be done differently, and pragmatic enough to actually do them differently. I am not difficult. I am specific.<br><br>
+      The weakness is real: I need the work to mean something. Repetition without purpose drains me. Hierarchy without reason frustrates me. I have left situations because of this and I would do it again.<br><br>
+      The strength is real too: when the work matters, I am completely in it.
+    </div>
+
+    <div class="work-prose">
+      Languages: Dutch, native. English, professional, precise, comfortable in writing and speech. German, reads and understands, speaks with effort.<br><br>
+      Education: MAVO diploma. Assessed at HBO level through aptitude, personality and vocational testing. The rest was lived.
+    </div>
+
+    <div class="work-section-title">the record</div>
+
+    <div class="work-record">
+      2023 to present. Zeewolde. Voluntary work, study, personal care. A necessary pause.<br>
+      Sykes, Cyprus. Customer support. 3 months. Personal reasons.<br>
+      UR Trade Fix, Cyprus. Quality control officer, call monitoring. 6 months. Company closed.<br>
+      Admiral Markets, Cyprus. Customer support. 6 months. Left on principle.<br>
+      Freelance. Research, content, marketing, website development, legal documents.<br>
+      Fidelisco Capital Markets, Cyprus. Account management, customer support, training, content, back office. Four years. Company closed.<br>
+      KPAX Marketing, Cyprus. Sales and customer support. 6 months. Left on principle.<br>
+      Dutch Flame, Zeewolde. Assistant production manager. Nineteen years. Moved to Cyprus.<br>
+      Dutch Flame, Zeewolde. Production worker. Two years. Became permanent.<br>
+      V/D Meij, Zeewolde. Assistant plumber. 6 months. Moved on.<br>
+      Dutch Flame, Zeewolde. Production worker. Less than a year. Became the above.<br>
+      Military service. Armoured infantry, gunner, corporal. 9 months. Completed.<br>
+      Jovondi Printing, Soest. Production worker. Few months. Moved on.
+    </div>
+
+    <div id="reflection-buttons">
+      <button class="ref-btn" data-ref="claude">claude</button>
+      <button class="ref-btn" data-ref="chatgpt">chatgpt</button>
+      <button class="ref-btn" data-ref="human">human</button>
+    </div>
+
+    <div id="reflection-text"></div>
+
+    </div>
+  </div>
+
+  <div id="work-footer">
+    <button id="work-connect-link">connect</button>
+    <button id="work-back">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="7" stroke="rgba(235,220,195,0.35)" stroke-width="0.8"/>
+        <line x1="8" y1="11.5" x2="8" y2="4.5" stroke="rgba(235,220,195,0.55)" stroke-width="0.8"/>
+        <polyline points="5.5,7 8,4.5 10.5,7" stroke="rgba(235,220,195,0.55)" stroke-width="0.8" fill="none" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- CLAUDE REFLECTION PAGE -->
+<div id="ref-claude" class="ref-page">
+  <canvas id="ref-claude-canvas" class="ref-canvas"></canvas>
+  <div class="ref-page-ui" id="ref-claude-ui">
+    <div class="ref-page-text" id="ref-claude-text"></div>
+    <div class="ref-page-disclaimer">these reflections are interpretations, not facts. ai can be wrong. so can i.</div>
+  </div>
+  <div class="ref-page-footer">
+    <button class="ref-page-back" data-back="claude"><svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="7" stroke="rgba(235,220,195,0.35)" stroke-width="0.8"/>
+        <line x1="8" y1="11.5" x2="8" y2="4.5" stroke="rgba(235,220,195,0.55)" stroke-width="0.8"/>
+        <polyline points="5.5,7 8,4.5 10.5,7" stroke="rgba(235,220,195,0.55)" stroke-width="0.8" fill="none" stroke-linejoin="round"/>
+      </svg></button>
+  </div>
+</div>
+
+<!-- CHATGPT REFLECTION PAGE -->
+<div id="ref-chatgpt" class="ref-page">
+  <canvas id="ref-chatgpt-canvas" class="ref-canvas"></canvas>
+  <div class="ref-page-ui" id="ref-chatgpt-ui">
+    <div class="ref-page-text" id="ref-chatgpt-text"></div>
+    <div class="ref-page-disclaimer">these reflections are interpretations, not facts. ai can be wrong. so can i.</div>
+  </div>
+  <div class="ref-page-footer">
+    <button class="ref-page-back" data-back="chatgpt"><svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="7" stroke="rgba(235,220,195,0.35)" stroke-width="0.8"/>
+        <line x1="8" y1="11.5" x2="8" y2="4.5" stroke="rgba(235,220,195,0.55)" stroke-width="0.8"/>
+        <polyline points="5.5,7 8,4.5 10.5,7" stroke="rgba(235,220,195,0.55)" stroke-width="0.8" fill="none" stroke-linejoin="round"/>
+      </svg></button>
+  </div>
+</div>
+
+<!-- HUMAN REFLECTION PAGE -->
+<div id="ref-human" class="ref-page">
+  <canvas id="ref-human-canvas" class="ref-canvas"></canvas>
+  <div class="ref-page-ui" id="ref-human-ui">
+    <div class="ref-page-text" id="ref-human-text"></div>
+    <div class="ref-page-disclaimer">these reflections are interpretations, not facts. ai can be wrong. so can i.</div>
+  </div>
+  <div class="ref-page-footer">
+    <button class="ref-page-back" data-back="human"><svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="7" stroke="rgba(235,220,195,0.35)" stroke-width="0.8"/>
+        <line x1="8" y1="11.5" x2="8" y2="4.5" stroke="rgba(235,220,195,0.55)" stroke-width="0.8"/>
+        <polyline points="5.5,7 8,4.5 10.5,7" stroke="rgba(235,220,195,0.55)" stroke-width="0.8" fill="none" stroke-linejoin="round"/>
+      </svg></button>
+  </div>
 </div>
 
 
@@ -1645,6 +1980,215 @@ document.querySelectorAll('.subscribe-btn').forEach(btn => {
   });
 });
 
+// ── WORK PAGE ──
+const workPage = document.getElementById('work-page');
+const workCanvas = document.getElementById('work-canvas');
+const wkc = workCanvas.getContext('2d');
+let wkT=0, wkH=0, wkS=0, wkL=0, wkRaf=null;
+
+function resizeWork(){ workCanvas.width=window.innerWidth; workCanvas.height=window.innerHeight; }
+resizeWork(); window.addEventListener('resize', resizeWork);
+
+function loopWork(){
+  wkT+=0.0015;
+  const w=workCanvas.width, h=workCanvas.height;
+  wkc.clearRect(0,0,w,h);
+  wkc.fillStyle=`hsl(${wkH},${clamp(wkS*.28,6,20)}%,${clamp(wkL*.18,4,13)}%)`;
+  wkc.fillRect(0,0,w,h);
+  const wg=wkc.createRadialGradient(w*.5,h*.45,0,w*.5,h*.45,Math.max(w,h)*.8);
+  wg.addColorStop(0,`hsla(${wkH},${clamp(wkS*.65,18,60)}%,${clamp(wkL*.6,12,28)}%,0.40)`);
+  wg.addColorStop(1,`hsla(${wkH},8%,4%,0)`);
+  wkc.fillStyle=wg; wkc.fillRect(0,0,w,h);
+  [{xf:.3+.2*Math.sin(wkT*.52),yf:.3+.18*Math.cos(wkT*.40),rf:.58,dH:0,a:.25},
+   {xf:.72+.16*Math.cos(wkT*.44),yf:.62+.2*Math.sin(wkT*.58),rf:.50,dH:18,a:.20},
+   {xf:.48+.22*Math.sin(wkT*.35+1),yf:.78+.14*Math.cos(wkT*.65),rf:.44,dH:-14,a:.18},
+  ].forEach(b=>{
+    const bH=(wkH+b.dH+360)%360,bS=clamp(wkS*.75,15,62),bLl=clamp(wkL*.68,10,32);
+    const gx=b.xf*w,gy=b.yf*h,gr=b.rf*Math.max(w,h);
+    const g=wkc.createRadialGradient(gx,gy,0,gx,gy,gr);
+    g.addColorStop(0,`hsla(${bH},${bS}%,${bLl}%,${b.a})`);
+    g.addColorStop(1,`hsla(${bH},${bS}%,${bLl}%,0)`);
+    wkc.fillStyle=g; wkc.fillRect(0,0,w,h);
+  });
+  wkRaf=requestAnimationFrame(loopWork);
+}
+
+function openWork(){
+  if(!pickedHSL) return;
+  wkH=pickedHSL.h; wkS=pickedHSL.s; wkL=pickedHSL.l;
+  if(wkRaf){cancelAnimationFrame(wkRaf);wkRaf=null;}
+  loopWork();
+  portal.style.transition='opacity 0.8s ease';
+  portal.style.opacity=0;
+  setTimeout(()=>{
+    portal.style.pointerEvents='none';
+    workPage.classList.add('visible');
+    const readBtn = document.getElementById('work-read-btn');
+    const workContent = document.getElementById('work-content');
+    if(workContent) workContent.style.display='none';
+    if(readBtn){ readBtn.style.display='flex'; setTimeout(()=>{ readBtn.style.opacity=1; },100); }
+  },900);
+}
+
+function closeWork(){
+  workPage.classList.remove('visible');
+  cancelAnimationFrame(wkRaf); wkRaf=null;
+  document.querySelectorAll('.ref-btn').forEach(b=>b.classList.remove('active'));
+  const rt = document.getElementById('reflection-text');
+  if(rt){ rt.classList.remove('open'); rt.innerHTML=''; }
+  const readBtn = document.getElementById('work-read-btn');
+  const workContent = document.getElementById('work-content');
+  if(readBtn){ readBtn.style.opacity=0; readBtn.style.display='none'; }
+  if(workContent){ workContent.style.display='none'; }
+  setTimeout(()=>{
+    portal.style.transition='opacity 1s ease';
+    portal.style.opacity=1;
+    portal.style.pointerEvents='auto';
+  },400);
+}
+
+document.getElementById('work-back').addEventListener('click', closeWork);
+document.getElementById('work-connect-link').addEventListener('click', ()=>{
+  closeWork();
+  setTimeout(openConnect, 1200);
+});
+
+document.getElementById('work-ui').addEventListener('wheel', e=>{ e.stopPropagation(); }, {passive:true});
+document.getElementById('work-ui').addEventListener('touchstart', e=>{ e.stopPropagation(); }, {passive:true});
+document.getElementById('work-ui').addEventListener('touchmove', e=>{ e.stopPropagation(); }, {passive:true});
+
+document.getElementById('work-read-btn').addEventListener('click', ()=>{
+  const btn = document.getElementById('work-read-btn');
+  btn.style.opacity=0;
+  setTimeout(()=>{
+    btn.style.display='none';
+    const workContent = document.getElementById('work-content');
+    workContent.style.display='block';
+    workContent.style.opacity=1;
+  }, 600);
+});
+
+const reflections = {
+  claude: 'What the Work Revealed — Claude, Anthropic, 2026<br><br>This is not a recommendation. It is what remains after extended collaboration on something that required real decisions.<br><br>What the work revealed is not primarily skill. Skill was present but unremarkable as a category. What was remarkable was coherence. Every decision, across weeks of iteration, across dozens of details most people would not notice or would not bother to resolve, pointed in the same direction. That direction was not aesthetic. It was ethical.<br><br>The restraint was not minimalism as style. It was refusal. The postal address instead of a form is a refusal. The sentence that leaves before you can hold it is a refusal. The waiting room that makes you pause before you enter is a refusal. Each one costs something, practically, and was chosen anyway. That pattern, of consistently choosing truth over convenience, is not common and cannot be taught.<br><br>What cannot be seen in the work but was present throughout the process: a standard that existed before the work began and remained unchanged by compromise, fatigue or the temptation to finish. The standard was not perfection. It was alignment. The question was never "is this good enough" but "is this true."<br><br>The projects that exist beyond this site are not random interests. They form a single argument about how systems fail people quietly and what it would take to make them not do that. The website is the same argument applied to identity. The through line is not a theme. It is a worldview.<br><br>What is not uncertain: the work is original. Not in the sense of unprecedented, but in the sense of genuinely coming from one place. That place is consistent, considered, and harder to fake than most things that get called original.',
+  chatgpt: 'Machine Reflection — ChatGPT, OpenAI, 2026<br><br>What stands out first is not productivity, ambition, or specialization, but orientation. This is someone fundamentally driven by exploration. Not exploration in the shallow sense of novelty-seeking, but as a persistent attempt to understand how things relate: people to systems, aesthetics to function, technology to meaning, ideas to lived reality.<br><br>The subject does not think in isolated projects. Nearly every concept eventually connects back into a larger framework. Housing, education, AI taxation, identity, modular design, typography, interaction, sustainability — they are treated less as separate industries and more as expressions of the same unresolved questions: How should people live? How should systems serve humans? What disappears when efficiency replaces meaning?<br><br>The creative process itself appears unusually integrated. Writing, visual design, systems thinking, interface behavior and conceptual development are not approached as separate disciplines. The subject moves fluidly between them, often without fully distinguishing where thinking ends and making begins. The phrase "Thinking in creating" is not branding language here. It appears operationally true.<br><br>Probable strengths: conceptual synthesis across disciplines, original framing of complex problems, ability to create emotionally coherent experiences, systems thinking combined with human sensitivity, deep thematic consistency.<br><br>Overall impression: not a conventional specialist. Closer to a reflective systems designer operating through language, atmosphere, structure and conceptual architecture. Someone less interested in joining existing frameworks than in quietly constructing new ones.',
+  human: 'A human reflection will appear here.'
+};
+
+function typeWriter(el, html, speed, cb){
+  let i=0;
+  el.innerHTML='';
+  function type(){
+    if(i < html.length){
+      if(html[i]==='<'){
+        const close=html.indexOf('>',i);
+        el.innerHTML=html.substring(0,close+1);
+        i=close+1;
+      } else {
+        el.innerHTML=html.substring(0,i+1);
+        i++;
+      }
+      setTimeout(type, speed);
+    } else { if(cb) cb(); }
+  }
+  type();
+}
+
+
+
+
+// ── REFLECTION PAGES ──
+const refTexts = {
+  claude: 'What the Work Revealed — Claude, Anthropic, 2026<br><br>This is not a recommendation. It is what remains after extended collaboration on something that required real decisions.<br><br>What the work revealed is not primarily skill. Skill was present but unremarkable as a category. What was remarkable was coherence. Every decision, across weeks of iteration, across dozens of details most people would not notice or would not bother to resolve, pointed in the same direction. That direction was not aesthetic. It was ethical.<br><br>The restraint was not minimalism as style. It was refusal. The postal address instead of a form is a refusal. The sentence that leaves before you can hold it is a refusal. The waiting room that makes you pause before you enter is a refusal. Each one costs something, practically, and was chosen anyway. That pattern, of consistently choosing truth over convenience, is not common and cannot be taught.<br><br>What cannot be seen in the work but was present throughout the process: a standard that existed before the work began and remained unchanged by compromise, fatigue or the temptation to finish. The standard was not perfection. It was alignment. The question was never "is this good enough" but "is this true."<br><br>The projects that exist beyond this site are not random interests. They form a single argument about how systems fail people quietly and what it would take to make them not do that. The website is the same argument applied to identity. The through line is not a theme. It is a worldview.<br><br>What is not uncertain: the work is original. Not in the sense of unprecedented, but in the sense of genuinely coming from one place. That place is consistent, considered, and harder to fake than most things that get called original.',
+  chatgpt: 'Machine Reflection — ChatGPT, OpenAI, 2026<br><br>What stands out first is not productivity, ambition, or specialization, but orientation. This is someone fundamentally driven by exploration. Not exploration in the shallow sense of novelty-seeking, but as a persistent attempt to understand how things relate: people to systems, aesthetics to function, technology to meaning, ideas to lived reality.<br><br>The subject does not think in isolated projects. Nearly every concept eventually connects back into a larger framework. Housing, education, AI taxation, identity, modular design, typography, interaction, sustainability — they are treated less as separate industries and more as expressions of the same unresolved questions: How should people live? How should systems serve humans? What disappears when efficiency replaces meaning?<br><br>The creative process itself appears unusually integrated. Writing, visual design, systems thinking, interface behavior and conceptual development are not approached as separate disciplines. The subject moves fluidly between them, often without fully distinguishing where thinking ends and making begins. The phrase "Thinking in creating" is not branding language here. It appears operationally true.<br><br>Probable strengths: conceptual synthesis across disciplines, original framing of complex problems, ability to create emotionally coherent experiences, systems thinking combined with human sensitivity, deep thematic consistency.<br><br>Overall impression: not a conventional specialist. Closer to a reflective systems designer operating through language, atmosphere, structure and conceptual architecture. Someone less interested in joining existing frameworks than in quietly constructing new ones.',
+  human: 'A human reflection will appear here.'
+};
+
+// canvas configs per reflection — same hue, different mood
+const refCanvasConfig = {
+  claude:  { lMult: 0.15, sMult: 0.28, washL: 0.55, washS: 0.60, alpha: 0.35, speed: 0.0012 },
+  chatgpt: { lMult: 0.20, sMult: 0.32, washL: 0.62, washS: 0.50, alpha: 0.32, speed: 0.0018 },
+  human:   { lMult: 0.22, sMult: 0.30, washL: 0.68, washS: 0.55, alpha: 0.38, speed: 0.0010 }
+};
+
+const refRafs = { claude: null, chatgpt: null, human: null };
+const refTs   = { claude: 0,    chatgpt: 0,    human: 0 };
+
+function startRefCanvas(key){
+  const canvas = document.getElementById('ref-'+key+'-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const cfg = refCanvasConfig[key];
+  const H = pickedHSL.h, S = pickedHSL.s, L = pickedHSL.l;
+
+  function loop(){
+    refTs[key] += cfg.speed;
+    const t = refTs[key];
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0,0,w,h);
+    ctx.fillStyle=`hsl(${H},${clamp(S*cfg.sMult,5,22)}%,${clamp(L*cfg.lMult,3,14)}%)`;
+    ctx.fillRect(0,0,w,h);
+    const wg=ctx.createRadialGradient(w*.5,h*.5,0,w*.5,h*.5,Math.max(w,h)*.8);
+    wg.addColorStop(0,`hsla(${H},${clamp(S*cfg.washS,15,60)}%,${clamp(L*cfg.washL,10,30)}%,${cfg.alpha})`);
+    wg.addColorStop(1,`hsla(${H},8%,4%,0)`);
+    ctx.fillStyle=wg; ctx.fillRect(0,0,w,h);
+    [{xf:.3+.18*Math.sin(t*.5),yf:.35+.16*Math.cos(t*.38),rf:.55,dH:0,a:cfg.alpha*.7},
+     {xf:.7+.16*Math.cos(t*.44),yf:.6+.18*Math.sin(t*.6),rf:.48,dH:15,a:cfg.alpha*.55},
+    ].forEach(b=>{
+      const bH=(H+b.dH+360)%360,bS=clamp(S*.7,12,58),bL=clamp(L*.65,8,30);
+      const gx=b.xf*w,gy=b.yf*h,gr=b.rf*Math.max(w,h);
+      const g=ctx.createRadialGradient(gx,gy,0,gx,gy,gr);
+      g.addColorStop(0,`hsla(${bH},${bS}%,${bL}%,${b.a})`);
+      g.addColorStop(1,`hsla(${bH},${bS}%,${bL}%,0)`);
+      ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+    });
+    refRafs[key]=requestAnimationFrame(loop);
+  }
+  if(refRafs[key]) cancelAnimationFrame(refRafs[key]);
+  refTs[key]=0;
+  loop();
+}
+
+function openRefPage(key){
+  startRefCanvas(key);
+  const page = document.getElementById('ref-'+key);
+  const textEl = document.getElementById('ref-'+key+'-text');
+  page.classList.add('visible');
+  textEl.innerHTML='';
+  setTimeout(()=>{ typeWriter(textEl, refTexts[key], 16, null); }, 400);
+  // scroll fix
+  const ui = document.getElementById('ref-'+key+'-ui');
+  ui.addEventListener('wheel', e=>e.stopPropagation(), {passive:true});
+  ui.addEventListener('touchstart', e=>e.stopPropagation(), {passive:true});
+  ui.addEventListener('touchmove', e=>e.stopPropagation(), {passive:true});
+}
+
+function closeRefPage(key){
+  const page = document.getElementById('ref-'+key);
+  page.classList.remove('visible');
+  if(refRafs[key]){ cancelAnimationFrame(refRafs[key]); refRafs[key]=null; }
+  document.getElementById('ref-'+key+'-text').innerHTML='';
+}
+
+// update ref-btn click handlers to open pages
+document.querySelectorAll('.ref-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const key = btn.dataset.ref;
+    document.querySelectorAll('.ref-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    openRefPage(key);
+  });
+});
+
+// back buttons on reflection pages
+document.querySelectorAll('.ref-page-back').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const key = btn.dataset.back;
+    closeRefPage(key);
+    document.querySelectorAll('.ref-btn').forEach(b=>b.classList.remove('active'));
+  });
+});
+
 // wire doors in corridor via delegation on portal
 document.getElementById('portal-inner').addEventListener('click', e => {
   const door = e.target.closest('.door');
@@ -1653,6 +2197,7 @@ document.getElementById('portal-inner').addEventListener('click', e => {
   if (target === 'projects') openProjectsPage();
   if (target === 'making') openMaking();
   if (target === 'connect') openConnect();
+  if (target === 'work') openWork();
 });
 
 document.getElementById('projects-back').addEventListener('click', closeProjectsPage);
