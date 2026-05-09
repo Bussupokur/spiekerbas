@@ -11,8 +11,8 @@
 
   :root {
     --cream: rgba(235, 220, 195, 0.9);
-    --cream-dim: rgba(235, 220, 195, 0.5);
-    --cream-faint: rgba(235, 220, 195, 0.25);
+    --cream-dim: rgba(235, 220, 195, 0.82);
+    --cream-faint: rgba(235, 220, 195, 0.45);
     --dark: #13110e;
   }
 
@@ -56,7 +56,7 @@
     right: 6%;
     font-family: 'Cormorant Garamond', serif;
     font-weight: 300;
-    font-size: clamp(11px, 1.1vw, 13px);
+    font-size: clamp(15px, 1.1vw, 17px);
     letter-spacing: 0.3em;
     color: var(--cream);
     text-transform: lowercase;
@@ -120,7 +120,7 @@
     font-family: 'Cormorant Garamond', serif;
     font-weight: 300;
     font-style: italic;
-    font-size: clamp(18px, 2.6vw, 32px);
+    font-size: clamp(22px, 2.6vw, 36px);
     color: var(--cream);
     letter-spacing: 0.03em;
     line-height: 1.5;
@@ -132,7 +132,7 @@
     font-family: 'Cormorant Garamond', serif;
     font-weight: 300;
     font-style: italic;
-    font-size: clamp(13px, 1.7vw, 21px);
+    font-size: clamp(17px, 1.7vw, 25px);
     color: var(--cream-dim);
     letter-spacing: 0.06em;
     line-height: 1.5;
@@ -161,7 +161,7 @@
     gap: 0.7rem;
   }
   #picker-question .q-nl {
-    font-size: clamp(15px, 1.8vw, 22px);
+    font-size: clamp(19px, 1.8vw, 26px);
     letter-spacing: 0.08em;
     color: var(--cream);
     text-transform: lowercase;
@@ -169,7 +169,7 @@
     font-style: italic;
   }
   #picker-question .q-en {
-    font-size: clamp(11px, 1.2vw, 14px);
+    font-size: clamp(15px, 1.2vw, 18px);
     letter-spacing: 0.18em;
     color: var(--cream-dim);
     text-transform: lowercase;
@@ -190,7 +190,7 @@
     height: 170px;
     border-radius: 50%;
     cursor: crosshair;
-    border: 1px solid rgba(235,220,195,0.12);
+    border: 1px solid rgba(235,220,195,0.65);
     display: block;
   }
 
@@ -219,7 +219,7 @@
   #enter-btn {
     font-family: 'Cormorant Garamond', serif;
     font-weight: 300;
-    font-size: clamp(12px, 1.3vw, 15px);
+    font-size: clamp(16px, 1.3vw, 19px);
     letter-spacing: 0.35em;
     color: var(--cream-dim);
     text-transform: lowercase;
@@ -289,7 +289,7 @@
     right: 6%;
     font-family: 'Cormorant Garamond', serif;
     font-weight: 300;
-    font-size: clamp(11px, 1.1vw, 13px);
+    font-size: clamp(15px, 1.1vw, 17px);
     letter-spacing: 0.3em;
     color: var(--cream-dim);
     text-transform: lowercase;
@@ -298,7 +298,7 @@
   .door {
     font-family: 'Cormorant Garamond', serif;
     font-weight: 300;
-    font-size: clamp(22px, 3.5vw, 44px);
+    font-size: clamp(26px, 3.5vw, 48px);
     letter-spacing: 0.18em;
     color: var(--cream-dim);
     text-transform: lowercase;
@@ -336,7 +336,7 @@
   }
 
   .door-divider.appear {
-    height: clamp(20px, 3vh, 32px);
+    height: clamp(24px, 3vh, 36px);
     opacity: 1;
   }
 
@@ -410,7 +410,7 @@
   #projects-title {
     font-family: 'Cormorant Garamond', serif;
     font-weight: 300;
-    font-size: clamp(11px, 1.1vw, 13px);
+    font-size: clamp(15px, 1.1vw, 17px);
     letter-spacing: 0.3em;
     color: var(--cream-dim);
     text-transform: lowercase;
@@ -433,7 +433,7 @@
     align-items: baseline;
     gap: 2rem;
     padding: clamp(1.4rem, 3vh, 2.2rem) 0;
-    border-top: 0.5px solid rgba(235,220,195,0.12);
+    border-top: 0.5px solid rgba(235,220,195,0.65);
     cursor: pointer;
     opacity: 0;
     transform: translateY(12px);
@@ -441,7 +441,7 @@
   }
 
   .project-row:last-child {
-    border-bottom: 0.5px solid rgba(235,220,195,0.12);
+    border-bottom: 0.5px solid rgba(235,220,195,0.65);
   }
 
   .project-row:hover { border-color: rgba(235,220,195,0.3); }
@@ -462,7 +462,7 @@
   .project-name {
     font-family: 'Cormorant Garamond', serif;
     font-weight: 300;
-    font-size: clamp(20px, 2.8vw, 36px);
+    font-size: clamp(24px, 2.8vw, 40px);
     letter-spacing: 0.05em;
     color: var(--cream-dim);
     text-transform: lowercase;
@@ -473,7 +473,7 @@
     font-family: 'Cormorant Garamond', serif;
     font-weight: 300;
     font-style: italic;
-    font-size: clamp(13px, 1.4vw, 17px);
+    font-size: clamp(17px, 1.4vw, 21px);
     color: rgba(235,220,195,0.3);
     letter-spacing: 0.03em;
     line-height: 1.5;
@@ -491,7 +491,7 @@
   .project-status {
     font-family: 'Cormorant Garamond', serif;
     font-weight: 300;
-    font-size: clamp(10px, 1vw, 12px);
+    font-size: clamp(14px, 1vw, 16px);
     letter-spacing: 0.22em;
     text-transform: lowercase;
     white-space: nowrap;
@@ -503,10 +503,10 @@
   .subscribe-btn {
     font-family: 'Cormorant Garamond', serif;
     font-weight: 300;
-    font-size: clamp(10px, 0.9vw, 11px);
+    font-size: clamp(14px, 0.9vw, 15px);
     letter-spacing: 0.2em;
     text-transform: lowercase;
-    color: rgba(235,220,195,0.35);
+    color: rgba(235,220,195,0.55);
     background: none;
     border: 0.5px solid rgba(235,220,195,0.2);
     padding: 0.3rem 0.7rem;
@@ -544,7 +544,7 @@
     gap: clamp(2rem,4vh,3.5rem);
   }
   #making-text {
-    font-size: clamp(17px,2.2vw,26px); font-weight: 300;
+    font-size: clamp(21px, 2.2vw, 30px); font-weight: 300;
     font-style: italic; line-height: 2;
     color: var(--cream-dim); letter-spacing: 0.03em;
     text-align: center;
@@ -555,10 +555,10 @@
   }
   #making-door {
     display: inline-block;
-    font-size: clamp(12px,1.3vw,15px); font-weight: 300;
+    font-size: clamp(16px, 1.3vw, 19px); font-weight: 300;
     letter-spacing: 0.28em; color: var(--cream-faint);
     text-transform: lowercase; text-decoration: none;
-    border-bottom: 0.5px solid rgba(235,220,195,0.15);
+    border-bottom: 0.5px solid rgba(235,220,195,0.65);
     padding-bottom: 0.2rem;
     transition: color 0.5s ease, border-color 0.5s ease;
     cursor: pointer;
@@ -598,7 +598,7 @@
   }
   #connect-header {
     position: absolute; top: 7%; right: 6%;
-    font-size: clamp(11px,1.1vw,13px); font-weight: 300;
+    font-size: clamp(15px, 1.1vw, 17px); font-weight: 300;
     letter-spacing: 0.3em; color: var(--cream-dim); text-transform: lowercase;
   }
   #connect-reasons {
@@ -606,12 +606,12 @@
     gap: 1.1rem; align-items: center;
   }
   .connect-reason {
-    font-size: clamp(15px,1.8vw,20px); font-weight: 300;
+    font-size: clamp(19px, 1.8vw, 24px); font-weight: 300;
     letter-spacing: 0.22em; color: var(--cream-dim);
     text-transform: lowercase; text-align: center;
   }
   #connect-divider {
-    width: 1px; height: clamp(28px,5vh,48px);
+    width: 1px; height: clamp(32px, 5vh, 52px);
     background: linear-gradient(to bottom, var(--cream-faint), transparent);
   }
   #connect-address {
@@ -623,17 +623,17 @@
     display: flex; flex-direction: column; gap: 0.35rem;
   }
   .label-nl {
-    font-size: clamp(13px,1.4vw,17px); font-weight: 300;
+    font-size: clamp(17px, 1.4vw, 21px); font-weight: 300;
     font-style: italic; letter-spacing: 0.08em;
     color: var(--cream-dim); text-transform: lowercase;
   }
   .label-en {
-    font-size: clamp(10px,0.95vw,12px); font-weight: 300;
+    font-size: clamp(14px, 0.95vw, 16px); font-weight: 300;
     letter-spacing: 0.25em; color: var(--cream-faint);
     text-transform: lowercase;
   }
   .address-lines {
-    font-size: clamp(16px,2vw,24px); font-weight: 300;
+    font-size: clamp(20px, 2vw, 28px); font-weight: 300;
     font-style: italic; color: var(--cream);
     letter-spacing: 0.05em; line-height: 1.8;
     text-align: center;
@@ -692,12 +692,12 @@
   .info-section {
     margin-bottom: clamp(3rem, 6vh, 5rem);
     padding-bottom: clamp(3rem, 6vh, 5rem);
-    border-bottom: 0.5px solid rgba(235,220,195,0.10);
+    border-bottom: 0.5px solid rgba(235,220,195,0.65);
   }
   .info-section:last-of-type { border-bottom: none; }
 
   .info-title {
-    font-size: clamp(13px,1.4vw,16px);
+    font-size: clamp(17px, 1.4vw, 20px);
     font-weight: 300;
     letter-spacing: 0.22em;
     color: var(--cream);
@@ -706,7 +706,7 @@
   }
 
   .info-body-nl {
-    font-size: clamp(14px,1.6vw,19px);
+    font-size: clamp(18px, 1.6vw, 23px);
     font-weight: 300;
     font-style: italic;
     line-height: 1.7;
@@ -718,11 +718,11 @@
   }
 
   .info-body-en {
-    font-size: clamp(12px,1.3vw,15px);
+    font-size: clamp(16px, 1.3vw, 19px);
     font-weight: 300;
     font-style: italic;
     line-height: 1.9;
-    color: rgba(235,220,195,0.35);
+    color: rgba(235,220,195,0.55);
     letter-spacing: 0.02em;
     display: none;
     margin-bottom: 0;
@@ -731,13 +731,13 @@
 
   .info-toggle {
     font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(10px,1vw,12px);
+    font-size: clamp(14px, 1vw, 16px);
     font-weight: 300;
     letter-spacing: 0.25em;
     text-transform: lowercase;
     color: rgba(235,220,195,0.3);
     background: none;
-    border: 0.5px solid rgba(235,220,195,0.15);
+    border: 0.5px solid rgba(235,220,195,0.65);
     padding: 0.3rem 0.8rem;
     cursor: pointer;
     transition: color 0.3s ease, border-color 0.3s ease;
@@ -751,17 +751,17 @@
   .info-link {
     color: var(--cream-dim);
     text-decoration: none;
-    border-bottom: 0.5px solid rgba(235,220,195,0.25);
+    border-bottom: 0.5px solid rgba(235,220,195,0.65);
     transition: color 0.3s ease, border-color 0.3s ease;
   }
   .info-link:hover { color: var(--cream); border-color: rgba(235,220,195,0.6); }
 
   /* info link in connect */
   #connect-info-link {
-    font-size: clamp(10px,1vw,12px);
+    font-size: clamp(14px, 1vw, 16px);
     font-weight: 300;
     letter-spacing: 0.25em;
-    color: rgba(235,220,195,0.22);
+    color: rgba(235,220,195,0.65);
     text-transform: lowercase;
     cursor: pointer;
     background: none;
@@ -790,7 +790,7 @@
   }
   #welcome-nl {
     font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(20px, 3vw, 38px);
+    font-size: clamp(24px, 3vw, 42px);
     font-weight: 300;
     font-style: italic;
     letter-spacing: 0.06em;
@@ -799,7 +799,7 @@
   }
   #welcome-en {
     font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(13px, 1.6vw, 20px);
+    font-size: clamp(17px, 1.6vw, 24px);
     font-weight: 300;
     font-style: italic;
     letter-spacing: 0.1em;
@@ -833,7 +833,7 @@
 
   #waiting-welcome {
     font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(15px, 1.8vw, 22px);
+    font-size: clamp(19px, 1.8vw, 26px);
     font-weight: 300;
     letter-spacing: 0.12em;
     color: rgba(235,220,195,0.85);
@@ -844,7 +844,7 @@
 
   #waiting-queue {
     font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(14px, 1.6vw, 20px);
+    font-size: clamp(18px, 1.6vw, 24px);
     font-weight: 300;
     font-style: italic;
     letter-spacing: 0.06em;
@@ -856,7 +856,7 @@
 
   #waiting-queue-en {
     font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(10px, 1.1vw, 13px);
+    font-size: clamp(14px, 1.1vw, 17px);
     font-weight: 300;
     letter-spacing: 0.2em;
     color: rgba(235,220,195,0.3);
@@ -868,7 +868,7 @@
 
   #waiting-risk {
     font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(14px, 1.6vw, 20px);
+    font-size: clamp(18px, 1.6vw, 24px);
     font-weight: 300;
     font-style: italic;
     letter-spacing: 0.08em;
@@ -880,7 +880,7 @@
 
   #waiting-risk-en {
     font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(10px, 1.1vw, 13px);
+    font-size: clamp(14px, 1.1vw, 17px);
     font-weight: 300;
     letter-spacing: 0.2em;
     color: rgba(235,220,195,0.3);
@@ -930,10 +930,10 @@
 
   #work-connect-link {
     font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(10px,1vw,12px);
+    font-size: clamp(14px, 1vw, 16px);
     font-weight: 300;
     letter-spacing: 0.25em;
-    color: rgba(235,220,195,0.25);
+    color: rgba(235,220,195,0.65);
     text-transform: lowercase;
     background: none;
     border: none;
@@ -954,7 +954,7 @@
   #work-back:hover { opacity: 0.8; transform: scale(1.15); }
 
   .work-prose {
-    font-size: clamp(16px,2vw,23px);
+    font-size: clamp(20px, 2vw, 27px);
     font-weight: 300;
     font-style: italic;
     line-height: 1.5;
@@ -964,7 +964,7 @@
   }
 
   .work-section-title {
-    font-size: clamp(11px,1.1vw,13px);
+    font-size: clamp(15px, 1.1vw, 17px);
     font-weight: 300;
     letter-spacing: 0.3em;
     color: rgba(235,220,195,0.4);
@@ -974,11 +974,11 @@
   }
 
   .work-record {
-    font-size: clamp(15px,1.7vw,20px);
+    font-size: clamp(19px, 1.7vw, 24px);
     font-weight: 300;
     font-style: italic;
     line-height: 1.5;
-    color: rgba(235,220,195,0.45);
+    color: rgba(235,220,195,0.65);
     letter-spacing: 0.02em;
     margin-bottom: 0.4rem;
   }
@@ -993,10 +993,10 @@
 
   .ref-btn {
     font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(11px,1.2vw,14px);
+    font-size: clamp(15px, 1.2vw, 18px);
     font-weight: 300;
     letter-spacing: 0.25em;
-    color: rgba(235,220,195,0.35);
+    color: rgba(235,220,195,0.55);
     text-transform: lowercase;
     background: none;
     border: none;
@@ -1021,11 +1021,11 @@
 
   #reflection-text {
     margin-top: 2rem;
-    font-size: clamp(13px,1.4vw,17px);
+    font-size: clamp(17px, 1.4vw, 21px);
     font-weight: 300;
     font-style: italic;
     line-height: 1.9;
-    color: rgba(235,220,195,0.45);
+    color: rgba(235,220,195,0.65);
     letter-spacing: 0.02em;
     opacity: 0;
     transition: opacity 0.8s ease;
@@ -1064,7 +1064,7 @@
 
   .ref-page-text {
     font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(13px,1.5vw,18px);
+    font-size: clamp(17px, 1.5vw, 22px);
     font-weight: 300;
     font-style: italic;
     line-height: 1.9;
@@ -1075,7 +1075,7 @@
 
   .ref-page-disclaimer {
     font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(9px,0.9vw,11px);
+    font-size: clamp(13px, 0.9vw, 15px);
     font-weight: 300;
     letter-spacing: 0.2em;
     color: rgba(235,220,195,0.2);
@@ -1121,10 +1121,10 @@
   #passkey-wrap.show { display: flex; }
   #passkey-instruction {
     font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(10px,1.2vw,13px);
+    font-size: clamp(14px, 1.2vw, 17px);
     font-weight: 300;
     letter-spacing: 0.25em;
-    color: rgba(235,220,195,0.45);
+    color: rgba(235,220,195,0.65);
     text-transform: lowercase;
     text-align: center;
   }
@@ -1135,14 +1135,14 @@
     justify-content: center;
   }
   .passkey-sq {
-    width: clamp(24px,5vw,36px);
-    height: clamp(24px,5vw,36px);
-    border: 0.5px solid rgba(235,220,195,0.25);
+    width: clamp(28px, 5vw, 40px);
+    height: clamp(28px, 5vw, 40px);
+    border: 0.5px solid rgba(235,220,195,0.65);
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(14px,2.5vw,18px);
+    font-size: clamp(18px, 2.5vw, 22px);
     color: rgba(235,220,195,0.7);
     position: relative;
   }
@@ -1160,7 +1160,7 @@
   }
   #passkey-good {
     font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(13px,1.6vw,20px);
+    font-size: clamp(17px, 1.6vw, 24px);
     font-weight: 300;
     font-style: italic;
     letter-spacing: 0.12em;
@@ -1177,22 +1177,22 @@
   }
   .pk-key {
     font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(13px,1.8vw,18px);
+    font-size: clamp(17px, 1.8vw, 22px);
     font-weight: 300;
     letter-spacing: 0.1em;
     color: rgba(235,220,195,0.5);
     background: none;
-    border: 0.5px solid rgba(235,220,195,0.15);
-    width: clamp(42px,10vw,56px);
-    height: clamp(34px,7vw,44px);
+    border: 0.5px solid rgba(235,220,195,0.65);
+    width: clamp(46px, 10vw, 60px);
+    height: clamp(38px, 7vw, 48px);
     cursor: pointer;
     transition: color 0.2s, border-color 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
   }
-  .pk-key:hover, .pk-key:active { color: rgba(235,220,195,0.9); border-color: rgba(235,220,195,0.45); }
-  .pk-key.wide { grid-column: span 3; letter-spacing: 0.3em; font-size: clamp(10px,1.2vw,12px); text-transform: lowercase; }
+  .pk-key:hover, .pk-key:active { color: rgba(235,220,195,0.9); border-color: rgba(235,220,195,0.65); }
+  .pk-key.wide { grid-column: span 3; letter-spacing: 0.3em; font-size: clamp(14px, 1.2vw, 16px); text-transform: lowercase; }
 
 
   /* ── PROJECT FOLD-OUT ── */
@@ -1206,7 +1206,7 @@
   .project-detail.open { display: block; }
   .project-detail-text {
     font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(13px,1.4vw,16px);
+    font-size: clamp(17px, 1.4vw, 20px);
     font-weight: 300;
     font-style: italic;
     line-height: 1.8;
@@ -1215,10 +1215,10 @@
     margin-bottom: 1rem;
   }
   .project-detail-title {
-    font-size: clamp(10px,1vw,12px);
+    font-size: clamp(14px, 1vw, 16px);
     font-weight: 300;
     letter-spacing: 0.25em;
-    color: rgba(235,220,195,0.25);
+    color: rgba(235,220,195,0.65);
     text-transform: lowercase;
     margin: 1.2rem 0 0.6rem;
   }
@@ -1229,11 +1229,11 @@
   }
   .project-detail ul li {
     font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(13px,1.4vw,16px);
+    font-size: clamp(17px, 1.4vw, 20px);
     font-weight: 300;
     font-style: italic;
     line-height: 1.8;
-    color: rgba(235,220,195,0.35);
+    color: rgba(235,220,195,0.55);
     letter-spacing: 0.02em;
     padding: 0.2rem 0;
   }
@@ -1300,7 +1300,7 @@
   </div>
   <button id="back-btn" title="return to the beginning">
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="8" cy="8" r="7" stroke="rgba(235,220,195,0.35)" stroke-width="0.8"/>
+      <circle cx="8" cy="8" r="7" stroke="rgba(235,220,195,0.55)" stroke-width="0.8"/>
       <line x1="8" y1="4.5" x2="8" y2="11.5" stroke="rgba(235,220,195,0.55)" stroke-width="0.8"/>
       <polyline points="5.5,7 8,4.5 10.5,7" stroke="rgba(235,220,195,0.55)" stroke-width="0.8" fill="none" stroke-linejoin="round"/>
     </svg>
@@ -1325,7 +1325,7 @@
   </div>
   <button id="making-back" title="back to corridor">
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <circle cx="8" cy="8" r="7" stroke="rgba(235,220,195,0.35)" stroke-width="0.8"/>
+          <circle cx="8" cy="8" r="7" stroke="rgba(235,220,195,0.55)" stroke-width="0.8"/>
           <line x1="8" y1="11.5" x2="8" y2="4.5" stroke="rgba(235,220,195,0.55)" stroke-width="0.8"/>
           <polyline points="5.5,7 8,4.5 10.5,7" stroke="rgba(235,220,195,0.55)" stroke-width="0.8" fill="none" stroke-linejoin="round"/>
         </svg>
@@ -1357,7 +1357,7 @@
   </div>
   <button id="connect-back" title="back to corridor">
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <circle cx="8" cy="8" r="7" stroke="rgba(235,220,195,0.35)" stroke-width="0.8"/>
+          <circle cx="8" cy="8" r="7" stroke="rgba(235,220,195,0.55)" stroke-width="0.8"/>
           <line x1="8" y1="11.5" x2="8" y2="4.5" stroke="rgba(235,220,195,0.55)" stroke-width="0.8"/>
           <polyline points="5.5,7 8,4.5 10.5,7" stroke="rgba(235,220,195,0.55)" stroke-width="0.8" fill="none" stroke-linejoin="round"/>
         </svg>
@@ -1407,7 +1407,7 @@
   </div>
   <button id="info-back" title="back to connect">
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <circle cx="8" cy="8" r="7" stroke="rgba(235,220,195,0.35)" stroke-width="0.8"/>
+      <circle cx="8" cy="8" r="7" stroke="rgba(235,220,195,0.55)" stroke-width="0.8"/>
       <line x1="8" y1="11.5" x2="8" y2="4.5" stroke="rgba(235,220,195,0.55)" stroke-width="0.8"/>
       <polyline points="5.5,7 8,4.5 10.5,7" stroke="rgba(235,220,195,0.55)" stroke-width="0.8" fill="none" stroke-linejoin="round"/>
     </svg>
@@ -1419,7 +1419,7 @@
   <canvas id="work-canvas"></canvas>
   <div id="work-ui">
     <div id="work-read-btn" style="display:none;opacity:0;position:absolute;inset:0;align-items:center;justify-content:center;transition:opacity 0.8s ease;">
-      <button style="font-family:'Cormorant Garamond',serif;font-size:clamp(12px,1.3vw,15px);font-weight:300;letter-spacing:0.35em;color:rgba(235,220,195,0.6);text-transform:lowercase;background:none;border:0.5px solid rgba(235,220,195,0.2);padding:0.6rem 1.4rem;cursor:pointer;transition:color 0.3s,border-color 0.3s;" onmouseover="this.style.color='rgba(235,220,195,0.95)';this.style.borderColor='rgba(235,220,195,0.5)'" onmouseout="this.style.color='rgba(235,220,195,0.6)';this.style.borderColor='rgba(235,220,195,0.2)'">read</button>
+      <button style="font-family:'Cormorant Garamond',serif;font-size:clamp(16px, 1.3vw, 19px);font-weight:300;letter-spacing:0.35em;color:rgba(235,220,195,0.6);text-transform:lowercase;background:none;border:0.5px solid rgba(235,220,195,0.2);padding:0.6rem 1.4rem;cursor:pointer;transition:color 0.3s,border-color 0.3s;" onmouseover="this.style.color='rgba(235,220,195,0.95)';this.style.borderColor='rgba(235,220,195,0.5)'" onmouseout="this.style.color='rgba(235,220,195,0.6)';this.style.borderColor='rgba(235,220,195,0.2)'">read</button>
     </div>
     <div id="passkey-wrap">
       <div id="passkey-instruction">fill in passkey and press enter</div>
@@ -1500,7 +1500,7 @@
     <button id="work-connect-link">connect</button>
     <button id="work-back">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <circle cx="8" cy="8" r="7" stroke="rgba(235,220,195,0.35)" stroke-width="0.8"/>
+        <circle cx="8" cy="8" r="7" stroke="rgba(235,220,195,0.55)" stroke-width="0.8"/>
         <line x1="8" y1="11.5" x2="8" y2="4.5" stroke="rgba(235,220,195,0.55)" stroke-width="0.8"/>
         <polyline points="5.5,7 8,4.5 10.5,7" stroke="rgba(235,220,195,0.55)" stroke-width="0.8" fill="none" stroke-linejoin="round"/>
       </svg>
@@ -1517,7 +1517,7 @@
   </div>
   <div class="ref-page-footer">
     <button class="ref-page-back" data-back="claude"><svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <circle cx="8" cy="8" r="7" stroke="rgba(235,220,195,0.35)" stroke-width="0.8"/>
+        <circle cx="8" cy="8" r="7" stroke="rgba(235,220,195,0.55)" stroke-width="0.8"/>
         <line x1="8" y1="11.5" x2="8" y2="4.5" stroke="rgba(235,220,195,0.55)" stroke-width="0.8"/>
         <polyline points="5.5,7 8,4.5 10.5,7" stroke="rgba(235,220,195,0.55)" stroke-width="0.8" fill="none" stroke-linejoin="round"/>
       </svg></button>
@@ -1533,7 +1533,7 @@
   </div>
   <div class="ref-page-footer">
     <button class="ref-page-back" data-back="chatgpt"><svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <circle cx="8" cy="8" r="7" stroke="rgba(235,220,195,0.35)" stroke-width="0.8"/>
+        <circle cx="8" cy="8" r="7" stroke="rgba(235,220,195,0.55)" stroke-width="0.8"/>
         <line x1="8" y1="11.5" x2="8" y2="4.5" stroke="rgba(235,220,195,0.55)" stroke-width="0.8"/>
         <polyline points="5.5,7 8,4.5 10.5,7" stroke="rgba(235,220,195,0.55)" stroke-width="0.8" fill="none" stroke-linejoin="round"/>
       </svg></button>
@@ -1549,7 +1549,7 @@
   </div>
   <div class="ref-page-footer">
     <button class="ref-page-back" data-back="human"><svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <circle cx="8" cy="8" r="7" stroke="rgba(235,220,195,0.35)" stroke-width="0.8"/>
+        <circle cx="8" cy="8" r="7" stroke="rgba(235,220,195,0.55)" stroke-width="0.8"/>
         <line x1="8" y1="11.5" x2="8" y2="4.5" stroke="rgba(235,220,195,0.55)" stroke-width="0.8"/>
         <polyline points="5.5,7 8,4.5 10.5,7" stroke="rgba(235,220,195,0.55)" stroke-width="0.8" fill="none" stroke-linejoin="round"/>
       </svg></button>
