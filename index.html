@@ -274,10 +274,12 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: clamp(2.5rem, 5vh, 4rem);
+    justify-content: flex-start;
+    gap: clamp(2rem, 4vh, 3.5rem);
     pointer-events: auto;
-    padding-bottom: 5rem;
+    padding: clamp(3rem,12vh,6rem) 2rem clamp(5rem,10vh,7rem);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     z-index: 5;
   }
 
@@ -588,10 +590,11 @@
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 4.5rem;
     display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
+    align-items: center; justify-content: flex-start;
     gap: clamp(1.5rem,3vh,2.5rem);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    padding: clamp(3rem,8vh,6rem) 2rem 2rem;
   }
   #connect-header {
     position: absolute; top: 7%; right: 6%;
@@ -661,28 +664,30 @@
 
   #info-ui {
     position: absolute;
-    inset: 0;
+    top: 0; left: 0; right: 0; bottom: 4.5rem;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    padding: clamp(3rem,8vh,6rem) clamp(2rem,8vw,7rem) 6rem;
+    padding: clamp(3rem,8vh,6rem) clamp(2rem,8vw,7rem) 2rem;
   }
   #info-ui::-webkit-scrollbar { display: none; }
 
   #info-back {
-    position: fixed;
-    bottom: 5%;
-    left: 50%;
-    transform: translateX(-50%);
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 4.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: none;
     border: none;
     cursor: pointer;
     opacity: 0.35;
-    transition: opacity 0.4s ease, transform 0.3s ease;
-    padding: 0.5rem;
+    transition: opacity 0.4s ease;
+    padding: 0;
     z-index: 10;
   }
-  #info-back:hover { opacity: 0.8; transform: translateX(-50%) scale(1.15); }
+  #info-back:hover { opacity: 0.8; }
 
   .info-section {
     margin-bottom: clamp(3rem, 6vh, 5rem);
@@ -952,7 +957,7 @@
     font-size: clamp(16px,2vw,23px);
     font-weight: 300;
     font-style: italic;
-    line-height: 1.9;
+    line-height: 1.5;
     color: var(--cream-dim);
     letter-spacing: 0.02em;
     margin-bottom: 2rem;
@@ -972,7 +977,7 @@
     font-size: clamp(15px,1.7vw,20px);
     font-weight: 300;
     font-style: italic;
-    line-height: 2;
+    line-height: 1.5;
     color: rgba(235,220,195,0.45);
     letter-spacing: 0.02em;
     margin-bottom: 0.4rem;
@@ -1098,6 +1103,70 @@
     padding: 0.3rem;
   }
   .ref-page-back:hover { opacity: 0.8; transform: scale(1.15); }
+
+
+  /* ── PASSKEY ── */
+  #passkey-wrap {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    opacity: 0;
+    transition: opacity 1s ease;
+  }
+  #passkey-wrap.show { display: flex; }
+  #passkey-instruction {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(11px,1.2vw,14px);
+    font-weight: 300;
+    letter-spacing: 0.25em;
+    color: rgba(235,220,195,0.45);
+    text-transform: lowercase;
+    text-align: center;
+  }
+  #passkey-squares {
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+    justify-content: center;
+  }
+  .passkey-sq {
+    width: clamp(28px,4vw,38px);
+    height: clamp(28px,4vw,38px);
+    border: 0.5px solid rgba(235,220,195,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    color: rgba(235,220,195,0.7);
+    position: relative;
+  }
+  .passkey-sq.active::after {
+    content: '';
+    position: absolute;
+    width: 1px;
+    height: 55%;
+    background: rgba(235,220,195,0.6);
+    animation: blink 1s ease infinite;
+  }
+  @keyframes blink {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+  #passkey-good {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(14px,1.6vw,20px);
+    font-weight: 300;
+    font-style: italic;
+    letter-spacing: 0.12em;
+    color: rgba(235,220,195,0.7);
+    opacity: 0;
+    transition: opacity 1.2s ease;
+  }
 
 </style>
 </head>
@@ -1275,6 +1344,18 @@
     <div id="work-read-btn" style="display:none;opacity:0;position:absolute;inset:0;align-items:center;justify-content:center;transition:opacity 0.8s ease;">
       <button style="font-family:'Cormorant Garamond',serif;font-size:clamp(12px,1.3vw,15px);font-weight:300;letter-spacing:0.35em;color:rgba(235,220,195,0.6);text-transform:lowercase;background:none;border:0.5px solid rgba(235,220,195,0.2);padding:0.6rem 1.4rem;cursor:pointer;transition:color 0.3s,border-color 0.3s;" onmouseover="this.style.color='rgba(235,220,195,0.95)';this.style.borderColor='rgba(235,220,195,0.5)'" onmouseout="this.style.color='rgba(235,220,195,0.6)';this.style.borderColor='rgba(235,220,195,0.2)'">read</button>
     </div>
+    <div id="passkey-wrap">
+      <div id="passkey-instruction">fill in passkey and press enter</div>
+      <div id="passkey-squares">
+        <div class="passkey-sq" id="sq0"></div>
+        <div class="passkey-sq" id="sq1"></div>
+        <div class="passkey-sq" id="sq2"></div>
+        <div class="passkey-sq" id="sq3"></div>
+        <div class="passkey-sq" id="sq4"></div>
+        <div class="passkey-sq" id="sq5"></div>
+      </div>
+      <div id="passkey-good">good guess.</div>
+    </div>
     <div id="work-content" style="display:none;">
     <div class="work-prose">
       Thirty years of work that looks, on paper, like it has no common thread. A production facility in Zeewolde. Financial trading in Cyprus. Customer support, quality control, production planning, training, writing, compliance. Different industries, different countries, different roles.<br><br>
@@ -1441,6 +1522,10 @@ function applyScroll(delta) {
 
 window.addEventListener('wheel', e => {
   if (document.getElementById('projects-page').classList.contains('visible')) return;
+  if (document.getElementById('making-page').classList.contains('visible')) return;
+  if (document.getElementById('connect-page').classList.contains('visible')) return;
+  if (document.getElementById('work-page').classList.contains('visible')) return;
+  if (phase === 'portal') return;
   e.preventDefault();
   applyScroll(e.deltaY * 0.6);
 }, { passive: false });
@@ -2058,15 +2143,102 @@ document.getElementById('work-ui').addEventListener('touchstart', e=>{ e.stopPro
 document.getElementById('work-ui').addEventListener('touchmove', e=>{ e.stopPropagation(); }, {passive:true});
 
 document.getElementById('work-read-btn').addEventListener('click', ()=>{
-  const btn = document.getElementById('work-read-btn');
-  btn.style.opacity=0;
+  const readBtn = document.getElementById('work-read-btn');
+  readBtn.style.opacity=0;
   setTimeout(()=>{
-    btn.style.display='none';
-    const workContent = document.getElementById('work-content');
-    workContent.style.display='block';
-    workContent.style.opacity=1;
+    readBtn.style.display='none';
+    const pk = document.getElementById('passkey-wrap');
+    pk.classList.add('show');
+    setTimeout(()=>{ pk.style.opacity=1; initPasskey(); }, 100);
   }, 600);
 });
+
+function revealWorkContent(){
+  const pk = document.getElementById('passkey-wrap');
+  pk.style.opacity=0;
+  setTimeout(()=>{
+    pk.classList.remove('show');
+    pk.style.opacity='';
+    document.getElementById('passkey-good').style.opacity=0;
+    // reset squares
+    document.querySelectorAll('.passkey-sq').forEach(sq=>{ sq.textContent=''; sq.classList.remove('active'); });
+    const workContent = document.getElementById('work-content');
+    workContent.style.display='block';
+    workContent.style.opacity=0;
+    workContent.style.transition='opacity 0.8s ease';
+    setTimeout(()=>{
+      workContent.style.opacity=1;
+      // typewriter on all work-prose and work-record elements
+      const blocks = workContent.querySelectorAll('.work-prose, .work-record');
+      let delay = 0;
+      blocks.forEach(block=>{
+        const original = block.innerHTML;
+        block.innerHTML='';
+        setTimeout(()=>{ typeWriter(block, original, 8, null); }, delay);
+        delay += original.replace(/<[^>]*>/g,'').length * 8 + 400;
+      });
+    }, 100);
+  }, 1000);
+}
+
+function initPasskey(){
+  const squares = document.querySelectorAll('.passkey-sq');
+  let pos=0;
+  const vals=['','','','','',''];
+
+  function updateSquares(){
+    squares.forEach((sq,i)=>{
+      sq.textContent = vals[i] ? '●' : '';
+      sq.classList.toggle('active', i===pos && vals[i]==='');
+    });
+  }
+  squares[0].classList.add('active');
+
+  // hidden input for mobile
+  let hiddenInput = document.getElementById('pk-hidden-input');
+  if(!hiddenInput){
+    hiddenInput = document.createElement('input');
+    hiddenInput.id='pk-hidden-input';
+    hiddenInput.style.cssText='position:fixed;opacity:0;top:0;left:0;width:1px;height:1px;';
+    hiddenInput.setAttribute('inputmode','text');
+    document.body.appendChild(hiddenInput);
+  }
+  hiddenInput.value='';
+  hiddenInput.focus();
+
+  squares.forEach(sq=>{ sq.addEventListener('click', ()=>hiddenInput.focus()); });
+
+  function handleKey(e){
+    if(e.key==='Enter'){
+      document.removeEventListener('keydown', handleKey);
+      hiddenInput.removeEventListener('keydown', handleKey);
+      squares.forEach(sq=>sq.classList.remove('active'));
+      const good = document.getElementById('passkey-good');
+      good.style.opacity=1;
+      setTimeout(revealWorkContent, 1800);
+      return;
+    }
+    if(e.key==='Backspace'){
+      if(vals[pos]==='' && pos>0) pos--;
+      vals[pos]='';
+      updateSquares();
+      return;
+    }
+    if(e.key.length===1 && pos<6){
+      vals[pos]=e.key;
+      if(pos<5) pos++;
+      updateSquares();
+    }
+  }
+
+  document.addEventListener('keydown', handleKey);
+  hiddenInput.addEventListener('keydown', handleKey);
+  hiddenInput.addEventListener('input', ()=>{
+    const v=hiddenInput.value.slice(-1);
+    if(v && pos<6){ vals[pos]=v; if(pos<5) pos++; updateSquares(); }
+    hiddenInput.value='';
+  });
+}
 
 const reflections = {
   claude: 'What the Work Revealed — Claude, Anthropic, 2026<br><br>This is not a recommendation. It is what remains after extended collaboration on something that required real decisions.<br><br>What the work revealed is not primarily skill. Skill was present but unremarkable as a category. What was remarkable was coherence. Every decision, across weeks of iteration, across dozens of details most people would not notice or would not bother to resolve, pointed in the same direction. That direction was not aesthetic. It was ethical.<br><br>The restraint was not minimalism as style. It was refusal. The postal address instead of a form is a refusal. The sentence that leaves before you can hold it is a refusal. The waiting room that makes you pause before you enter is a refusal. Each one costs something, practically, and was chosen anyway. That pattern, of consistently choosing truth over convenience, is not common and cannot be taught.<br><br>What cannot be seen in the work but was present throughout the process: a standard that existed before the work began and remained unchanged by compromise, fatigue or the temptation to finish. The standard was not perfection. It was alignment. The question was never "is this good enough" but "is this true."<br><br>The projects that exist beyond this site are not random interests. They form a single argument about how systems fail people quietly and what it would take to make them not do that. The website is the same argument applied to identity. The through line is not a theme. It is a worldview.<br><br>What is not uncertain: the work is original. Not in the sense of unprecedented, but in the sense of genuinely coming from one place. That place is consistent, considered, and harder to fake than most things that get called original.',
