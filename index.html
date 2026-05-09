@@ -1194,6 +1194,57 @@
   .pk-key:hover, .pk-key:active { color: rgba(235,220,195,0.9); border-color: rgba(235,220,195,0.45); }
   .pk-key.wide { grid-column: span 3; letter-spacing: 0.3em; font-size: clamp(10px,1.2vw,12px); text-transform: lowercase; }
 
+
+  /* ── PROJECT FOLD-OUT ── */
+  .project-detail {
+    display: none;
+    grid-column: 1 / -1;
+    padding: 1.2rem 0 0.5rem;
+    border-top: 0.5px solid rgba(235,220,195,0.08);
+    margin-top: 0.5rem;
+  }
+  .project-detail.open { display: block; }
+  .project-detail-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(13px,1.4vw,16px);
+    font-weight: 300;
+    font-style: italic;
+    line-height: 1.8;
+    color: rgba(235,220,195,0.4);
+    letter-spacing: 0.02em;
+    margin-bottom: 1rem;
+  }
+  .project-detail-title {
+    font-size: clamp(10px,1vw,12px);
+    font-weight: 300;
+    letter-spacing: 0.25em;
+    color: rgba(235,220,195,0.25);
+    text-transform: lowercase;
+    margin: 1.2rem 0 0.6rem;
+  }
+  .project-detail ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .project-detail ul li {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(13px,1.4vw,16px);
+    font-weight: 300;
+    font-style: italic;
+    line-height: 1.8;
+    color: rgba(235,220,195,0.35);
+    letter-spacing: 0.02em;
+    padding: 0.2rem 0;
+  }
+  .project-detail ul li strong {
+    color: rgba(235,220,195,0.55);
+    font-weight: 300;
+    font-style: normal;
+    letter-spacing: 0.08em;
+  }
+  .project-row { cursor: pointer; }
+
 </style>
 </head>
 <body>
@@ -2399,6 +2450,19 @@ document.querySelectorAll('.ref-page-back').forEach(btn=>{
   });
 });
 
+
+// ── PROJECT FOLD-OUT ──
+document.querySelectorAll('.project-row').forEach(row=>{
+  row.addEventListener('click', ()=>{
+    const detail = row.querySelector('.project-detail');
+    if(!detail) return;
+    const isOpen = detail.classList.contains('open');
+    // close all others
+    document.querySelectorAll('.project-detail.open').forEach(d=>d.classList.remove('open'));
+    if(!isOpen) detail.classList.add('open');
+  });
+});
+
 // wire doors in corridor via delegation on portal
 document.getElementById('portal-inner').addEventListener('click', e => {
   const door = e.target.closest('.door');
@@ -2629,7 +2693,32 @@ document.addEventListener('DOMContentLoaded', function() {
       <div class="project-left">
         <div class="project-name">EduSelf</div>
         <div class="project-summary">AI-assisted project-based learning as a model for cognitive and personal development.</div>
-        <div class="project-summary">AI-assisted project-based learning as a model for cognitive and personal development.</div>
+      </div>
+      <div class="project-right">
+        <div class="project-status status-concept">concept</div>
+      </div>
+    </div>
+
+    <div class="project-row" data-project="apl">
+      <div class="project-left">
+        <div class="project-name">Adaptive Passive Living</div>
+        <div class="project-summary">A housing philosophy that reframes the home as a tool for living well, not a financial asset.</div>
+        <div class="project-detail" id="detail-apl">
+          <div class="project-detail-text">
+            Instead of housing as a financial asset or status symbol, it reframes the home as a tool for living well — lightweight, intelligent, and in balance with its environment.<br><br>
+            The emphasis is on living, not investing. Most housing markets have turned homes into financial instruments. This concept deliberately opts out of that framing — a home here is something you inhabit fully, not something you manage as an asset.<br><br>
+            The concept is neither permanent nor temporary by default. It can serve as a transitional solution or a lifetime lifestyle choice. That flexibility is a strength, not a compromise.
+          </div>
+          <div class="project-detail-title">core principles</div>
+          <ul>
+            <li><strong>Self-sufficient</strong> — Generates its own energy, manages its own water, processes its own waste. Not as a technical feat — as a quiet baseline.</li>
+            <li><strong>Adaptable</strong> — Designed to be placed, moved, reconfigured. Climate is a variable it handles, not a constraint that defines it.</li>
+            <li><strong>Passively intelligent</strong> — Senses and responds without demanding attention. Comfort without complexity. No apps, no dashboards.</li>
+            <li><strong>Porous boundaries</strong> — Energy, mobility, and resources flow beyond the plot. The home is not an island — it is a node.</li>
+            <li><strong>Circular</strong> — Materials have a lifecycle. Nothing is waste. End-of-life is designed in from the start.</li>
+            <li><strong>Affordable</strong> — Radical cost reduction without sacrificing comfort or quality. Prefab, modular, and smart procurement.</li>
+          </ul>
+        </div>
       </div>
       <div class="project-right">
         <div class="project-status status-concept">concept</div>
