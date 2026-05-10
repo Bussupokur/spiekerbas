@@ -1635,11 +1635,11 @@ window.addEventListener('touchmove', e => {
 
 // ── SENTENCE ──
 const sentences = [
-  { nl: 'het meeste wat ik doe gebeurt tussen de zinnen', en: 'most of what I do happens between sentences' },
-  { nl: 'ik ontwerp met woorden', en: 'I design with words' },
-  { nl: 'ideeën hebben een vorm nodig om te bestaan', en: 'ideas need a shape to exist' },
-  { nl: 'ik ben hier om te verkennen', en: 'I exist to explore' },
-  { nl: 'het concept komt voor het canvas', en: 'the concept comes before the canvas' },
+  { nl: 'Ik wil graag wat rebelleren.', en: 'Manduca holera tua.' },
+  { nl: 'Een beetje de chaos in de orde respecteren, eren en uitproberen.', en: 'Esto benignus hominibus.' },
+  { nl: 'Niet normaal of anders in zijn redenatie rondzweven.', en: 'Amplectere carius eos quos amas.' },
+  { nl: 'Een vrije interpretatie aan het leven geven.', en: 'Esto ipse, mane ipse.' },
+  { nl: 'In de illusies van de ongeschreven regels vrij voortbewegen.', en: 'Noli timere vivere.' },
 ];
 
 let currentSentence = null;
@@ -2089,6 +2089,9 @@ function closeMaking(){
 }
 
 document.getElementById('making-back').addEventListener('click', closeMaking);
+document.getElementById('making-inner').addEventListener('wheel', e=>{ e.stopPropagation(); }, {passive:true});
+document.getElementById('making-inner').addEventListener('touchstart', e=>{ e.stopPropagation(); }, {passive:true});
+document.getElementById('making-inner').addEventListener('touchmove', e=>{ e.stopPropagation(); }, {passive:true});
 
 // ── CONNECT PAGE ──
 const connectPage = document.getElementById('connect-page');
