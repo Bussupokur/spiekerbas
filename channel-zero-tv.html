@@ -875,15 +875,153 @@
   }
 
   @media (max-width: 760px){
-    .tv{ grid-template-columns: 1fr; grid-template-rows: 1fr auto; aspect-ratio: unset; height: 92vh; }
-    .panel{ flex-direction:row; flex-wrap:wrap; justify-content:space-between; }
-    .keypad{ width:60%; }
-    .knobs{ margin:0; }
+    body{ padding:0; }
+    .tv{
+      width:100vw;
+      height:100vh;
+      border-radius:0;
+      grid-template-columns: 1fr;
+      grid-template-rows: minmax(0,1fr) auto;
+      aspect-ratio: unset;
+      padding:10px;
+      gap:10px;
+    }
+
+    /* screen gets almost all the height; panel is a compact strip below */
+    .screen-wrap{ min-height:0; }
+
+    .channel-content{ padding:20px 18px; }
+    .channel-content.fullbleed{ padding:0; }
+    .sn7-pad{ padding:20px 18px; }
+
+    .ch-badge{ top:14px; right:16px; font-size:11px; }
+    .ch-badge .num{ font-size:17px; }
+
+    .bracket-title{ font-size:19px; margin-bottom:14px; }
+    .home-title{ font-size:clamp(22px,7vw,32px); letter-spacing:3px; }
+    .home-tagline{ font-size:12px; margin-bottom:10px; }
+    .colorbars{ margin-bottom:10px; height:10px; }
+    .broadcast-box{ padding:10px 12px; }
+    .broadcast-box .eyebrow{ margin-bottom:6px; }
+    .broadcast-box .ep-title{ font-size:14px; margin-bottom:6px; }
+    .broadcast-box .ep-desc{ font-size:11.5px; margin-bottom:8px; line-height:1.4; }
+    .countdown{ font-size:22px; }
+    .schedule, .featured{ font-size:11.5px; line-height:1.55; margin-top:10px; }
+    .guide-pointer{ margin-top:8px; }
+
+    .term-prompt{ font-size:12.5px; margin-bottom:10px; }
+    .term-note{ font-size:11.5px; line-height:1.45; margin:10px 0 !important; }
+    .term-row{ font-size:11.5px; line-height:1.7; }
+
+    .claude-flicker{ font-size:clamp(20px,7vw,30px); }
+    .claude-bug{ width:20px; height:20px; left:14px; bottom:12px; }
+
+    /* nav bars with multiple buttons: allow wrapping instead of clipping */
+    .teletext-nav{
+      flex-wrap:wrap;
+      gap:8px 10px;
+      margin:2px 0 16px;
+    }
+    .tt-btn{ font-size:11px; padding:7px 9px; }
+    .tt-jump input{ width:36px; font-size:12px; }
+
+    .subpage-nav{ gap:8px; }
+
+    .blog-list{ font-size:12.5px; }
+    .blog-item{ padding:7px 0; }
+    .blog-title{ font-size:12.5px; }
+    .blog-pageref{ display:block; float:none; margin-top:2px; }
+
+    .archive-item{ padding:2px 0 10px 12px; }
+    .archive-title{ font-size:13px; margin-bottom:2px; }
+    .archive-tag{ font-size:11px; margin-bottom:3px; }
+    .archive-desc{ font-size:11.5px; line-height:1.4; }
+
+    .blog-post-meta{ font-size:11px; margin-bottom:4px; }
+    .blog-post-title{ font-size:15px; margin-bottom:8px; }
+    .blog-post-body{ font-size:12px; line-height:1.5; }
+
+    .txt-overlay{ left:16px; right:16px; bottom:16px; max-height:70%; }
+    .txt-panel{ padding:12px 14px; }
+    .txt-title{ font-size:12px; }
+    .txt-body{ font-size:11.5px; }
+
+    .sub-row{ flex-direction:column; align-items:stretch; gap:12px; }
+    .sub-btn{ padding:10px 14px; }
+
+    /* ── control panel ── */
+    .panel{
+      flex-direction:row;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px 14px;
+    }
+    .panel-label{ display:none; }
+    .keypad{
+      order:1;
+      width:auto;
+      flex:1 1 auto;
+      grid-template-columns: repeat(3, 44px);
+      gap:7px;
+    }
+    .key{ padding:11px 0; font-size:16px; }
+    .key.zero{ grid-column: 1 / 2; }
+
+    .vol-block{
+      order:2;
+      margin:0;
+      flex:0 0 auto;
+    }
+    .vol-track{ width:24px; height:78px; }
+
+    .power-row{ order:3; margin-bottom:0; }
+    .power-caption{ display:none; }
     .grille{ display:none; }
   }
+
+  @media (max-width: 420px){
+    .keypad{ grid-template-columns: repeat(3, 38px); gap:6px; }
+    .key{ font-size:14px; padding:9px 0; }
+    .vol-track{ height:64px; }
+  }
+  #mobileNotice{
+    position:fixed;
+    left:12px; right:12px; bottom:12px;
+    z-index:50;
+    background:rgba(10,12,10,0.94);
+    border:1px solid rgba(124,252,158,0.3);
+    color:#cfe6d6;
+    font-family:'Courier New', monospace;
+    font-size:12px;
+    line-height:1.5;
+    padding:12px 40px 12px 14px;
+    border-radius:4px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.5);
+    display:none;
+  }
+  #mobileNotice.show{ display:block; }
+  #mobileNotice .mn-accent{ color:var(--phosphor); }
+  #mobileNoticeClose{
+    position:absolute;
+    top:8px; right:10px;
+    background:none;
+    border:none;
+    color:#7f9986;
+    font-size:16px;
+    line-height:1;
+    cursor:pointer;
+    padding:4px;
+  }
+  #mobileNoticeClose:hover{ color:#eef7ef; }
 </style>
 </head>
 <body>
+
+<div id="mobileNotice">
+  <span class="mn-accent">&gt;</span> this set broadcasts best on a larger screen. things may look tight here.
+  <button id="mobileNoticeClose" aria-label="dismiss">×</button>
+</div>
 
 <div class="tv">
   <div class="power-led" id="led"></div>
@@ -1665,6 +1803,7 @@
       <text x="${cx}" y="${cy - 14}" text-anchor="middle" font-family="'Courier New', monospace" font-size="12" fill="#7CFC9E" letter-spacing="2">CHANNEL ZERO</text>
       <text x="${cx}" y="${cy + 2}" text-anchor="middle" font-family="'Courier New', monospace" font-size="8.5" fill="#9fd4ad" letter-spacing="0.5">CARRIER SIGNAL — STANDING BY</text>
       <text x="${cx}" y="${cy + 18}" text-anchor="middle" font-family="'Courier New', monospace" font-size="8" fill="#6f8f78" letter-spacing="1">PO BOX 1979</text>
+      <text x="${cx}" y="${cy + boxH/2 + 16}" text-anchor="middle" font-family="'Courier New', monospace" font-size="7.5" fill="#4d6b55" letter-spacing="0.5">BROADCASTS BEST ON LARGER SCREENS</text>
     `;
 
     return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block;">${lines}${bars}${box}</svg>`;
@@ -1844,6 +1983,31 @@
 
   // start powered-off
   turnOff();
+
+  // ---- small-screen notice: real detection, not just the test-card joke ----
+  const mobileNotice = document.getElementById('mobileNotice');
+  const mobileNoticeClose = document.getElementById('mobileNoticeClose');
+  const smallScreenQuery = window.matchMedia('(max-width: 760px)');
+  const DISMISS_KEY = 'channelZeroMobileNoticeDismissed';
+
+  function updateMobileNotice(){
+    const dismissed = localStorage.getItem(DISMISS_KEY) === '1';
+    if(smallScreenQuery.matches && !dismissed){
+      mobileNotice.classList.add('show');
+    } else {
+      mobileNotice.classList.remove('show');
+    }
+  }
+
+  if(mobileNoticeClose){
+    mobileNoticeClose.addEventListener('click', () => {
+      mobileNotice.classList.remove('show');
+      try{ localStorage.setItem(DISMISS_KEY, '1'); }catch(e){}
+    });
+  }
+
+  smallScreenQuery.addEventListener('change', updateMobileNotice);
+  updateMobileNotice();
 
   // ---- subscribe form (demo only — no backend wired up) ----
   const subForm = document.getElementById('subForm');
