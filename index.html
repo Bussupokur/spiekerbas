@@ -649,6 +649,80 @@
   #connect-back:hover { opacity: 0.8; }
 
 
+  /* ── CHANNEL ZERO TV THRESHOLD PAGE ── */
+  #channelzero-page {
+    position: fixed;
+    inset: 0;
+    z-index: 7;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1.6s ease;
+    overflow: hidden;
+    background: var(--dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #channelzero-page.visible { opacity: 1; pointer-events: auto; }
+  #channelzero-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2.2rem;
+    text-align: center;
+    padding: 2rem;
+    max-width: 560px;
+  }
+  .cz-line-nl {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-style: italic;
+    font-size: clamp(20px, 2.2vw, 28px);
+    color: var(--cream);
+    letter-spacing: 0.04em;
+    line-height: 1.6;
+  }
+  .cz-line-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(13px, 1vw, 15px);
+    letter-spacing: 0.24em;
+    color: var(--cream-faint);
+    text-transform: lowercase;
+  }
+  #channelzero-enter {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(16px, 1.3vw, 19px);
+    letter-spacing: 0.35em;
+    color: var(--cream-dim);
+    text-transform: lowercase;
+    background: none;
+    border: 1px solid rgba(235,220,195,0.3);
+    cursor: pointer;
+    padding: 0.7rem 2rem;
+    margin-top: 0.6rem;
+    transition: color 0.4s ease, border-color 0.4s ease;
+  }
+  #channelzero-enter:hover {
+    color: var(--cream);
+    border-color: rgba(235,220,195,0.65);
+  }
+  #channelzero-back {
+    position: absolute;
+    bottom: 7%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    opacity: 0.35;
+    transition: opacity 0.4s ease;
+    padding: 0.6rem;
+  }
+  #channelzero-back:hover { opacity: 0.8; }
+
+
   /* ── INFO PAGE ── */
   #info-page {
     position: fixed;
@@ -1645,6 +1719,8 @@
     <div class="door" data-door="work">work</div>
     <div class="door-divider"></div>
     <div class="door" data-door="connect">connect</div>
+    <div class="door-divider"></div>
+    <div class="door" data-door="channelzero">channel zero tv</div>
   </div>
   <button id="back-btn" title="return to the beginning">
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1708,6 +1784,24 @@
           <line x1="8" y1="11.5" x2="8" y2="4.5" stroke="rgba(235,220,195,0.55)" stroke-width="0.8"/>
           <polyline points="5.5,7 8,4.5 10.5,7" stroke="rgba(235,220,195,0.55)" stroke-width="0.8" fill="none" stroke-linejoin="round"/>
         </svg>
+  </button>
+</div>
+
+<!-- CHANNEL ZERO TV THRESHOLD PAGE -->
+<div id="channelzero-page">
+  <div id="channelzero-inner">
+    <div class="cz-line-nl">Dit is een portaal zonder terugweg.</div>
+    <div class="cz-line-en">this is a one-way portal</div>
+    <div class="cz-line-nl" style="margin-top: 0.4rem;">channel zero tv — een andere soort uitzending</div>
+    <div class="cz-line-en">a different kind of broadcast</div>
+    <button id="channelzero-enter">enter</button>
+  </div>
+  <button id="channelzero-back" title="back to corridor">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="8" r="7" stroke="rgba(235,220,195,0.55)" stroke-width="0.8"/>
+      <line x1="8" y1="11.5" x2="8" y2="4.5" stroke="rgba(235,220,195,0.55)" stroke-width="0.8"/>
+      <polyline points="5.5,7 8,4.5 10.5,7" stroke="rgba(235,220,195,0.55)" stroke-width="0.8" fill="none" stroke-linejoin="round"/>
+    </svg>
   </button>
 </div>
 
@@ -2610,6 +2704,34 @@ function closeConnect(){
 
 document.getElementById('connect-back').addEventListener('click', closeConnect);
 
+// ── CHANNEL ZERO TV PAGE ──
+const channelzeroPage = document.getElementById('channelzero-page');
+
+function openChannelZero(){
+  portal.style.transition='opacity 0.8s ease';
+  portal.style.opacity=0;
+  setTimeout(()=>{
+    portal.style.pointerEvents='none';
+    channelzeroPage.classList.add('visible');
+  },900);
+}
+
+function closeChannelZero(){
+  channelzeroPage.classList.remove('visible');
+  setTimeout(()=>{
+    portal.style.transition='opacity 1s ease';
+    portal.style.opacity=1;
+    portal.style.pointerEvents='auto';
+  },400);
+}
+
+document.getElementById('channelzero-back').addEventListener('click', closeChannelZero);
+
+document.getElementById('channelzero-enter').addEventListener('click', () => {
+  // one-way: leaves this site entirely, replacing it in the same tab
+  window.location.href = 'channel-zero-tv.html';
+});
+
 // wire notify me buttons to connect page
 document.querySelectorAll('.subscribe-btn').forEach(btn => {
   btn.addEventListener('click', e => {
@@ -3189,6 +3311,7 @@ document.getElementById('portal-inner').addEventListener('click', e => {
   if (target === 'making') openMaking();
   if (target === 'connect') openConnect();
   if (target === 'work') openWork();
+  if (target === 'channelzero') openChannelZero();
 });
 
 // projects-back handled in split JS
