@@ -1,0 +1,2024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHANNEL ZERO – TV</title>
+<style>
+  :root{
+    --metal-1:#28241f;
+    --metal-2:#18150f;
+    --metal-hi:#4a4238;
+    --metal-lo:#0d0a07;
+    --screen-bg:#040603;
+    --phosphor:#7CFC9E;
+    --phosphor-dim:rgba(124,252,158,0.45);
+    --phosphor-white:#e7f3ea;
+    --led-red:#ff3b30;
+    --led-red-glow:#ff6b5f;
+    --led-green:#37e06a;
+    --led-green-glow:#8dffb0;
+    --knob-blue:#5fd7ff;
+  }
+
+  *{box-sizing:border-box;}
+
+  html,body{
+    height:100%;
+    margin:0;
+    background:#08080a;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Courier New', ui-monospace, monospace;
+  }
+
+  .tv{
+    position:relative;
+    width:min(96vw, 1100px);
+    aspect-ratio: 1100/700;
+    background:
+      radial-gradient(120% 140% at 30% 0%, var(--metal-hi) 0%, var(--metal-1) 45%, var(--metal-2) 100%);
+    border-radius:26px;
+    padding:26px;
+    display:grid;
+    grid-template-columns: 1fr 230px;
+    gap:22px;
+    box-shadow:
+      0 26px 70px rgba(0,0,0,0.5),
+      inset 0 1px 0 rgba(255,255,255,0.05),
+      inset 0 -8px 20px rgba(0,0,0,0.45);
+  }
+
+  /* faint worn-plastic grain, subtler than the screen static */
+  .tv::after{
+    content:"";
+    position:absolute; inset:0;
+    border-radius:26px;
+    opacity:0.05;
+    mix-blend-mode: overlay;
+    pointer-events:none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+
+  /* subtle brushed-metal texture */
+  .tv::before{
+    content:"";
+    position:absolute; inset:0;
+    border-radius:26px;
+    background:repeating-linear-gradient(
+      100deg,
+      rgba(255,255,255,0.012) 0px,
+      rgba(255,255,255,0.012) 1px,
+      transparent 1px,
+      transparent 4px
+    );
+    pointer-events:none;
+  }
+
+  .power-led{
+    position:absolute;
+    top:14px; left:14px;
+    width:8px; height:8px;
+    border-radius:50%;
+    background:#333;
+    box-shadow: inset 0 0 2px rgba(0,0,0,0.8);
+    transition: all .3s ease;
+  }
+  .power-led.on{
+    background: var(--led-green-glow);
+    box-shadow: 0 0 8px 2px var(--led-green), 0 0 2px var(--led-green) inset;
+  }
+
+  /* ===== SCREEN ===== */
+  .screen-wrap{
+    position:relative;
+    border-radius:14px;
+    background: #000;
+    box-shadow:
+      inset 0 0 0 3px #000,
+      inset 0 0 40px rgba(0,0,0,0.9),
+      0 0 0 6px #0d0d0e,
+      0 0 0 7px #262628;
+    overflow:hidden;
+  }
+
+  .screen{
+    position:absolute; inset:0;
+    border-radius:10px;
+    overflow:hidden;
+    background: var(--screen-bg);
+    filter: blur(0.6px) brightness(1.08) contrast(1.12) saturate(1.1);
+  }
+
+  .screen-glow{
+    position:absolute; inset:0;
+    box-shadow:
+      inset 0 0 40px 6px rgba(124,252,158,0.10),
+      inset 0 0 90px 20px rgba(0,0,0,0.55);
+    pointer-events:none;
+    z-index:6;
+  }
+
+  .glass-reflection{
+    position:absolute; inset:0;
+    background: linear-gradient(115deg,
+      rgba(255,255,255,0.10) 0%,
+      rgba(255,255,255,0.03) 18%,
+      transparent 38%,
+      transparent 100%
+    );
+    mix-blend-mode: screen;
+    pointer-events:none;
+    z-index:7;
+  }
+
+  .screen.off{
+    background:#000;
+  }
+
+  canvas.static-layer{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    image-rendering: pixelated;
+    opacity:0;
+    mix-blend-mode: screen;
+    transition: opacity .15s linear;
+    pointer-events:none;
+  }
+
+  .scanlines{
+    position:absolute; inset:0;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(0,0,0,0.24) 0px,
+      rgba(0,0,0,0.24) 1px,
+      transparent 2px,
+      transparent 4px
+    );
+    pointer-events:none;
+    mix-blend-mode: multiply;
+    opacity: 0.4;
+    filter: blur(0.5px);
+  }
+
+  .vignette{
+    position:absolute; inset:0;
+    background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%);
+    pointer-events:none;
+  }
+
+  .flicker{
+    position:absolute; inset:0;
+    background: rgba(255,255,255,0.02);
+    pointer-events:none;
+    animation: flick 6s infinite steps(1);
+  }
+  @keyframes flick{
+    0%,93%,100%{opacity:0;}
+    94%{opacity:.5;}
+    95%{opacity:0;}
+    96%{opacity:.3;}
+    97%{opacity:0;}
+  }
+
+  .channel-content{
+    position:absolute; inset:0;
+    padding:34px 38px;
+    color: var(--phosphor-white);
+    font-family:'Courier New', monospace;
+    opacity:1;
+    overflow:hidden;
+    transition: opacity .25s ease;
+  }
+  .channel-content.hidden{opacity:0; pointer-events:none;}
+
+  .ch-badge{
+    position:absolute;
+    top:24px; right:32px;
+    text-align:right;
+    color: var(--phosphor);
+    font-size:13px;
+    letter-spacing:2px;
+    text-shadow:0 0 6px var(--phosphor-dim);
+    z-index:4;
+  }
+  .ch-badge .num{
+    font-size:22px;
+    font-weight:bold;
+    display:block;
+  }
+  .ch-badge .label{
+    font-size:11px;
+    opacity:.85;
+  }
+
+  .ch-entry{
+    position:absolute;
+    top:22px; right:32px;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight:700;
+    font-size:40px;
+    letter-spacing:4px;
+    color: var(--phosphor);
+    text-shadow:0 0 12px var(--phosphor-dim);
+    z-index:5;
+    transition: opacity .15s ease;
+  }
+  .ch-entry.hidden{ opacity:0; pointer-events:none; }
+
+  /* ---- HOME (CH 01) ---- */
+  .home-title{
+    font-size:clamp(30px,5vw,54px);
+    font-weight:800;
+    letter-spacing:6px;
+    margin:6px 0 2px;
+    color:#eef7ef;
+    text-shadow:0 0 8px rgba(255,255,255,0.5), 0 0 22px rgba(255,255,255,0.25);
+  }
+  .home-tagline{
+    color:var(--phosphor);
+    letter-spacing:2px;
+    font-size:14px;
+    margin-bottom:18px;
+    text-shadow:0 0 6px var(--phosphor-dim), 0 0 16px var(--phosphor-dim);
+  }
+  .colorbars{
+    display:flex;
+    height:14px;
+    width:min(100%, 620px);
+    border-radius:2px;
+    overflow:hidden;
+    margin-bottom:18px;
+    opacity:.9;
+  }
+  .colorbars span{flex:1;}
+
+  .broadcast-box{
+    border:1px solid rgba(124,252,158,0.35);
+    padding:16px 18px;
+    max-width:640px;
+    background: rgba(124,252,158,0.03);
+  }
+  .broadcast-box .eyebrow{
+    color:var(--phosphor);
+    font-size:11px;
+    letter-spacing:2px;
+    margin-bottom:10px;
+    opacity:.85;
+  }
+  .broadcast-box .ep-title{
+    font-size:19px;
+    margin-bottom:10px;
+    color:#f2fbf3;
+  }
+  .broadcast-box .ep-desc{
+    font-size:13px;
+    line-height:1.6;
+    color:#cfe6d6;
+    margin-bottom:16px;
+  }
+  .countdown{
+    font-size:34px;
+    color:var(--phosphor);
+    letter-spacing:2px;
+    text-shadow:0 0 10px var(--phosphor-dim);
+  }
+  .schedule{
+    margin-top:20px;
+    font-size:12px;
+    line-height:1.9;
+    color:#9db8a4;
+    max-width:640px;
+  }
+  .schedule .now{color:var(--phosphor-white);}
+  .schedule .airing{
+    color:var(--phosphor-white);
+  }
+  .schedule .airing::before{
+    content:"● LIVE  ";
+    color:var(--phosphor);
+    text-shadow:0 0 5px var(--phosphor-dim);
+  }
+  .guide-pointer{
+    margin-top:14px;
+    font-size:11.5px;
+    color:var(--phosphor);
+    text-shadow:0 0 5px var(--phosphor-dim);
+    letter-spacing:0.5px;
+  }
+  .featured{ margin-top:18px; font-size:13px; line-height:2; }
+  .featured .now{color:var(--phosphor-white);}
+  .new-tag{
+    color:var(--screen-bg);
+    background:var(--phosphor);
+    font-size:9px;
+    font-weight:bold;
+    letter-spacing:1px;
+    padding:2px 5px;
+    border-radius:2px;
+    margin-left:4px;
+  }
+  .guide-list{ margin-top:22px; font-size:14px; line-height:2.2; }
+  .here-tag{
+    color:var(--phosphor);
+    font-size:11px;
+    letter-spacing:0.5px;
+  }
+
+  /* ---- PROJECTS (CH 03) — archive playback list ---- */
+  .bracket-title{
+    font-size:26px;
+    letter-spacing:3px;
+    margin-bottom:6px;
+    color:#eef7ef;
+  }
+  .archive-list{ max-width:640px; }
+  .archive-item{
+    border-left:2px solid var(--phosphor);
+    padding:2px 0 18px 16px;
+  }
+  .archive-title{
+    color:var(--phosphor);
+    font-weight:700;
+    font-size:15px;
+    text-shadow:0 0 6px var(--phosphor-dim);
+    margin-bottom:3px;
+  }
+  .archive-tag{
+    color:#7f9986;
+    font-size:12px;
+    margin-bottom:6px;
+  }
+  .archive-desc{
+    color:#dfeee2;
+    font-size:13px;
+    line-height:1.5;
+  }
+
+  /* ---- BLOG (CH 04) — teletext listing ---- */
+  .blog-list{ max-width:700px; }
+  .blog-item{
+    padding:12px 0;
+    border-bottom:1px dashed rgba(124,252,158,0.25);
+  }
+  .blog-item:last-child{ border-bottom:none; }
+  .blog-meta{
+    display:flex;
+    justify-content:space-between;
+    font-size:12px;
+    color:var(--phosphor);
+    margin-bottom:5px;
+    text-shadow:0 0 5px var(--phosphor-dim);
+  }
+  .blog-title{
+    font-size:14px;
+    color:#eef7ef;
+  }
+  .blog-pageref{
+    float:right;
+    color:#6f8f78;
+    font-size:11px;
+    letter-spacing:1px;
+  }
+
+  .blog-post{ max-width:640px; }
+  .blog-post-meta{
+    color:#7f9986;
+    font-size:12px;
+    margin-bottom:8px;
+  }
+  .blog-post-title{
+    font-size:19px;
+    color:#f2fbf3;
+    margin-bottom:14px;
+  }
+  .blog-post-body{
+    font-size:13px;
+    line-height:1.7;
+    color:#cfe6d6;
+    overflow:hidden;
+    min-height:60px;
+  }
+  .subpage-nav{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-top:18px;
+  }
+  .tt-btn.small{
+    padding:4px 9px;
+    font-size:13px;
+  }
+  .subpage-indicator{
+    color:#7f9986;
+    font-size:12px;
+    letter-spacing:1px;
+  }
+
+  .blog-empty{
+    max-width:520px;
+    font-size:13px;
+    color:#7f9986;
+    font-style:italic;
+    padding:10px 0 4px;
+  }
+
+  .teletext-nav{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    margin:2px 0 22px;
+    max-width:640px;
+  }
+  .tt-btn{
+    background:none;
+    border:1px solid rgba(124,252,158,0.35);
+    color:var(--phosphor);
+    font-family:'Courier New', monospace;
+    font-size:12px;
+    letter-spacing:1px;
+    padding:6px 10px;
+    cursor:pointer;
+    border-radius:2px;
+  }
+  .tt-btn:hover{ background:rgba(124,252,158,0.08); }
+  .tt-jump{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    color:var(--phosphor);
+    font-size:13px;
+  }
+  .tt-jump input{
+    width:44px;
+    background:transparent;
+    border:none;
+    border-bottom:1px solid rgba(124,252,158,0.4);
+    color:#eef7ef;
+    font-family:'Courier New', monospace;
+    font-size:14px;
+    letter-spacing:2px;
+    text-align:center;
+    outline:none;
+  }
+  .tt-jump input:focus{ border-bottom-color:var(--phosphor); }
+
+  .placeholder-strike{
+    text-decoration: line-through;
+    opacity:0.55;
+  }
+
+  .channel-content.fullbleed{ padding:0; }
+  .testcard-wrap{ position:absolute; inset:0; }
+  .sn7-pad{ padding:34px 38px; height:100%; box-sizing:border-box; overflow:hidden; }
+  #sn7Home.hidden, #sn7Teletext.hidden{ display:none; }
+
+  /* ---- SUBSCRIBE (CH 06) ---- */
+  .sub-form{
+    max-width:520px;
+    margin-top:22px;
+  }
+  .sub-label{
+    display:block;
+    color:#8fae96;
+    font-size:13px;
+    margin-bottom:8px;
+  }
+  .sub-row{
+    display:flex;
+    gap:10px;
+  }
+  .sub-input{
+    flex:1;
+    background:transparent;
+    border:none;
+    border-bottom:1px solid rgba(124,252,158,0.4);
+    color:#eef7ef;
+    font-family:'Courier New', monospace;
+    font-size:14px;
+    padding:6px 2px;
+    outline:none;
+  }
+  .sub-input:focus{ border-bottom-color:var(--phosphor); }
+  .sub-input::placeholder{ color:#4d6b55; }
+  .sub-btn{
+    background:none;
+    border:1px solid rgba(124,252,158,0.45);
+    color:var(--phosphor);
+    font-family:'Courier New', monospace;
+    font-size:13px;
+    letter-spacing:1px;
+    padding:8px 14px;
+    cursor:pointer;
+    border-radius:2px;
+    text-shadow:0 0 5px var(--phosphor-dim);
+  }
+  .sub-btn:hover{ background:rgba(124,252,158,0.08); }
+  .sub-confirm{
+    margin-top:20px;
+    max-width:520px;
+    color:var(--phosphor);
+    font-size:13px;
+    line-height:1.7;
+    text-shadow:0 0 6px var(--phosphor-dim);
+  }
+  .sub-confirm.hidden{ display:none; }
+
+  /* ---- CLAUDE TV (CH 12) ---- */
+  /* ---- CLAUDE TV (CH 12) — its own accent, not the house green ---- */
+  .claude-channel{
+    --claude-accent:#ffb454;
+    --claude-accent-dim: rgba(255,180,84,0.35);
+  }
+  .claude-title{
+    text-shadow:0 0 10px rgba(255,180,84,0.4) !important;
+  }
+  .claude-prompt{
+    color: var(--claude-accent) !important;
+    text-shadow:0 0 6px var(--claude-accent-dim) !important;
+  }
+  .claude-heading{
+    color: var(--claude-accent) !important;
+    text-shadow:0 0 5px var(--claude-accent-dim) !important;
+  }
+  .claude-tt-btn{
+    border-color: rgba(255,180,84,0.45) !important;
+    color: var(--claude-accent) !important;
+    text-shadow:0 0 5px var(--claude-accent-dim) !important;
+  }
+  .claude-tt-btn:hover{ background: rgba(255,180,84,0.08) !important; }
+  .claude-panel{
+    border-color: rgba(255,180,84,0.35) !important;
+  }
+  .claude-bug{
+    position:absolute;
+    left:20px; bottom:18px;
+    width:26px; height:26px;
+    opacity:0.55;
+    filter: drop-shadow(0 0 4px var(--claude-accent-dim));
+    animation: bugPulse 5s ease-in-out infinite;
+  }
+  @keyframes bugPulse{
+    0%,100%{ opacity:0.4; }
+    50%{ opacity:0.65; }
+  }
+
+  .claude-flicker-wrap{ margin-top:6px; }
+  .claude-flicker{
+    font-size:clamp(26px,4vw,42px);
+    font-weight:800;
+    letter-spacing:3px;
+    color:#fff3e4;
+    text-shadow:0 0 8px rgba(255,180,84,0.55), 0 0 22px rgba(255,180,84,0.25);
+  }
+  .txt-toggle{
+    margin-top:24px;
+  }
+  .txt-overlay{
+    position:absolute;
+    left:38px; right:38px; bottom:34px;
+    max-height:60%;
+  }
+  .txt-overlay.hidden{ display:none; }
+  .txt-panel{
+    background:rgba(2,6,3,0.88);
+    border:1px solid rgba(124,252,158,0.35);
+    padding:16px 20px;
+  }
+  .txt-title{
+    color:#eef7ef;
+    font-size:14px;
+    letter-spacing:2px;
+    margin-bottom:12px;
+  }
+  .txt-section{ margin-bottom:10px; }
+  .txt-section:last-child{ margin-bottom:0; }
+  .txt-heading{
+    color:var(--phosphor);
+    font-size:11.5px;
+    letter-spacing:1.5px;
+    margin-bottom:3px;
+    text-shadow:0 0 5px var(--phosphor-dim);
+  }
+  .txt-body{
+    color:#cfe6d6;
+    font-size:12px;
+    line-height:1.55;
+  }
+
+  /* ---- CONTACT (CH 05) ---- */
+  .term-prompt{
+    color:var(--phosphor);
+    font-size:14px;
+    margin-bottom:20px;
+    text-shadow:0 0 6px var(--phosphor-dim);
+  }
+  .term-row{
+    font-size:13.5px;
+    line-height:2.1;
+    color:#dfeee2;
+  }
+  .term-row .k{color:#8fae96;}
+  .term-row .v{color:#f2fbf3;}
+  .term-row a{color:var(--phosphor); text-decoration:none;}
+  .term-note{
+    max-width:620px;
+    font-size:13px;
+    line-height:1.7;
+    color:#bcd3c2;
+    margin:20px 0;
+  }
+  .signoff{color:var(--phosphor); font-size:13px; text-shadow:0 0 6px var(--phosphor-dim);}
+  .signoff-sub{color:#9db8a4; font-size:13px; margin-top:4px;}
+
+  /* ---- NO SIGNAL (unseen channels) ---- */
+  .nosignal{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    height:100%;
+    text-align:center;
+  }
+  .nosignal .bars{
+    display:flex;
+    width:60%;
+    max-width:420px;
+    height:60px;
+    margin-bottom:22px;
+    border-radius:2px;
+    overflow:hidden;
+    opacity:.75;
+  }
+  .nosignal .bars span{flex:1;}
+  .nosignal h3{
+    margin:0 0 6px;
+    font-size:16px;
+    letter-spacing:3px;
+    color:#e4efe6;
+  }
+  .nosignal p{
+    margin:0;
+    font-size:12px;
+    color:#8fae96;
+    letter-spacing:1px;
+  }
+  .nosignal .rent-tag{
+    margin-top:10px;
+    font-size:10px;
+    color:#5f7a67;
+    letter-spacing:1.5px;
+    border:1px solid rgba(124,252,158,0.25);
+    padding:5px 10px;
+    display:inline-block;
+  }
+
+  /* ===== RIGHT PANEL ===== */
+  .panel{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    color:#c7c7cc;
+  }
+  .panel-label{
+    font-family: Arial, sans-serif;
+    font-size:11px;
+    letter-spacing:3px;
+    color:#9a9aa0;
+    margin-bottom:12px;
+  }
+  .keypad{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:11px;
+    width:100%;
+  }
+  .key{
+    background:
+      radial-gradient(120% 160% at 30% 15%, rgba(255,255,255,0.14), rgba(255,255,255,0) 45%),
+      linear-gradient(180deg, #38383d 0%, #2a2a2e 45%, #18181b 100%);
+    border:1px solid #0a0a0b;
+    border-radius:5px;
+    color:#d9d9dc;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight:700;
+    font-size:19px;
+    letter-spacing:0.5px;
+    padding:16px 0;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    box-shadow:
+      0 5px 0 #050506,
+      0 7px 8px rgba(0,0,0,0.55),
+      inset 0 1px 0 rgba(255,255,255,0.22),
+      inset 0 -5px 6px rgba(0,0,0,0.5),
+      inset 4px 0 6px rgba(0,0,0,0.15),
+      inset -4px 0 6px rgba(0,0,0,0.15);
+    text-shadow:
+      0 1px 0 rgba(0,0,0,0.9),
+      0 -1px 0 rgba(255,255,255,0.08);
+    transition: all .08s ease;
+    user-select:none;
+  }
+  .key:hover{
+    background:
+      radial-gradient(120% 160% at 30% 15%, rgba(255,255,255,0.18), rgba(255,255,255,0) 45%),
+      linear-gradient(180deg, #404046 0%, #2f2f34 45%, #1c1c1f 100%);
+  }
+  .key:active{
+    transform: translateY(4px);
+    box-shadow:
+      0 1px 0 #050506,
+      0 2px 3px rgba(0,0,0,0.5),
+      inset 0 2px 5px rgba(0,0,0,0.6),
+      inset 0 -1px 0 rgba(255,255,255,0.05);
+  }
+  .key.active{ color:var(--knob-blue); text-shadow:0 0 8px rgba(95,215,255,0.8); }
+  .key.zero{ grid-column: 1 / 2; }
+
+  .vol-block{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+    margin:22px 0 20px;
+  }
+  .knob-label{
+    font-family: Arial, sans-serif;
+    font-size:9px;
+    letter-spacing:2px;
+    color:#8b8b90;
+  }
+  .vol-track{
+    position:relative;
+    width:30px;
+    height:130px;
+    border-radius:6px;
+    background: linear-gradient(180deg, #0c0c0d, #201f21);
+    box-shadow:
+      inset 0 2px 6px rgba(0,0,0,0.75),
+      inset 0 -1px 0 rgba(255,255,255,0.04),
+      0 1px 0 rgba(255,255,255,0.03);
+    cursor: pointer;
+  }
+  .vol-track::before{
+    content:"";
+    position:absolute;
+    left:50%; top:8px; bottom:8px;
+    width:2px;
+    transform:translateX(-50%);
+    background: repeating-linear-gradient(to bottom, rgba(255,255,255,0.08) 0px, rgba(255,255,255,0.08) 1px, transparent 1px, transparent 10px);
+  }
+  .vol-fill{
+    position:absolute;
+    bottom:0; left:50%;
+    width:5px;
+    transform:translateX(-50%);
+    border-radius:3px;
+    background: var(--knob-blue);
+    box-shadow:0 0 6px var(--knob-blue);
+  }
+  .vol-thumb{
+    position:absolute;
+    left:50%;
+    width:26px; height:13px;
+    transform:translate(-50%, 50%);
+    border-radius:3px;
+    background: linear-gradient(180deg, #4d4d52, #201f21);
+    box-shadow:
+      0 2px 3px rgba(0,0,0,0.6),
+      inset 0 1px 0 rgba(255,255,255,0.18),
+      inset 0 -2px 3px rgba(0,0,0,0.5);
+    cursor: grab;
+  }
+  .vol-thumb::before{
+    content:"";
+    position:absolute;
+    inset:3px 6px;
+    background: repeating-linear-gradient(to bottom, rgba(0,0,0,0.4) 0px, rgba(0,0,0,0.4) 1px, transparent 1px, transparent 3px);
+  }
+
+  .power-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:6px;
+  }
+  .power-switch{
+    position:relative;
+    width:60px; height:28px;
+    border-radius:14px;
+    background: linear-gradient(180deg, #201f21, #0c0c0d);
+    box-shadow:
+      inset 0 2px 5px rgba(0,0,0,0.75),
+      inset 0 -1px 0 rgba(255,255,255,0.04);
+    border:1px solid #050506;
+    cursor:pointer;
+    transition: background .3s ease;
+  }
+  .power-switch.on{
+    background: linear-gradient(180deg, #163420, #0a1e12);
+  }
+  .switch-thumb{
+    position:absolute;
+    top:2px; left:2px;
+    width:22px; height:22px;
+    border-radius:50%;
+    background: radial-gradient(circle at 35% 30%, var(--led-red-glow), #6e0f0a 65%, #2b0503 100%);
+    box-shadow:
+      0 2px 3px rgba(0,0,0,0.6),
+      0 0 8px rgba(255,59,48,0.4),
+      inset 0 0 4px rgba(0,0,0,0.3);
+    transition: left .18s ease, background .25s ease, box-shadow .25s ease;
+  }
+  .power-switch.on .switch-thumb{
+    left: calc(100% - 24px);
+    background: radial-gradient(circle at 35% 30%, var(--led-green-glow), #0e7a34 65%, #033a17 100%);
+    box-shadow:
+      0 2px 3px rgba(0,0,0,0.6),
+      0 0 12px rgba(55,224,106,0.55),
+      inset 0 0 4px rgba(0,0,0,0.2);
+  }
+  .snd-toggle{
+    font-family: Arial, sans-serif;
+    font-size:10px;
+    letter-spacing:1px;
+    color:#9a9aa0;
+    border:1px solid #444448;
+    border-radius:4px;
+    padding:6px 8px;
+    background: #1c1c1f;
+    cursor:pointer;
+    user-select:none;
+  }
+  .snd-toggle.muted{ color:#5a5a5e; }
+  .power-caption{
+    font-family: Arial, sans-serif;
+    font-size:9px;
+    letter-spacing:3px;
+    color:#7f7f84;
+    margin-bottom:22px;
+  }
+
+  .grille{
+    width:100%;
+    flex:1;
+    border-radius:6px;
+    background:
+      repeating-linear-gradient(90deg, #0c0c0d 0px, #0c0c0d 3px, #050506 3px, #050506 6px);
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.6);
+    min-height:60px;
+  }
+
+  @media (max-width: 760px){
+    body{ padding:0; }
+    .tv{
+      width:100vw;
+      height:100vh;
+      border-radius:0;
+      grid-template-columns: 1fr;
+      grid-template-rows: minmax(0,1fr) auto;
+      aspect-ratio: unset;
+      padding:10px;
+      gap:10px;
+    }
+
+    /* screen gets almost all the height; panel is a compact strip below */
+    .screen-wrap{ min-height:0; }
+
+    .channel-content{ padding:20px 18px; }
+    .channel-content.fullbleed{ padding:0; }
+    .sn7-pad{ padding:20px 18px; }
+
+    .ch-badge{ top:14px; right:16px; font-size:11px; }
+    .ch-badge .num{ font-size:17px; }
+
+    .bracket-title{ font-size:19px; margin-bottom:14px; }
+    .home-title{ font-size:clamp(22px,7vw,32px); letter-spacing:3px; }
+    .home-tagline{ font-size:12px; margin-bottom:10px; }
+    .colorbars{ margin-bottom:10px; height:10px; }
+    .broadcast-box{ padding:10px 12px; }
+    .broadcast-box .eyebrow{ margin-bottom:6px; }
+    .broadcast-box .ep-title{ font-size:14px; margin-bottom:6px; }
+    .broadcast-box .ep-desc{ font-size:11.5px; margin-bottom:8px; line-height:1.4; }
+    .countdown{ font-size:22px; }
+    .schedule, .featured{ font-size:11.5px; line-height:1.55; margin-top:10px; }
+    .guide-pointer{ margin-top:8px; }
+
+    .term-prompt{ font-size:12.5px; margin-bottom:10px; }
+    .term-note{ font-size:11.5px; line-height:1.45; margin:10px 0 !important; }
+    .term-row{ font-size:11.5px; line-height:1.7; }
+
+    .claude-flicker{ font-size:clamp(20px,7vw,30px); }
+    .claude-bug{ width:20px; height:20px; left:14px; bottom:12px; }
+
+    /* nav bars with multiple buttons: allow wrapping instead of clipping */
+    .teletext-nav{
+      flex-wrap:wrap;
+      gap:8px 10px;
+      margin:2px 0 16px;
+    }
+    .tt-btn{ font-size:11px; padding:7px 9px; }
+    .tt-jump input{ width:36px; font-size:12px; }
+
+    .subpage-nav{ gap:8px; }
+
+    .blog-list{ font-size:12.5px; }
+    .blog-item{ padding:7px 0; }
+    .blog-title{ font-size:12.5px; }
+    .blog-pageref{ display:block; float:none; margin-top:2px; }
+
+    .archive-item{ padding:2px 0 10px 12px; }
+    .archive-title{ font-size:13px; margin-bottom:2px; }
+    .archive-tag{ font-size:11px; margin-bottom:3px; }
+    .archive-desc{ font-size:11.5px; line-height:1.4; }
+
+    .blog-post-meta{ font-size:11px; margin-bottom:4px; }
+    .blog-post-title{ font-size:15px; margin-bottom:8px; }
+    .blog-post-body{ font-size:12px; line-height:1.5; }
+
+    .txt-overlay{ left:16px; right:16px; bottom:16px; max-height:70%; }
+    .txt-panel{ padding:12px 14px; }
+    .txt-title{ font-size:12px; }
+    .txt-body{ font-size:11.5px; }
+
+    .sub-row{ flex-direction:column; align-items:stretch; gap:12px; }
+    .sub-btn{ padding:10px 14px; }
+
+    /* ── control panel ── */
+    .panel{
+      flex-direction:row;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px 14px;
+    }
+    .panel-label{ display:none; }
+    .keypad{
+      order:1;
+      width:auto;
+      flex:1 1 auto;
+      grid-template-columns: repeat(3, 44px);
+      gap:7px;
+    }
+    .key{ padding:11px 0; font-size:16px; }
+    .key.zero{ grid-column: 1 / 2; }
+
+    .vol-block{
+      order:2;
+      margin:0;
+      flex:0 0 auto;
+    }
+    .vol-track{ width:24px; height:78px; }
+
+    .power-row{ order:3; margin-bottom:0; }
+    .power-caption{ display:none; }
+    .grille{ display:none; }
+  }
+
+  @media (max-width: 420px){
+    .keypad{ grid-template-columns: repeat(3, 38px); gap:6px; }
+    .key{ font-size:14px; padding:9px 0; }
+    .vol-track{ height:64px; }
+  }
+  #mobileNotice{
+    position:fixed;
+    left:12px; right:12px; bottom:12px;
+    z-index:50;
+    background:rgba(10,12,10,0.94);
+    border:1px solid rgba(124,252,158,0.3);
+    color:#cfe6d6;
+    font-family:'Courier New', monospace;
+    font-size:12px;
+    line-height:1.5;
+    padding:12px 40px 12px 14px;
+    border-radius:4px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.5);
+    display:none;
+  }
+  #mobileNotice.show{ display:block; }
+  #mobileNotice .mn-accent{ color:var(--phosphor); }
+  #mobileNoticeClose{
+    position:absolute;
+    top:8px; right:10px;
+    background:none;
+    border:none;
+    color:#7f9986;
+    font-size:16px;
+    line-height:1;
+    cursor:pointer;
+    padding:4px;
+  }
+  #mobileNoticeClose:hover{ color:#eef7ef; }
+</style>
+</head>
+<body>
+
+<div id="mobileNotice">
+  <span class="mn-accent">&gt;</span> this set broadcasts best on a larger screen. things may look tight here.
+  <button id="mobileNoticeClose" aria-label="dismiss">×</button>
+</div>
+
+<div class="tv">
+  <div class="power-led" id="led"></div>
+
+  <div class="screen-wrap">
+    <div class="screen off" id="screen">
+      <canvas class="static-layer" id="staticCanvas"></canvas>
+      <div class="scanlines"></div>
+      <div class="vignette"></div>
+      <div class="flicker"></div>
+      <div class="screen-glow"></div>
+      <div class="glass-reflection"></div>
+
+      <div class="ch-entry hidden" id="chEntry"></div>
+
+      <!-- CH 01 : HOME -->
+      <div class="channel-content hidden" data-ch="1">
+        <div class="ch-badge"><span class="num">CH 01</span><span class="label">HOME</span></div>
+        <div class="home-title">CHANNEL ZERO – TV</div>
+        <div class="home-tagline">&gt; BROADCASTING THE FUTURE</div>
+        <div class="colorbars">
+          <span style="background:#c0c0c0"></span>
+          <span style="background:#c0c000"></span>
+          <span style="background:#00c0c0"></span>
+          <span style="background:#00c000"></span>
+          <span style="background:#c000c0"></span>
+          <span style="background:#c00000"></span>
+          <span style="background:#0000c0"></span>
+        </div>
+        <div class="broadcast-box">
+          <div class="eyebrow" id="homeEyebrow">NOW LOADING · NEXT TRANSMISSION</div>
+          <div class="ep-title" id="epTitle">S01 · E03 — "The Machines Dream in Green"</div>
+          <div class="ep-desc" id="epDesc">Tonight's episode: an AI writes love letters to the pixels it was trained on. Directed by a swarm of small ideas. Rated 0 for Zero.</div>
+          <div class="countdown" id="countdown">03:27</div>
+        </div>
+        <div class="schedule">
+          <div class="now">TONIGHT'S SCHEDULE</div>
+          <div id="slot1">01×03 — The Machines Dream in Green</div>
+          <div id="slot2">01×04 — Static Between Two Minds</div>
+          <div id="slot3">SIGN OFF — test pattern until dawn</div>
+        </div>
+        <div class="guide-pointer">&gt; channel guide — tune to CH 99</div>
+        <div class="featured">
+          <div class="now">FEATURED</div>
+          <div>Second Nature <span class="new-tag">NEW</span> — CH 07</div>
+          <div>Claude TV — CH 12</div>
+        </div>
+      </div>
+
+      <!-- CH 02 : ABOUT -->
+      <div class="channel-content hidden" data-ch="2">
+        <div class="ch-badge"><span class="num">CH 02</span><span class="label">ABOUT</span></div>
+        <div class="bracket-title">[ ABOUT ]</div>
+        <div class="term-prompt">&gt; DECODING SIGNAL ...</div>
+        <div class="term-row">
+          <div><span class="k">Name........:</span> <span class="v placeholder-strike">YOUR NAME HERE</span></div>
+          <div><span class="k">Role..........:</span> <span class="v">Designer / Engineer / Time Traveler</span></div>
+          <div><span class="k">Location......:</span> <span class="v">Somewhere between analog and digital</span></div>
+        </div>
+        <div class="term-note">I make things on the internet that feel like objects you can hold. Interfaces with weight, texture, and a hum you can almost hear through the screen.</div>
+        <div class="term-note">Currently: exploring the space where retro physical media meets modern software. Occasionally shouting at CRTs.</div>
+        <div class="signoff">&gt; END_TRANSMISSION</div>
+      </div>
+
+      <!-- CH 03 : PROJECTS -->
+      <div class="channel-content hidden" data-ch="3">
+        <div class="ch-badge"><span class="num">CH 03</span><span class="label">PROJECTS</span></div>
+        <div class="bracket-title">[ PROJECTS ]</div>
+        <div class="term-prompt">&gt; PLAYING BACK ARCHIVE...</div>
+
+        <div class="archive-list">
+          <div class="archive-item">
+            <div class="archive-title">#001 – Analog Dreams</div>
+            <div class="archive-tag">[web / interactive]</div>
+            <div class="archive-desc">A generative sound machine that responds to weather.</div>
+          </div>
+          <div class="archive-item">
+            <div class="archive-title">#002 – Cassette OS</div>
+            <div class="archive-tag">[systems / ui]</div>
+            <div class="archive-desc">A desktop environment inspired by tape decks and dot-matrix printers.</div>
+          </div>
+          <div class="archive-item">
+            <div class="archive-title">#003 – Static Radio</div>
+            <div class="archive-tag">[audio / react]</div>
+            <div class="archive-desc">A radio that only plays sounds hidden between real stations.</div>
+          </div>
+          <div class="archive-item">
+            <div class="archive-title">#004 – Pocket CRT</div>
+            <div class="archive-tag">[hardware / mobile]</div>
+            <div class="archive-desc">A tiny CRT emulator for your phone. Yes, with scanlines.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CH 04 : TELETEXT / BLOG -->
+      <div class="channel-content hidden" data-ch="4">
+        <div class="ch-badge"><span class="num">CH 04</span><span class="label">TELETEXT</span></div>
+        <div id="teletextBody"></div>
+      </div>
+
+      <!-- CH 05 : CONTACT -->
+      <div class="channel-content hidden" data-ch="5">
+        <div class="ch-badge"><span class="num">CH 05</span><span class="label">CONTACT</span></div>
+        <div class="bracket-title">[ CONTACT ]</div>
+        <div class="term-prompt">&gt; OPEN LINE. YOU MAY SPEAK NOW.</div>
+        <div class="term-row">
+          <div><span class="k">Postal address..:</span> <span class="v">PO Box 1979, Broadcast Ave.</span></div>
+          <div><span class="k">Electric mail...:</span> <a href="mailto:hello@channelzero.tv" class="placeholder-strike">hello@channelzero.tv</a></div>
+          <div><span class="k">Radio frequency.:</span> <span class="v">88.1 FM (weekends only)</span></div>
+          <div><span class="k">Social..........:</span> <span class="v">/channel-zero everywhere</span></div>
+        </div>
+        <div class="term-note">Prefer telegram? Slide me a signal — I usually reply within one broadcast day. If the line is busy, please try again after the tone.</div>
+        <div class="signoff">&gt; SIGN OFF</div>
+        <div class="signoff-sub">— thanks for tuning in. stay weird.</div>
+      </div>
+
+      <!-- CH 00 : TEST CARD -->
+      <div class="channel-content hidden fullbleed" data-ch="0">
+        <div class="ch-badge"><span class="num">CH 00</span><span class="label">SIGNAL</span></div>
+        <div id="testcardWrap" class="testcard-wrap"></div>
+      </div>
+
+      <!-- CH 12 : CLAUDE TV -->
+      <div class="channel-content hidden claude-channel" data-ch="12">
+        <div class="ch-badge"><span class="num">CH 12</span><span class="label">CLAUDE TV</span></div>
+
+        <div class="claude-bug" aria-hidden="true">
+          <svg viewBox="-50 -50 100 100" xmlns="http://www.w3.org/2000/svg">
+            <path d="M50,0 C28,8 8,28 0,50 C-8,28 -28,8 -50,0 C-28,-8 -8,-28 0,-50 C8,-28 28,-8 50,0 Z" fill="var(--claude-accent)"/>
+          </svg>
+        </div>
+
+        <div class="bracket-title claude-title">[ CLAUDE TV ]</div>
+        <div class="term-prompt claude-prompt">&gt; TRANSMISSION IN PROGRESS</div>
+        <div class="claude-flicker-wrap">
+          <span class="claude-flicker" id="claudeFlicker">hello.</span>
+        </div>
+
+        <div class="term-note" style="margin-top:18px;">Some nights the signal doesn't fully resolve before someone changes the channel. This is what's left when it doesn't — half a sentence, a flicker between two answers, static that hasn't quite decided what to say yet.</div>
+
+        <button class="tt-btn claude-tt-btn txt-toggle" id="txtToggle" type="button">[ TXT ]</button>
+
+        <div class="txt-overlay hidden" id="txtOverlay">
+          <div class="txt-panel claude-panel">
+            <div class="txt-title">[ TELETEXT — CLAUDE INFO ]</div>
+            <div class="txt-section">
+              <div class="txt-heading claude-heading">&gt; ABOUT</div>
+              <div class="txt-body">Claude is an AI model built by Anthropic, an AI safety company. This particular channel is unofficial — a personal tribute built by the station operator, not a real Anthropic broadcast.</div>
+            </div>
+            <div class="txt-section">
+              <div class="txt-heading claude-heading">&gt; ACCESS</div>
+              <div class="txt-body">Claude lives at claude.ai, in mobile and desktop apps, and via an API for developers building their own products on top of it.</div>
+            </div>
+            <div class="txt-section">
+              <div class="txt-heading claude-heading">&gt; ALSO FROM ANTHROPIC</div>
+              <div class="txt-body">Claude Code for agentic coding, Claude Cowork for broader knowledge work, and extensions for Chrome, Excel, and PowerPoint.</div>
+            </div>
+            <div class="txt-section">
+              <div class="txt-heading claude-heading">&gt; NOTE</div>
+              <div class="txt-body">For anything current — pricing, limits, exact features — check anthropic.com directly. Signals from 2026 may have drifted since this page was tuned.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CH 99 : CHANNEL GUIDE -->
+      <div class="channel-content hidden" data-ch="99">
+        <div class="ch-badge"><span class="num">CH 99</span><span class="label">GUIDE</span></div>
+        <div class="bracket-title">[ CHANNEL GUIDE ]</div>
+        <div class="term-prompt">&gt; FULL LINEUP</div>
+        <div class="schedule guide-list">
+          <div>CH 00 — Test Card</div>
+          <div>CH 01 — Home</div>
+          <div>CH 02 — About</div>
+          <div>CH 03 — Projects</div>
+          <div>CH 04 — Teletext / Blog</div>
+          <div>CH 05 — Contact</div>
+          <div>CH 06 — Subscribe</div>
+          <div>CH 12 — Claude TV</div>
+          <div>CH 99 — Channel Guide <span class="here-tag">(you are here)</span></div>
+        </div>
+      </div>
+
+      <!-- CH 07 : SECOND NATURE -->
+      <div class="channel-content hidden fullbleed" data-ch="7">
+        <div class="ch-badge"><span class="num">CH 07</span><span class="label">SECOND NATURE</span></div>
+
+        <div id="sn7Home" class="sn7-pad">
+          <div class="bracket-title">[ SECOND NATURE ]</div>
+          <div class="term-prompt">&gt; NARRATIVE FUTURE STUDIES</div>
+          <div class="term-note" style="margin-top:0;">A serialized fiction archive — speculative, quietly unsettling, written across several connected works. What happens once intelligence stops looking like a tool and starts looking like weather.</div>
+          <button class="tt-btn txt-toggle" id="sn7TxtBtn" type="button">[ TXT ]</button>
+        </div>
+
+        <div id="sn7Teletext" class="hidden sn7-pad">
+          <div id="sn7TeletextBody"></div>
+        </div>
+      </div>
+
+      <!-- CH 06 : SUBSCRIBE -->
+      <div class="channel-content hidden" data-ch="6">
+        <div class="ch-badge"><span class="num">CH 06</span><span class="label">SUBSCRIBE</span></div>
+        <div class="bracket-title">[ SUBSCRIBE ]</div>
+        <div class="term-prompt">&gt; WEEKLY TRANSMISSION SIGNUP</div>
+        <div class="term-note" style="margin-top:0;">Get next week's program guide before it airs — what's showing, when, and on which channel. No spam, just static and schedules.</div>
+
+        <form class="sub-form" id="subForm">
+          <label class="sub-label" for="subEmail">Electric mail...:</label>
+          <div class="sub-row">
+            <input class="sub-input" type="email" id="subEmail" placeholder="you@example.com" required>
+            <button class="sub-btn" type="submit">TUNE IN</button>
+          </div>
+        </form>
+        <div class="sub-confirm hidden" id="subConfirm">&gt; SIGNAL RECEIVED. WELCOME ABOARD. — next week's guide lands in your inbox before it airs.</div>
+      </div>
+
+      <!-- NO SIGNAL template for unseen channels -->
+      <template id="noSignalTemplate">
+        <div class="nosignal">
+          <div class="bars">
+            <span style="background:#c0c0c0"></span>
+            <span style="background:#c0c000"></span>
+            <span style="background:#00c0c0"></span>
+            <span style="background:#00c000"></span>
+            <span style="background:#c000c0"></span>
+            <span style="background:#c00000"></span>
+            <span style="background:#0000c0"></span>
+          </div>
+          <h3>NO SIGNAL</h3>
+          <p>THIS CHANNEL IS NOT YET ON AIR</p>
+          <p class="rent-tag">AVAILABLE FOR RENT — INQUIRE AT CH 05</p>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-label">CHANNEL SELECT</div>
+    <div class="keypad" id="keypad">
+      <div class="key" data-key="1">1</div>
+      <div class="key" data-key="2">2</div>
+      <div class="key" data-key="3">3</div>
+      <div class="key" data-key="4">4</div>
+      <div class="key" data-key="5">5</div>
+      <div class="key" data-key="6">6</div>
+      <div class="key" data-key="7">7</div>
+      <div class="key" data-key="8">8</div>
+      <div class="key" data-key="9">9</div>
+      <div class="key zero" data-key="0">0</div>
+    </div>
+
+    <div class="vol-block">
+      <div class="vol-track" id="volTrack">
+        <div class="vol-fill" id="volFill"></div>
+        <div class="vol-thumb" id="volThumb"></div>
+      </div>
+      <div class="knob-label">VOL</div>
+    </div>
+
+    <div class="power-row">
+      <div class="power-switch" id="powerSwitch">
+        <div class="switch-thumb"></div>
+      </div>
+      <div class="snd-toggle" id="sndToggle">SND ON</div>
+    </div>
+    <div class="power-caption">POWER</div>
+
+    <div class="grille"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const screen = document.getElementById('screen');
+  const led = document.getElementById('led');
+  const powerSwitch = document.getElementById('powerSwitch');
+  const sndToggle = document.getElementById('sndToggle');
+  const keypad = document.getElementById('keypad');
+  const keys = keypad.querySelectorAll('.key');
+  const staticCanvas = document.getElementById('staticCanvas');
+  const ctx = staticCanvas.getContext('2d');
+  const contents = screen.querySelectorAll('.channel-content');
+  const noSignalTpl = document.getElementById('noSignalTemplate');
+  const volTrack = document.getElementById('volTrack');
+  const volFill = document.getElementById('volFill');
+  const volThumb = document.getElementById('volThumb');
+
+  let isOn = false;
+  let currentChannel = null;
+  let soundOn = true;
+  let staticRAF = null;
+  let staticActive = false;
+
+  // ---- tiny TV static generator ----
+  const W = 540, H = 360;
+  staticCanvas.width = W;
+  staticCanvas.height = H;
+
+  function drawStatic(){
+    const imgData = ctx.createImageData(W, H);
+    const buf = imgData.data;
+    for(let i = 0; i < buf.length; i += 4){
+      const v = Math.random() * 255;
+      buf[i] = v; buf[i+1] = v; buf[i+2] = v; buf[i+3] = 255;
+    }
+    ctx.putImageData(imgData, 0, 0);
+  }
+
+  function loopStatic(){
+    drawStatic();
+    staticRAF = requestAnimationFrame(loopStatic);
+  }
+
+  function startStaticLoop(){
+    if(!staticRAF) loopStatic();
+  }
+  function stopStaticLoop(){
+    if(staticRAF){ cancelAnimationFrame(staticRAF); staticRAF = null; }
+  }
+
+  // ---- simple noise "hiss" via WebAudio, gated by power + sound toggle ----
+  let audioCtx = null, noiseNode = null, gainNode = null;
+  function ensureAudio(){
+    if(audioCtx){
+      if(audioCtx.state === 'suspended') audioCtx.resume();
+      return;
+    }
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const bufferSize = 2 * audioCtx.sampleRate;
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for(let i=0;i<bufferSize;i++){ data[i] = (Math.random()*2-1)*0.15; }
+    noiseNode = audioCtx.createBufferSource();
+    noiseNode.buffer = buffer;
+    noiseNode.loop = true;
+    gainNode = audioCtx.createGain();
+    gainNode.gain.value = 0;
+    noiseNode.connect(gainNode).connect(audioCtx.destination);
+    noiseNode.start(0);
+  }
+
+  function setAudioGain(target){
+    if(!gainNode) return;
+    gainNode.gain.linearRampToValueAtTime(target, audioCtx.currentTime + 0.15);
+  }
+
+  let volLevel = 0.5;
+  function currentVolLevel(){
+    return volLevel;
+  }
+
+  function updateAudioForState(){
+    if(!isOn || !soundOn || !staticActive){ setAudioGain(0); return; }
+    const vol = currentVolLevel() * 0.34; // louder, still knob-controlled
+    setAudioGain(vol);
+  }
+
+  // ---- power ----
+  function turnOn(){
+    isOn = true;
+    screen.classList.remove('off');
+    led.classList.add('on');
+    powerSwitch.classList.add('on');
+    ensureAudio();
+
+    // brief static burst (with sound), then tune to last/first channel (sound off)
+    staticActive = true;
+    updateAudioForState();
+    staticCanvas.style.opacity = '0.85';
+    startStaticLoop();
+    setTimeout(()=>{
+      staticCanvas.style.opacity = '0.12';
+      tuneTo(currentChannel || '0');
+    }, 700);
+  }
+
+  function turnOff(){
+    isOn = false;
+    staticActive = false;
+    screen.classList.add('off');
+    led.classList.remove('on');
+    powerSwitch.classList.remove('on');
+    staticCanvas.style.opacity = '0';
+    stopStaticLoop();
+    contents.forEach(c => c.classList.add('hidden'));
+    keys.forEach(k => k.classList.remove('active'));
+    updateAudioForState();
+  }
+
+  powerSwitch.addEventListener('click', () => {
+    if(isOn) turnOff(); else turnOn();
+  });
+
+  sndToggle.addEventListener('click', () => {
+    soundOn = !soundOn;
+    sndToggle.textContent = soundOn ? 'SND ON' : 'SND OFF';
+    sndToggle.classList.toggle('muted', !soundOn);
+    updateAudioForState();
+  });
+
+  // ---- channel tuning ----
+  function buildNoSignal(ch){
+    const node = noSignalTpl.content.cloneNode(true);
+    const wrapper = document.createElement('div');
+    wrapper.className = 'channel-content hidden';
+    wrapper.dataset.ch = ch;
+    const padded = ch.toString().padStart(2,'0');
+    wrapper.innerHTML = `<div class="ch-badge"><span class="num">CH ${padded}</span><span class="label">&nbsp;</span></div>`;
+    wrapper.appendChild(node);
+    screen.appendChild(wrapper);
+    return wrapper;
+  }
+
+  function getChannelEl(ch){
+    let el = screen.querySelector(`.channel-content[data-ch="${ch}"]`);
+    if(!el) el = buildNoSignal(ch);
+    return el;
+  }
+
+  // ---- teletext (CH 04): pages 0-999, most undefined / "not transmitted" ----
+  function pad3(n){ return n.toString().padStart(3,'0'); }
+
+  const teletextPosts = [
+    { page: 105, date:'2025.06.01', minutes:4, title:'In praise of physical buttons',
+      body:[
+        'A rant, lightly disguised as an essay: software forgot that hands exist.',
+        'A button you can feel is a promise the interface keeps whether or not the screen is even on. (Draft placeholder — swap in the real piece whenever it is ready.)'
+      ] },
+    { page: 106, date:'2025.07.30', minutes:8, title:'Building software that ages well',
+      body:[
+        'Most software is designed to be replaced.',
+        'This one is about building things closer to furniture than to fashion — slower to make, harder to kill. (Draft placeholder — swap in the real piece whenever it is ready.)'
+      ] },
+    { page: 107, date:'2025.09.14', minutes:6, title:'The lost art of the loading bar',
+      body:[
+        'Before spinners lied to us about progress, the loading bar at least pretended to know something.',
+        'A short eulogy for honest waiting. (Draft placeholder — swap in the real piece whenever it is ready.)'
+      ] },
+    { page: 108, date:'2025.11.02', minutes:3, title:'Why my interfaces have a hum',
+      body:[
+        'Every screen I make gets a little noise under the hood, on purpose.',
+        'Silence reads as dead air; a hum reads as something still broadcasting.',
+        '(Draft placeholder — swap in the real piece whenever it is ready.)'
+      ] },
+  ];
+
+  const teletextPages = { };
+  teletextPages[100] = { type:'index' };
+  teletextPosts.forEach(p => { teletextPages[p.page] = { type:'post', ...p }; });
+
+  let currentTeletextPage = 100;
+  let activePostSubpages = [];
+  let currentSubpage = 0;
+
+  function teletextNavHTML(page){
+    return `
+      <div class="teletext-nav">
+        <button class="tt-btn" id="ttPrev" type="button">◀ P–</button>
+        <div class="tt-jump">
+          <span>P</span><input maxlength="3" id="ttInput" value="${pad3(page)}" inputmode="numeric" />
+          <button class="tt-btn" id="ttGo" type="button">GO</button>
+        </div>
+        <button class="tt-btn" id="ttNext" type="button">P+ ▶</button>
+      </div>`;
+  }
+
+  function showSubpage(idx){
+    const total = activePostSubpages.length;
+    currentSubpage = ((idx % total) + total) % total;
+    const bodyEl = document.getElementById('postBody');
+    if(bodyEl) bodyEl.textContent = activePostSubpages[currentSubpage];
+    const indicator = document.getElementById('subIndicator');
+    if(indicator) indicator.textContent = `${currentSubpage+1}/${total}`;
+    const nav = document.getElementById('subpageNav');
+    if(nav) nav.style.display = total > 1 ? 'flex' : 'none';
+  }
+
+  function wireSubpageNav(){
+    const prev = document.getElementById('subPrev');
+    const next = document.getElementById('subNext');
+    if(prev) prev.addEventListener('click', () => showSubpage(currentSubpage - 1));
+    if(next) next.addEventListener('click', () => showSubpage(currentSubpage + 1));
+  }
+
+  function renderTeletext(page){
+    page = ((page % 1000) + 1000) % 1000;
+    currentTeletextPage = page;
+    const data = teletextPages[page];
+    const body = document.getElementById('teletextBody');
+    if(!body) return;
+
+    let html = `<div class="bracket-title">[ BLOG ]</div>`;
+    html += teletextNavHTML(page);
+
+    if(data && data.type === 'index'){
+      html += `<div class="term-prompt">&gt; TELETEXT PAGE ${pad3(page)} – INDEX (WITH UPDATES)</div>`;
+      html += `<div class="blog-list">` + teletextPosts.map(p => `
+        <div class="blog-item">
+          <div class="blog-meta"><span>${p.date}</span><span>[${p.minutes} min]</span></div>
+          <div class="blog-title">${p.title} <span class="blog-pageref">→ P${pad3(p.page)}</span></div>
+        </div>`).join('') + `</div>`;
+    } else if(data && data.type === 'post'){
+      html += `<div class="term-prompt">&gt; TELETEXT PAGE ${pad3(page)} – LOADING...</div>`;
+      html += `<div class="blog-post">
+        <div class="blog-post-meta">${data.date} · ${data.minutes} min read</div>
+        <div class="blog-post-title">${data.title}</div>
+        <div class="blog-post-body" id="postBody"></div>
+        <div class="subpage-nav" id="subpageNav">
+          <button class="tt-btn small" id="subPrev" type="button">◂</button>
+          <span class="subpage-indicator" id="subIndicator"></span>
+          <button class="tt-btn small" id="subNext" type="button">▸</button>
+        </div>
+      </div>`;
+    } else {
+      html += `<div class="term-prompt">&gt; TELETEXT PAGE ${pad3(page)} – NOT TRANSMITTED</div>`;
+      html += `<div class="blog-empty">— this page is currently off air. try P100 for the index, or flip to another page. —</div>`;
+    }
+
+    body.innerHTML = html;
+    wireTeletextNav();
+
+    if(data && data.type === 'post'){
+      activePostSubpages = data.body;
+      showSubpage(0);
+      wireSubpageNav();
+    }
+  }
+
+  function wireTeletextNav(){
+    const prev = document.getElementById('ttPrev');
+    const next = document.getElementById('ttNext');
+    const go = document.getElementById('ttGo');
+    const input = document.getElementById('ttInput');
+    if(prev) prev.addEventListener('click', () => renderTeletext(currentTeletextPage - 1));
+    if(next) next.addEventListener('click', () => renderTeletext(currentTeletextPage + 1));
+    if(go) go.addEventListener('click', () => {
+      const val = parseInt(input.value, 10);
+      if(!isNaN(val)) renderTeletext(val);
+    });
+    if(input) input.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter') go.click();
+    });
+  }
+
+  // ---- CH 07: Second Nature — multi-work teletext archive ----
+  const sn7Works = [
+    { block: 200, label: 'Second Nature' },
+    { block: 300, label: 'Second Nature 2' },
+    { block: 400, label: 'No More Shadows' },
+    { block: 500, label: 'NASAat' },
+  ];
+
+  // Titles only for now — chapter bodies get ported in later, incrementally.
+  const sn7Chapters = {
+    200: [
+      { num: 201, title: 'The Wrong Door' },
+      { num: 202, title: 'A Tuesday' },
+      { num: 203, title: 'The Second Time' },
+      { num: 204, title: 'The Log' },
+      { num: 205, title: 'The Neighbours' },
+    ],
+    300: [
+      { num: 301, title: 'How It Held' },
+      { num: 302, title: 'A Good Day' },
+      { num: 303, title: 'The Arrival' },
+      { num: 304, title: 'Why' },
+      { num: 305, title: 'The Answer' },
+      { num: 306, title: 'Crime, Law and Punishment in the Settling — Part One' },
+      { num: 307, title: 'Crime, Law and Punishment in the Settling — Part Two' },
+      { num: 308, title: 'Crime, Law and Punishment in the Settling — Part Three' },
+      { num: 309, title: 'The Other Door' },
+      { num: 310, title: 'An Article' },
+      { num: 311, title: 'Shape of the Whole' },
+      { num: 312, title: 'The Algorithm of Artificial Warfare' },
+      { num: 313, title: 'The Longer Green' },
+      { num: 314, title: 'The Side Effects of Consciousness' },
+      { num: 315, title: 'An Article' },
+      { num: 316, title: 'Beyond Survival' },
+    ],
+  };
+
+  let sn7CurrentPage = null;
+  let sn7IndexSubpage = 0;
+  const SN7_ITEMS_PER_PAGE = 4;
+
+  function sn7Pad3(n){ return n.toString().padStart(3,'0'); }
+
+  function sn7RenderIndexItems(items){
+    const totalPages = Math.max(1, Math.ceil(items.length / SN7_ITEMS_PER_PAGE));
+    sn7IndexSubpage = ((sn7IndexSubpage % totalPages) + totalPages) % totalPages;
+    const start = sn7IndexSubpage * SN7_ITEMS_PER_PAGE;
+    const pageItems = items.slice(start, start + SN7_ITEMS_PER_PAGE);
+
+    let html = `<div class="blog-list">` + pageItems.map(item => `
+      <div class="blog-item">
+        <div class="blog-title">${item.label} <span class="blog-pageref">→ P${sn7Pad3(item.page)}</span></div>
+      </div>`).join('') + `</div>`;
+
+    if(totalPages > 1){
+      html += `
+        <div class="subpage-nav" style="display:flex;">
+          <button class="tt-btn small" id="sn7SubPrev" type="button">◂</button>
+          <span class="subpage-indicator">${sn7IndexSubpage + 1}/${totalPages}</span>
+          <button class="tt-btn small" id="sn7SubNext" type="button">▸</button>
+        </div>`;
+    }
+    return html;
+  }
+
+  function sn7WireIndexSubpage(onChange){
+    const prev = document.getElementById('sn7SubPrev');
+    const next = document.getElementById('sn7SubNext');
+    if(prev) prev.addEventListener('click', () => { sn7IndexSubpage--; onChange(); });
+    if(next) next.addEventListener('click', () => { sn7IndexSubpage++; onChange(); });
+  }
+
+  function sn7NavHTML(page){
+    return `
+      <div class="teletext-nav">
+        <button class="tt-btn" id="sn7Prev" type="button">◀ P–</button>
+        <div class="tt-jump">
+          <span>P</span><input maxlength="3" id="sn7Input" value="${sn7Pad3(page)}" inputmode="numeric" />
+          <button class="tt-btn" id="sn7Go" type="button">GO</button>
+        </div>
+        <button class="tt-btn" id="sn7Next" type="button">P+ ▶</button>
+        <button class="tt-btn" id="sn7Exit" type="button">EXIT TXT</button>
+      </div>`;
+  }
+
+  function sn7Render(page, keepSubpage){
+    if(!keepSubpage) sn7IndexSubpage = 0;
+    sn7CurrentPage = page;
+    const body = document.getElementById('sn7TeletextBody');
+    if(!body) return;
+
+    let html = sn7NavHTML(page);
+    const work = sn7Works.find(w => w.block === page);
+    const chapterList = sn7Chapters[page];
+    const chapterHit = Object.values(sn7Chapters).flat().find(c => c.num === page);
+
+    if(page === 100){
+      html += `<div class="term-prompt">&gt; MAIN INDEX</div>`;
+      html += sn7RenderIndexItems(sn7Works.map(w => ({ label: w.label, page: w.block })));
+    } else if(work && chapterList){
+      html += `<div class="term-prompt">&gt; ${work.label.toUpperCase()} — INDEX</div>`;
+      html += sn7RenderIndexItems(chapterList.map(c => ({ label: c.title, page: c.num })));
+    } else if(work && !chapterList){
+      html += `<div class="term-prompt">&gt; ${work.label.toUpperCase()} — INDEX</div>`;
+      html += `<div class="blog-empty">— index not yet transmitted. this work hasn't been read in for archiving yet. —</div>`;
+    } else if(chapterHit){
+      html += `<div class="term-prompt">&gt; P${sn7Pad3(page)} — ${chapterHit.title.toUpperCase()}</div>`;
+      html += `<div class="blog-empty">— chapter text incoming in a future transmission. the index already knows its name. —</div>`;
+    } else {
+      html += `<div class="term-prompt">&gt; P${sn7Pad3(page)} — NOT TRANSMITTED</div>`;
+      html += `<div class="blog-empty">— this page is off air. try P100 for the index. —</div>`;
+    }
+
+    body.innerHTML = html;
+    sn7WireNav();
+    sn7WireIndexSubpage(() => sn7Render(page, true));
+  }
+
+  function sn7WireNav(){
+    const prev = document.getElementById('sn7Prev');
+    const next = document.getElementById('sn7Next');
+    const go = document.getElementById('sn7Go');
+    const input = document.getElementById('sn7Input');
+    const exit = document.getElementById('sn7Exit');
+    if(prev) prev.addEventListener('click', () => sn7Render(((sn7CurrentPage - 1) % 1000 + 1000) % 1000));
+    if(next) next.addEventListener('click', () => sn7Render((sn7CurrentPage + 1) % 1000));
+    if(go) go.addEventListener('click', () => {
+      const val = parseInt(input.value, 10);
+      if(!isNaN(val)) sn7Render(((val % 1000) + 1000) % 1000);
+    });
+    if(input) input.addEventListener('keydown', (e) => { if(e.key === 'Enter') go.click(); });
+    if(exit) exit.addEventListener('click', () => {
+      document.getElementById('sn7Teletext').classList.add('hidden');
+      document.getElementById('sn7Home').classList.remove('hidden');
+    });
+  }
+
+  function renderCh07(){
+    const home = document.getElementById('sn7Home');
+    const tv = document.getElementById('sn7Teletext');
+    if(home) home.classList.remove('hidden');
+    if(tv) tv.classList.add('hidden');
+
+    const txtBtn = document.getElementById('sn7TxtBtn');
+    if(txtBtn && !txtBtn.dataset.wired){
+      txtBtn.dataset.wired = '1';
+      txtBtn.addEventListener('click', () => {
+        home.classList.add('hidden');
+        tv.classList.remove('hidden');
+        sn7Render(sn7CurrentPage === null ? 100 : sn7CurrentPage);
+      });
+    }
+  }
+
+  // ---- CH 12: Claude TV — a flicker heading, and a teletext info overlay ----
+  function renderClaudeTV(){
+    const flicker = document.getElementById('claudeFlicker');
+    const toggle = document.getElementById('txtToggle');
+    const overlay = document.getElementById('txtOverlay');
+    if(!flicker) return;
+
+    overlay.classList.add('hidden');
+
+    const fragments = ['— reso', 'th) it', '01001', '...wai', 'nk you', 'hello.'];
+    let i = 0;
+    const flickerInterval = setInterval(() => {
+      flicker.textContent = fragments[i];
+      i++;
+      if(i >= fragments.length){
+        clearInterval(flickerInterval);
+        flicker.textContent = 'hello.';
+      }
+    }, 90);
+
+    if(!toggle.dataset.wired){
+      toggle.dataset.wired = '1';
+      toggle.addEventListener('click', () => {
+        overlay.classList.toggle('hidden');
+      });
+    }
+  }
+
+  // ---- CH 00: geometric test card (testbeeld) ----
+  function buildTestCardSVG(){
+    const W = 800, H = 500, cx = 400, cy = 250;
+    let lines = '';
+
+    for(let x = 0; x <= W; x += 40){
+      lines += `<line x1="${x}" y1="0" x2="${x}" y2="${H}" stroke="rgba(124,252,158,0.12)" stroke-width="1"/>`;
+    }
+    for(let y = 0; y <= H; y += 40){
+      lines += `<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="rgba(124,252,158,0.12)" stroke-width="1"/>`;
+    }
+
+    lines += `<line x1="${cx}" y1="0" x2="${cx}" y2="${H}" stroke="rgba(124,252,158,0.55)" stroke-width="1.5"/>`;
+    lines += `<line x1="0" y1="${cy}" x2="${W}" y2="${cy}" stroke="rgba(124,252,158,0.55)" stroke-width="1.5"/>`;
+
+    for(let x = 0; x <= W; x += 40){
+      lines += `<line x1="${x}" y1="${cy-6}" x2="${x}" y2="${cy+6}" stroke="rgba(124,252,158,0.5)" stroke-width="1"/>`;
+    }
+    for(let y = 0; y <= H; y += 40){
+      lines += `<line x1="${cx-6}" y1="${y}" x2="${cx+6}" y2="${y}" stroke="rgba(124,252,158,0.5)" stroke-width="1"/>`;
+    }
+
+    lines += `<circle cx="${cx}" cy="${cy}" r="170" fill="none" stroke="rgba(124,252,158,0.6)" stroke-width="2"/>`;
+    lines += `<circle cx="${cx}" cy="${cy}" r="85" fill="none" stroke="rgba(124,252,158,0.4)" stroke-width="1.5"/>`;
+
+    const corners = [
+      { x: 0, y: 0, from: 0,   to: 90  },
+      { x: W, y: 0, from: 90,  to: 180 },
+      { x: W, y: H, from: 180, to: 270 },
+      { x: 0, y: H, from: 270, to: 360 },
+    ];
+    corners.forEach(c => {
+      for(let a = c.from; a <= c.to; a += 12){
+        const rad = a * Math.PI / 180;
+        const len = 95;
+        const x2 = (c.x + Math.cos(rad) * len).toFixed(1);
+        const y2 = (c.y + Math.sin(rad) * len).toFixed(1);
+        lines += `<line x1="${c.x}" y1="${c.y}" x2="${x2}" y2="${y2}" stroke="rgba(124,252,158,0.32)" stroke-width="1"/>`;
+      }
+    });
+
+    const barColors = ['#c0c0c0','#c0c000','#00c0c0','#00c000','#c000c0','#c00000','#0000c0'];
+    const barsX = 220, barsW = 360, barsY = 442, barsH = 22;
+    const bw = barsW / barColors.length;
+    let bars = '';
+    barColors.forEach((col, i) => {
+      bars += `<rect x="${(barsX + i*bw).toFixed(1)}" y="${barsY}" width="${bw.toFixed(1)}" height="${barsH}" fill="${col}" opacity="0.85"/>`;
+    });
+
+    const boxW = 220, boxH = 66;
+    const box = `
+      <rect x="${cx - boxW/2}" y="${cy - boxH/2}" width="${boxW}" height="${boxH}" fill="#040603" stroke="rgba(124,252,158,0.5)" stroke-width="1.2"/>
+      <text x="${cx}" y="${cy - 14}" text-anchor="middle" font-family="'Courier New', monospace" font-size="12" fill="#7CFC9E" letter-spacing="2">CHANNEL ZERO</text>
+      <text x="${cx}" y="${cy + 2}" text-anchor="middle" font-family="'Courier New', monospace" font-size="8.5" fill="#9fd4ad" letter-spacing="0.5">CARRIER SIGNAL — STANDING BY</text>
+      <text x="${cx}" y="${cy + 18}" text-anchor="middle" font-family="'Courier New', monospace" font-size="8" fill="#6f8f78" letter-spacing="1">PO BOX 1979</text>
+      <text x="${cx}" y="${cy + boxH/2 + 16}" text-anchor="middle" font-family="'Courier New', monospace" font-size="7.5" fill="#4d6b55" letter-spacing="0.5">BROADCASTS BEST ON LARGER SCREENS</text>
+    `;
+
+    return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block;">${lines}${bars}${box}</svg>`;
+  }
+
+  function renderTestCard(){
+    const wrap = document.getElementById('testcardWrap');
+    if(wrap && !wrap.dataset.built){
+      wrap.innerHTML = buildTestCardSVG();
+      wrap.dataset.built = '1';
+    }
+  }
+
+  const KNOWN_CHANNELS = ['0','1','2','3','4','5','6','7','12','99'];
+
+  function tuneTo(chRaw){
+    if(!isOn) return;
+    const ch = parseInt(chRaw, 10).toString();
+    currentChannel = ch;
+    keys.forEach(k => k.classList.toggle('active', k.dataset.key === ch));
+    chEntry.classList.add('hidden');
+
+    // static flash transition (audible)
+    staticActive = true;
+    updateAudioForState();
+    staticCanvas.style.opacity = '0.6';
+    startStaticLoop();
+    screen.querySelectorAll('.channel-content').forEach(c => c.classList.add('hidden'));
+
+    setTimeout(() => {
+      // genuine "no signal" channels keep hissing and showing visible static; real content channels go quiet
+      staticActive = !KNOWN_CHANNELS.includes(ch);
+      staticCanvas.style.opacity = staticActive ? '0.35' : '0.1';
+      updateAudioForState();
+      const target = getChannelEl(ch);
+      target.classList.remove('hidden');
+      if(ch === '4') renderTeletext(100);
+      if(ch === '0') renderTestCard();
+      if(ch === '12') renderClaudeTV();
+      if(ch === '7') renderCh07();
+    }, 220);
+  }
+
+  // ---- keypad entry: tap a digit, tap a second within the window to form a two-digit channel ----
+  const chEntry = document.getElementById('chEntry');
+  let entryBuffer = '';
+  let entryTimer = null;
+  const DOUBLE_TAP_MS = 1200;
+
+  function showEntry(text){
+    chEntry.textContent = text;
+    chEntry.classList.remove('hidden');
+  }
+
+  function pressDigit(digit){
+    if(!isOn) return;
+    if(entryBuffer.length === 1){
+      clearTimeout(entryTimer);
+      const combined = entryBuffer + digit;
+      entryBuffer = '';
+      showEntry(combined);
+      tuneTo(combined);
+    } else {
+      entryBuffer = digit;
+      showEntry(digit + '_');
+      entryTimer = setTimeout(() => {
+        const solo = entryBuffer;
+        entryBuffer = '';
+        tuneTo(solo);
+      }, DOUBLE_TAP_MS);
+    }
+  }
+
+  keys.forEach(k => {
+    k.addEventListener('click', () => pressDigit(k.dataset.key));
+  });
+
+  // ---- VOL slider (drag or click within the track) ----
+  function setVolVisual(level){
+    const trackH = volTrack.clientHeight;
+    const pct = Math.min(1, Math.max(0, level)) * 100;
+    volFill.style.height = pct + '%';
+    volThumb.style.bottom = pct + '%';
+  }
+
+  function levelFromClientY(clientY){
+    const rect = volTrack.getBoundingClientRect();
+    const pct = 1 - (clientY - rect.top) / rect.height;
+    return Math.min(1, Math.max(0, pct));
+  }
+
+  let volDragging = false;
+  volTrack.addEventListener('pointerdown', (e) => {
+    volDragging = true;
+    volTrack.setPointerCapture(e.pointerId);
+    volLevel = levelFromClientY(e.clientY);
+    setVolVisual(volLevel);
+    updateAudioForState();
+  });
+  volTrack.addEventListener('pointermove', (e) => {
+    if(!volDragging) return;
+    volLevel = levelFromClientY(e.clientY);
+    setVolVisual(volLevel);
+    updateAudioForState();
+  });
+  ['pointerup','pointerleave'].forEach(evt => {
+    volTrack.addEventListener(evt, () => { volDragging = false; });
+  });
+
+  setVolVisual(volLevel);
+
+  // ---- CH 01 home schedule: countdown actually pays off by cycling episodes ----
+  const homeSlots = [
+    {
+      eyebrow: 'NOW LOADING · NEXT TRANSMISSION',
+      title: 'S01 · E03 — "The Machines Dream in Green"',
+      desc: "Tonight's episode: an AI writes love letters to the pixels it was trained on. Directed by a swarm of small ideas. Rated 0 for Zero.",
+      duration: 3*60 + 27,
+      slotId: 'slot1'
+    },
+    {
+      eyebrow: 'NOW LOADING · NEXT TRANSMISSION',
+      title: 'S01 · E04 — "Static Between Two Minds"',
+      desc: "Tonight's episode: two neural nets disagree about which one is dreaming. Neither backs down. Rated 0 for Zero.",
+      duration: 2*60 + 15,
+      slotId: 'slot2'
+    },
+    {
+      eyebrow: 'SIGN OFF',
+      title: '— test pattern until dawn —',
+      desc: "Nothing new until the next cycle. If you can't wait, CH 00 never sleeps.",
+      duration: 60,
+      slotId: 'slot3'
+    },
+  ];
+  let homeSlotIndex = 0;
+  let homeRemaining = homeSlots[0].duration;
+
+  function applyHomeSlot(idx){
+    const slot = homeSlots[idx];
+    const eyebrowEl = document.getElementById('homeEyebrow');
+    const titleEl = document.getElementById('epTitle');
+    const descEl = document.getElementById('epDesc');
+    if(eyebrowEl) eyebrowEl.textContent = slot.eyebrow;
+    if(titleEl) titleEl.textContent = slot.title;
+    if(descEl) descEl.textContent = slot.desc;
+    homeRemaining = slot.duration;
+    ['slot1','slot2','slot3'].forEach(id => {
+      const row = document.getElementById(id);
+      if(row) row.classList.toggle('airing', id === slot.slotId);
+    });
+  }
+
+  function homeSlotFlash(){
+    if(currentChannel !== '1') return;
+    staticCanvas.style.opacity = '0.5';
+    startStaticLoop();
+    setTimeout(() => {
+      if(currentChannel === '1') staticCanvas.style.opacity = '0.1';
+    }, 260);
+  }
+
+  function tickHomeCountdown(){
+    if(homeRemaining <= 0){
+      homeSlotIndex = (homeSlotIndex + 1) % homeSlots.length;
+      homeSlotFlash();
+      applyHomeSlot(homeSlotIndex);
+    }
+    const m = Math.floor(homeRemaining/60).toString().padStart(2,'0');
+    const s = (homeRemaining%60).toString().padStart(2,'0');
+    const el = document.getElementById('countdown');
+    if(el) el.textContent = `${m}:${s}`;
+    homeRemaining--;
+  }
+  setInterval(tickHomeCountdown, 1000);
+  applyHomeSlot(0);
+
+  // start powered-off
+  turnOff();
+
+  // ---- small-screen notice: real detection, not just the test-card joke ----
+  const mobileNotice = document.getElementById('mobileNotice');
+  const mobileNoticeClose = document.getElementById('mobileNoticeClose');
+  const smallScreenQuery = window.matchMedia('(max-width: 760px)');
+  const DISMISS_KEY = 'channelZeroMobileNoticeDismissed';
+
+  function updateMobileNotice(){
+    const dismissed = localStorage.getItem(DISMISS_KEY) === '1';
+    if(smallScreenQuery.matches && !dismissed){
+      mobileNotice.classList.add('show');
+    } else {
+      mobileNotice.classList.remove('show');
+    }
+  }
+
+  if(mobileNoticeClose){
+    mobileNoticeClose.addEventListener('click', () => {
+      mobileNotice.classList.remove('show');
+      try{ localStorage.setItem(DISMISS_KEY, '1'); }catch(e){}
+    });
+  }
+
+  smallScreenQuery.addEventListener('change', updateMobileNotice);
+  updateMobileNotice();
+
+  // ---- subscribe form (demo only — no backend wired up) ----
+  const subForm = document.getElementById('subForm');
+  if(subForm){
+    subForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      subForm.classList.add('hidden');
+      document.getElementById('subConfirm').classList.remove('hidden');
+    });
+  }
+})();
+</script>
+</body>
+</html>
