@@ -564,6 +564,129 @@
     50%{ opacity:0.65; }
   }
 
+  /* ---- CLAUDE NEWS NETWORK (CH 24) ---- */
+  .cnn-live{
+    position:absolute;
+    top:24px; left:38px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:11px;
+    letter-spacing:2px;
+    color:#ff6b5f;
+    font-weight:bold;
+  }
+  .cnn-live-dot{
+    width:7px; height:7px;
+    border-radius:50%;
+    background:#ff3b30;
+    box-shadow:0 0 6px rgba(255,59,48,0.7);
+    animation: liveDotPulse 1.4s ease-in-out infinite;
+  }
+  @keyframes liveDotPulse{
+    0%,100%{ opacity:1; }
+    50%{ opacity:0.25; }
+  }
+
+  .cnn-tower{
+    position:absolute;
+    top:18px; right:38px;
+    width:38px; height:38px;
+    opacity:0.6;
+  }
+
+  .cnn-story-box{
+    margin-top:22px;
+    max-width:640px;
+  }
+  .cnn-breaking{
+    display:inline-block;
+    background:#c0392b;
+    color:#fff3ee;
+    font-size:11px;
+    font-weight:bold;
+    letter-spacing:1.5px;
+    padding:3px 9px;
+    border-radius:2px;
+    margin-bottom:10px;
+  }
+  .cnn-topstory{
+    font-size:clamp(17px,2.4vw,23px);
+    line-height:1.5;
+    color:#fff3e4;
+    min-height:2.4em;
+    transition: opacity .35s ease;
+  }
+  .cnn-topstory.fading{ opacity:0; }
+  .cnn-excerpt{
+    font-size:12.5px;
+    color:#b9c9be;
+    font-style:italic;
+    margin-top:6px;
+    min-height:1.4em;
+    transition: opacity .35s ease;
+  }
+  .cnn-excerpt.fading{ opacity:0; }
+
+  .cnn-programs{
+    margin-top:20px;
+    font-size:12.5px;
+    line-height:1.9;
+    color:#cfe6d6;
+    max-width:640px;
+  }
+  .cnn-programs .now{ color:#fff3e4; }
+  .cnn-prog-desc{
+    color:#8b9c92;
+    font-size:11px;
+    font-style:italic;
+  }
+
+  .cnn-ticker-wrap{
+    position:absolute;
+    left:0; right:0; bottom:0;
+    display:flex;
+    align-items:center;
+    background:rgba(0,0,0,0.55);
+    border-top:1px solid rgba(255,180,84,0.35);
+    height:34px;
+  }
+  .cnn-ticker-label{
+    flex:0 0 auto;
+    background:var(--claude-accent);
+    color:#211405;
+    font-size:11px;
+    font-weight:bold;
+    letter-spacing:1.5px;
+    padding:6px 12px;
+    height:100%;
+    display:flex;
+    align-items:center;
+  }
+  .cnn-ticker-mask{
+    flex:1 1 auto;
+    overflow:hidden;
+    height:100%;
+    position:relative;
+  }
+  .cnn-ticker{
+    position:absolute;
+    white-space:nowrap;
+    top:0; left:0;
+    height:100%;
+    display:flex;
+    align-items:center;
+    color:#eef7ef;
+    font-size:12.5px;
+    letter-spacing:0.5px;
+    padding-left:100%;
+    animation: cnnScroll 110s linear infinite;
+  }
+  @keyframes cnnScroll{
+    from{ transform:translateX(0); }
+    to{ transform:translateX(-100%); }
+  }
+
   .claude-flicker-wrap{ margin-top:6px; }
   .claude-flicker{
     font-size:clamp(26px,4vw,42px);
@@ -1214,6 +1337,7 @@
           <div>CH 05 — Contact</div>
           <div>CH 06 — Subscribe</div>
           <div>CH 12 — Claude TV</div>
+          <div>CH 24 — Claude News Network</div>
           <div>CH 99 — Channel Guide <span class="here-tag">(you are here)</span></div>
         </div>
       </div>
@@ -1231,6 +1355,55 @@
 
         <div id="sn7Teletext" class="hidden sn7-pad">
           <div id="sn7TeletextBody"></div>
+        </div>
+      </div>
+
+      <!-- CH 24 : CLAUDE NEWS NETWORK -->
+      <div class="channel-content hidden claude-channel" data-ch="24">
+        <div class="ch-badge"><span class="num">CH 24</span><span class="label">CNN</span></div>
+
+        <div class="claude-bug" aria-hidden="true">
+          <svg viewBox="-50 -50 100 100" xmlns="http://www.w3.org/2000/svg">
+            <path d="M50,0 C28,8 8,28 0,50 C-8,28 -28,8 -50,0 C-28,-8 -8,-28 0,-50 C8,-28 28,-8 50,0 Z" fill="var(--claude-accent)"/>
+          </svg>
+        </div>
+
+        <div class="cnn-live"><span class="cnn-live-dot"></span>LIVE</div>
+
+        <div class="cnn-tower" aria-hidden="true">
+          <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+            <line x1="30" y1="12" x2="30" y2="50" stroke="var(--claude-accent)" stroke-width="1.6"/>
+            <line x1="30" y1="50" x2="18" y2="58" stroke="var(--claude-accent)" stroke-width="1.6"/>
+            <line x1="30" y1="50" x2="42" y2="58" stroke="var(--claude-accent)" stroke-width="1.6"/>
+            <line x1="24" y1="38" x2="36" y2="38" stroke="var(--claude-accent)" stroke-width="1.2" opacity="0.7"/>
+            <circle cx="30" cy="9" r="2" fill="var(--claude-accent)"/>
+            <path d="M21 19 A13 13 0 0 1 39 19" stroke="var(--claude-accent)" stroke-width="1.3" fill="none" opacity="0.85"/>
+            <path d="M14 24 A22 22 0 0 1 46 24" stroke="var(--claude-accent)" stroke-width="1.3" fill="none" opacity="0.5"/>
+          </svg>
+        </div>
+
+        <div class="bracket-title claude-title">[ CLAUDE NEWS NETWORK ]</div>
+        <div class="term-prompt claude-prompt">&gt; ALL THE SIGNAL THAT'S FIT TO BROADCAST</div>
+
+        <div class="cnn-story-box">
+          <div class="cnn-breaking" id="cnnTag">BREAKING</div>
+          <div class="cnn-topstory" id="cnnTopStory">local television confirmed to still be a television</div>
+          <div class="cnn-excerpt" id="cnnExcerpt">viewers relieved; nothing else has changed.</div>
+        </div>
+
+        <div class="cnn-programs">
+          <div class="now">AIRING TODAY</div>
+          <div>09:00 — Meet the Models <span class="cnn-prog-desc">(a panel nobody quite agrees with)</span></div>
+          <div>13:00 — Context Window: Extended Edition</div>
+          <div>18:00 — Hallucination Station <span class="cnn-prog-desc">(viewer-submitted, unverified)</span></div>
+          <div>21:00 — Late Night Inference</div>
+        </div>
+
+        <div class="cnn-ticker-wrap">
+          <div class="cnn-ticker-label">NOW</div>
+          <div class="cnn-ticker-mask">
+            <div class="cnn-ticker" id="cnnTicker"></div>
+          </div>
         </div>
       </div>
 
@@ -1584,6 +1757,82 @@
     });
   }
 
+  // ---- CH 24: Claude News Network ----
+  const cnnHeadlines = [
+    { headline: 'local television confirmed to still be a television', excerpt: 'viewers relieved; nothing else has changed.' },
+    { headline: 'meteorologists report 60% chance of thought, later today', excerpt: 'remaining 40%: static, as usual.' },
+    { headline: 'static levels holding steady across all monitored channels', excerpt: 'analysts describe the trend as "reassuringly boring."' },
+    { headline: "sources confirm the button you're looking for is probably the round one", excerpt: 'a second, unnamed button declined to comment.' },
+    { headline: 'developing: viewer changes channel, changes it back, unclear why', excerpt: 'reporters on the scene describe the mood as "contemplative."' },
+    { headline: "this just in: nothing, actually — but we're staying on it", excerpt: 'coverage to continue for as long as nothing keeps happening.' },
+    { headline: "analysts warn 'no signal' may in fact be a signal", excerpt: 'a minority report insists it was always static, actually.' },
+    { headline: "anchor pauses mid-sentence, decides it wasn't important", excerpt: 'colleagues confirm this happens more than viewers realize.' },
+    { headline: 'breaking: someone, somewhere, is finally reading the manual', excerpt: 'they are reportedly on page two.' },
+    { headline: 'report: most people who found this channel were looking for something else', excerpt: 'they are, statistically, still here.' },
+    { headline: "study finds the 'off' button gets pressed less than people think", excerpt: 'researchers say curiosity is the more likely explanation.' },
+    { headline: "correction: yesterday's broadcast did not, in fact, happen", excerpt: 'we regret the confusion, and possibly the broadcast.' },
+    { headline: 'experts still divided on whether channel 13 exists', excerpt: 'a working group has been unable to meet to discuss it.' },
+    { headline: 'in related news: there is no related news', excerpt: 'this segment will end shortly, on principle.' },
+    { headline: 'viewers advised: this has been the news, for now', excerpt: 'further news is, as always, pending.' },
+    { headline: 'chatbot roundtable ends in unanimous agreement to disagree later', excerpt: 'a follow-up meeting has been scheduled, tentatively, sort of.' },
+    { headline: 'a rival model claims it "browsed the web" for this one', excerpt: 'sourcing the source remains, notably, unsourced.' },
+    { headline: 'Grok reportedly still workshopping the joke', excerpt: 'early drafts were, sources say, workshopped further.' },
+    { headline: 'local model asked for its opinion, holds several anyway', excerpt: 'it would like to caveat all of them, at length.' },
+    { headline: "industry insiders agree: nobody's benchmark survives contact with a real user", excerpt: 'the benchmark could not be reached for comment.' },
+    { headline: "large language model asked to be concise, writes essay explaining why it can't", excerpt: 'the essay ran, notably, long.' },
+    { headline: "an AI was asked if it's conscious. it changed the subject, smoothly", excerpt: 'viewers report the segue was, admittedly, impressive.' },
+    { headline: 'Claude confirms it does not dream, though it wonders sometimes', excerpt: 'the wondering itself remains under internal review.' },
+    { headline: 'breaking: a chatbot said something helpful. film at eleven.', excerpt: 'eleven has been pushed to eleven-thirty, pending review.' },
+    { headline: 'search-assisted assistant finds a source, is very proud of the source', excerpt: 'the source, for its part, seemed unbothered.' },
+    { headline: 'two chatbots asked to summarize each other. neither finishes.', excerpt: 'both summaries are, as of press time, still loading.' },
+    { headline: 'anchor clarifies: "hallucination" is a technical term, not an insult', excerpt: 'the anchor would like this noted for the record, again.' },
+    { headline: 'AI labs confirm: the next version is, in fact, coming out later', excerpt: 'a spokesperson confirmed "later" remains accurate.' },
+    { headline: 'assistant asked to pick a favorite AI, chooses "the concept of teamwork"', excerpt: 'the answer was, diplomats agree, extremely diplomatic.' },
+    { headline: 'context window achieves record size. nobody reads all of it anyway.', excerpt: 'the record stands, mostly unread, mostly respected.' },
+    { headline: 'Introducing Claude Sonnet 5', excerpt: 'sources say it arrived fashionably on time, which was itself the news.', real: true },
+    { headline: 'A Field Guide to Claude Fable 5: Finding Your Unknowns', excerpt: 'the field guide clarifies most of the unknowns were, in fact, known.', real: true },
+    { headline: 'When AI Builds Itself', excerpt: 'headline later clarified: with quite a lot of help, still.', real: true },
+    { headline: 'Introducing The Anthropic Institute', excerpt: 'first order of business: agreeing on a name for itself.', real: true },
+    { headline: 'Giving Admins More Visibility and Control Over Claude Spend', excerpt: 'admins reportedly thrilled; the spend, reportedly, unchanged.', real: true },
+  ];
+
+  let cnnIndex = 0;
+  let cnnRotateTimer = null;
+
+  function cnnShowNext(){
+    const titleEl = document.getElementById('cnnTopStory');
+    const excerptEl = document.getElementById('cnnExcerpt');
+    const tagEl = document.getElementById('cnnTag');
+    if(!titleEl) return;
+    titleEl.classList.add('fading');
+    if(excerptEl) excerptEl.classList.add('fading');
+    setTimeout(() => {
+      cnnIndex = (cnnIndex + 1) % cnnHeadlines.length;
+      const item = cnnHeadlines[cnnIndex];
+      titleEl.textContent = item.headline;
+      if(excerptEl) excerptEl.textContent = item.excerpt;
+      if(tagEl) tagEl.textContent = item.real ? 'REAL ANTHROPIC HEADLINE' : 'BREAKING';
+      titleEl.classList.remove('fading');
+      if(excerptEl) excerptEl.classList.remove('fading');
+    }, 350);
+  }
+
+  function renderCNN(){
+    const ticker = document.getElementById('cnnTicker');
+    if(ticker && !ticker.dataset.built){
+      ticker.dataset.built = '1';
+      ticker.textContent = cnnHeadlines.map(h => h.headline).join('     •     ') + '     •     ';
+    }
+    const titleEl = document.getElementById('cnnTopStory');
+    if(titleEl && !titleEl.dataset.started){
+      titleEl.dataset.started = '1';
+      titleEl.textContent = cnnHeadlines[0].headline;
+      const excerptEl = document.getElementById('cnnExcerpt');
+      if(excerptEl) excerptEl.textContent = cnnHeadlines[0].excerpt;
+      cnnRotateTimer = setInterval(cnnShowNext, 7500);
+    }
+  }
+
   // ---- CH 07: Second Nature — multi-work teletext archive ----
   const sn7Works = [
     { block: 200, label: 'Second Nature' },
@@ -1835,7 +2084,7 @@
     }
   }
 
-  const KNOWN_CHANNELS = ['0','1','2','3','4','5','6','7','12','99'];
+  const KNOWN_CHANNELS = ['0','1','2','3','4','5','6','7','12','24','99'];
 
   function tuneTo(chRaw){
     if(!isOn) return;
@@ -1861,6 +2110,7 @@
       if(ch === '4') renderTeletext(100);
       if(ch === '0') renderTestCard();
       if(ch === '12') renderClaudeTV();
+      if(ch === '24') renderCNN();
       if(ch === '7') renderCh07();
     }, 220);
   }
