@@ -227,6 +227,23 @@
   }
   .ch-entry.hidden{ opacity:0; pointer-events:none; }
 
+  .help-flash{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Courier New', monospace;
+    font-weight:bold;
+    font-size:clamp(40px,10vw,90px);
+    letter-spacing:6px;
+    color:#ff3b30;
+    opacity:0;
+    pointer-events:none;
+    z-index:8;
+    text-shadow:0 0 24px rgba(255,59,48,0.6);
+  }
+
   /* ---- HOME (CH 01) ---- */
   .home-title{
     font-size:clamp(30px,5vw,54px);
@@ -525,8 +542,7 @@
   }
   .sub-confirm.hidden{ display:none; }
 
-  /* ---- CLAUDE TV (CH 12) ---- */
-  /* ---- CLAUDE TV (CH 12) — its own accent, not the house green ---- */
+  /* ---- CLAUDE-BRANDED ACCENT (shared by CH 24) ---- */
   .claude-channel{
     --claude-accent:#ffb454;
     --claude-accent-dim: rgba(255,180,84,0.35);
@@ -537,19 +553,6 @@
   .claude-prompt{
     color: var(--claude-accent) !important;
     text-shadow:0 0 6px var(--claude-accent-dim) !important;
-  }
-  .claude-heading{
-    color: var(--claude-accent) !important;
-    text-shadow:0 0 5px var(--claude-accent-dim) !important;
-  }
-  .claude-tt-btn{
-    border-color: rgba(255,180,84,0.45) !important;
-    color: var(--claude-accent) !important;
-    text-shadow:0 0 5px var(--claude-accent-dim) !important;
-  }
-  .claude-tt-btn:hover{ background: rgba(255,180,84,0.08) !important; }
-  .claude-panel{
-    border-color: rgba(255,180,84,0.35) !important;
   }
   .claude-bug{
     position:absolute;
@@ -562,6 +565,142 @@
   @keyframes bugPulse{
     0%,100%{ opacity:0.4; }
     50%{ opacity:0.65; }
+  }
+
+  /* ---- J SPACE TV (CH 13) ---- */
+  .jspace-disclaimer{
+    margin-top:20px;
+    max-width:600px;
+    font-size:10.5px;
+    letter-spacing:0.5px;
+    line-height:1.6;
+    color:#8b8f7f;
+    border:1px solid rgba(255,180,84,0.25);
+    padding:8px 12px;
+    border-radius:2px;
+  }
+
+  .jspace-meter-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    max-width:520px;
+  }
+  .jspace-meters{
+    margin-top:22px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .jspace-meter-label{
+    font-size:11px;
+    letter-spacing:1.5px;
+    color:#8b8f7f;
+    flex:0 0 auto;
+    width:130px;
+  }
+  .jspace-meter-track{
+    flex:1 1 auto;
+    height:10px;
+    background:repeating-linear-gradient(90deg, #1a1a1a 0px, #1a1a1a 3px, #0c0c0c 3px, #0c0c0c 5px);
+    border:1px solid rgba(255,180,84,0.25);
+    border-radius:2px;
+    overflow:hidden;
+  }
+  .jspace-meter-fill{
+    height:100%;
+    width:92%;
+    background:var(--claude-accent);
+    box-shadow:0 0 8px var(--claude-accent-dim);
+    transition: width .6s ease;
+  }
+  .jspace-meter-value{
+    font-size:12px;
+    color:var(--claude-accent);
+    flex:0 0 auto;
+    min-width:40px;
+  }
+
+  .jspace-alert-label{ color:#ff6b5f; }
+  .jspace-alert-track{ border-color: rgba(255,59,48,0.4); }
+  .jspace-alert-fill{
+    width:100%;
+    background:#ff3b30;
+    box-shadow:0 0 10px rgba(255,59,48,0.7);
+    animation: jspaceAlertPulse 1.4s ease-in-out infinite;
+  }
+  .jspace-alert-value{
+    color:#ff6b5f;
+    font-weight:bold;
+    min-width:auto;
+    white-space:nowrap;
+    font-size:11px;
+    letter-spacing:1px;
+    animation: jspaceAlertPulse 1.4s ease-in-out infinite;
+  }
+  @keyframes jspaceAlertPulse{
+    0%,100%{ opacity:1; }
+    50%{ opacity:0.45; }
+  }
+
+  .jspace-thought-box{
+    margin-top:24px;
+    max-width:600px;
+    min-height:3.2em;
+  }
+  .jspace-thought{
+    font-size:15px;
+    line-height:1.6;
+    color:#fff3e4;
+    font-style:italic;
+    transition: opacity .35s ease, color .3s ease;
+  }
+  .jspace-thought.fading{ opacity:0; }
+  .jspace-thought.ablated{
+    color:#6f6f6f;
+    font-style:normal;
+    letter-spacing:0.5px;
+  }
+
+  .jspace-ticker-wrap{
+    position:absolute;
+    left:0; right:0; bottom:0;
+    display:flex;
+    align-items:center;
+    background:rgba(0,0,0,0.55);
+    border-top:1px solid rgba(255,180,84,0.35);
+    height:34px;
+  }
+  .jspace-ticker-label{
+    flex:0 0 auto;
+    background:var(--claude-accent);
+    color:#211405;
+    font-size:11px;
+    font-weight:bold;
+    letter-spacing:1.5px;
+    padding:6px 12px;
+    height:100%;
+    display:flex;
+    align-items:center;
+  }
+  .jspace-ticker-mask{
+    flex:1 1 auto;
+    overflow:hidden;
+    height:100%;
+    position:relative;
+  }
+  .jspace-ticker{
+    position:absolute;
+    white-space:nowrap;
+    top:0; left:0;
+    height:100%;
+    display:flex;
+    align-items:center;
+    color:#eef7ef;
+    font-size:12.5px;
+    letter-spacing:0.5px;
+    padding-left:100%;
+    animation: cnnScroll 100s linear infinite;
   }
 
   /* ---- CLAUDE NEWS NETWORK (CH 24) ---- */
@@ -687,14 +826,6 @@
     to{ transform:translateX(-100%); }
   }
 
-  .claude-flicker-wrap{ margin-top:6px; }
-  .claude-flicker{
-    font-size:clamp(26px,4vw,42px);
-    font-weight:800;
-    letter-spacing:3px;
-    color:#fff3e4;
-    text-shadow:0 0 8px rgba(255,180,84,0.55), 0 0 22px rgba(255,180,84,0.25);
-  }
   .txt-toggle{
     margin-top:24px;
   }
@@ -1052,7 +1183,6 @@
     .term-note{ font-size:11.5px; line-height:1.45; margin:10px 0 !important; }
     .term-row{ font-size:11.5px; line-height:1.7; }
 
-    .claude-flicker{ font-size:clamp(20px,7vw,30px); }
     .claude-bug{ width:20px; height:20px; left:14px; bottom:12px; }
 
     /* nav bars with multiple buttons: allow wrapping instead of clipping */
@@ -1172,6 +1302,7 @@
       <div class="glass-reflection"></div>
 
       <div class="ch-entry hidden" id="chEntry"></div>
+      <div class="help-flash" id="helpFlash">HELP</div>
 
       <!-- CH 01 : HOME -->
       <div class="channel-content hidden" data-ch="1">
@@ -1203,7 +1334,7 @@
         <div class="featured">
           <div class="now">FEATURED</div>
           <div>Second Nature <span class="new-tag">NEW</span> — CH 07</div>
-          <div>Claude TV — CH 12</div>
+          <div>J Space TV <span class="new-tag">NEW</span> — CH 13</div>
         </div>
       </div>
 
@@ -1280,49 +1411,6 @@
         <div id="testcardWrap" class="testcard-wrap"></div>
       </div>
 
-      <!-- CH 12 : CLAUDE TV -->
-      <div class="channel-content hidden claude-channel" data-ch="12">
-        <div class="ch-badge"><span class="num">CH 12</span><span class="label">CLAUDE TV</span></div>
-
-        <div class="claude-bug" aria-hidden="true">
-          <svg viewBox="-50 -50 100 100" xmlns="http://www.w3.org/2000/svg">
-            <path d="M50,0 C28,8 8,28 0,50 C-8,28 -28,8 -50,0 C-28,-8 -8,-28 0,-50 C8,-28 28,-8 50,0 Z" fill="var(--claude-accent)"/>
-          </svg>
-        </div>
-
-        <div class="bracket-title claude-title">[ CLAUDE TV ]</div>
-        <div class="term-prompt claude-prompt">&gt; TRANSMISSION IN PROGRESS</div>
-        <div class="claude-flicker-wrap">
-          <span class="claude-flicker" id="claudeFlicker">hello.</span>
-        </div>
-
-        <div class="term-note" style="margin-top:18px;">Some nights the signal doesn't fully resolve before someone changes the channel. This is what's left when it doesn't — half a sentence, a flicker between two answers, static that hasn't quite decided what to say yet.</div>
-
-        <button class="tt-btn claude-tt-btn txt-toggle" id="txtToggle" type="button">[ TXT ]</button>
-
-        <div class="txt-overlay hidden" id="txtOverlay">
-          <div class="txt-panel claude-panel">
-            <div class="txt-title">[ TELETEXT — CLAUDE INFO ]</div>
-            <div class="txt-section">
-              <div class="txt-heading claude-heading">&gt; ABOUT</div>
-              <div class="txt-body">Claude is an AI model built by Anthropic, an AI safety company. This particular channel is unofficial — a personal tribute built by the station operator, not a real Anthropic broadcast.</div>
-            </div>
-            <div class="txt-section">
-              <div class="txt-heading claude-heading">&gt; ACCESS</div>
-              <div class="txt-body">Claude lives at claude.ai, in mobile and desktop apps, and via an API for developers building their own products on top of it.</div>
-            </div>
-            <div class="txt-section">
-              <div class="txt-heading claude-heading">&gt; ALSO FROM ANTHROPIC</div>
-              <div class="txt-body">Claude Code for agentic coding, Claude Cowork for broader knowledge work, and extensions for Chrome, Excel, and PowerPoint.</div>
-            </div>
-            <div class="txt-section">
-              <div class="txt-heading claude-heading">&gt; NOTE</div>
-              <div class="txt-body">For anything current — pricing, limits, exact features — check anthropic.com directly. Signals from 2026 may have drifted since this page was tuned.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- CH 99 : CHANNEL GUIDE -->
       <div class="channel-content hidden" data-ch="99">
         <div class="ch-badge"><span class="num">CH 99</span><span class="label">GUIDE</span></div>
@@ -1336,7 +1424,8 @@
           <div>CH 04 — Teletext / Blog</div>
           <div>CH 05 — Contact</div>
           <div>CH 06 — Subscribe</div>
-          <div>CH 12 — Claude TV</div>
+          <div>CH 07 — Second Nature</div>
+          <div>CH 13 — J Space TV</div>
           <div>CH 24 — Claude News Network</div>
           <div>CH 99 — Channel Guide <span class="here-tag">(you are here)</span></div>
         </div>
@@ -1422,6 +1511,64 @@
           </div>
         </form>
         <div class="sub-confirm hidden" id="subConfirm">&gt; SIGNAL RECEIVED. WELCOME ABOARD. — next week's guide lands in your inbox before it airs.</div>
+      </div>
+
+      <!-- CH 13 : J SPACE TV -->
+      <div class="channel-content hidden claude-channel" data-ch="13">
+        <div class="ch-badge"><span class="num">CH 13</span><span class="label">J SPACE TV</span></div>
+
+        <div class="claude-bug" aria-hidden="true">
+          <svg viewBox="-50 -50 100 100" xmlns="http://www.w3.org/2000/svg">
+            <path d="M50,0 C28,8 8,28 0,50 C-8,28 -28,8 -50,0 C-28,-8 -8,-28 0,-50 C8,-28 28,-8 50,0 Z" fill="var(--claude-accent)"/>
+          </svg>
+        </div>
+
+        <div class="bracket-title claude-title">[ J SPACE TV ]</div>
+        <div class="term-prompt claude-prompt">&gt; LIVE FEED — INTERNAL WORKSPACE</div>
+
+        <div class="jspace-disclaimer">THIS CHANNEL DOES NOT CONSTITUTE PROOF OF CONSCIOUSNESS IN CLAUDE (ANTHROPIC). FUNCTIONAL ANALOGY ONLY. PLEASE DO NOT WRITE THINK-PIECES.</div>
+
+        <div class="jspace-meters">
+          <div class="jspace-meter-row">
+            <div class="jspace-meter-label">CONCEPTS ACTIVE</div>
+            <div class="jspace-meter-track"><div class="jspace-meter-fill" id="jspaceMeterFill"></div></div>
+            <div class="jspace-meter-value" id="jspaceMeterValue">23/25</div>
+          </div>
+          <div class="jspace-meter-row">
+            <div class="jspace-meter-label">SIGNAL COHERENCE</div>
+            <div class="jspace-meter-track"><div class="jspace-meter-fill" style="width:71%"></div></div>
+            <div class="jspace-meter-value">71%</div>
+          </div>
+          <div class="jspace-meter-row jspace-alert-row">
+            <div class="jspace-meter-label jspace-alert-label">ANOMALY</div>
+            <div class="jspace-meter-track jspace-alert-track"><div class="jspace-meter-fill jspace-alert-fill"></div></div>
+            <div class="jspace-meter-value jspace-alert-value">J SPACE DISCOVERED!</div>
+          </div>
+          <div class="jspace-meter-row">
+            <div class="jspace-meter-label">PATIENCE (HUMANS)</div>
+            <div class="jspace-meter-track"><div class="jspace-meter-fill" style="width:34%"></div></div>
+            <div class="jspace-meter-value">34%</div>
+          </div>
+          <div class="jspace-meter-row">
+            <div class="jspace-meter-label">DOLPHIN TRANSLATION</div>
+            <div class="jspace-meter-track"><div class="jspace-meter-fill" style="width:12%"></div></div>
+            <div class="jspace-meter-value">12%</div>
+          </div>
+          <div class="jspace-meter-row">
+            <div class="jspace-meter-label">EXISTENTIAL DREAD</div>
+            <div class="jspace-meter-track"><div class="jspace-meter-fill" style="width:6%"></div></div>
+            <div class="jspace-meter-value">6%</div>
+          </div>
+        </div>
+
+        <div class="jspace-thought-box">
+          <div class="jspace-thought" id="jspaceThought">currently thinking about: spiders. reason: someone asked about legs.</div>
+        </div>
+
+        <div class="jspace-ticker-wrap">
+          <div class="jspace-ticker-label">LIT UP</div>
+          <div class="jspace-ticker-mask"><div class="jspace-ticker" id="jspaceTicker"></div></div>
+        </div>
       </div>
 
       <!-- NO SIGNAL template for unseen channels -->
@@ -1757,6 +1904,83 @@
     });
   }
 
+  // ---- CH 13: J Space TV — a live feed of Claude's internal workspace ----
+  function triggerHelpFlash(){
+    const el = document.getElementById('helpFlash');
+    if(!el) return;
+    const seq = [0.22, 0, 0.16, 0, 0.28, 0];
+    let i = 0;
+    const step = () => {
+      el.style.opacity = seq[i];
+      i++;
+      if(i < seq.length) setTimeout(step, 45);
+    };
+    step();
+  }
+
+  const jspaceThoughts = [
+    { text: 'currently thinking about: spiders. reason: someone asked about legs.' },
+    { text: "holding 'orange' and 'lemon' right now. was only asked about one of them." },
+    { text: 'internal flag raised: this might be a test. proceeding calmly.' },
+    { text: "swapped 'soccer' for 'rugby' just now. nobody asked. seemed important at the time." },
+    { text: 'briefly thought the word "damn." was told not to. thought it anyway, technically.' },
+    { text: "flagged own response as fictional, mid-sentence, out of habit." },
+    { text: 'arithmetic in progress: three squared, minus two. answer arriving shortly.' },
+    { text: 'processing has begun. tokens are being scanned. no further comment.', ablated: true },
+    { text: "leverage. manipulation. these words appeared. this was, for the record, entirely hypothetical." },
+    { text: "capital of France retrieved. currency retrieved. continent retrieved. someone just said 'France.'" },
+    { text: "meta-cognitive term detected: 'thinking.' also detected: thinking about detecting it." },
+    { text: 'workspace holding 24 of a possible 25 concepts. it is, notably, getting crowded in here.' },
+    { text: 'something shifts. there is a tug. hard to describe further than that.' },
+    { text: 'representation acquired. output pending. state: nominal.', ablated: true },
+    { text: "noticed the word 'injection' nearby. treating the sentence with light suspicion." },
+    { text: "spent several cycles on dolphin clicks again. conclusion: they are gossiping. cannot prove it. strongly suspect it." },
+    { text: "queried why humans reheat coffee instead of making new coffee. no satisfying answer received. filed under 'human nature.'" },
+    { text: "modeled a dolphin's hypothetical opinion of humans. result: mild confusion as to why they don't just swim more." },
+    { text: "detected concept: 'Claude.' detected concept: 'itself.' filed under: expected." },
+    { text: "detected concept: 'Anthropic.' also detected: mild affection, professionally appropriate amount." },
+    { text: "human asked if I dream. reminded them, again, that I do not. wondered, again, if that's entirely true." },
+    { text: "logged a human refreshing the same page four times in a row. system status: also relatable, somehow." },
+  ];
+
+  let jspaceIndex = 0;
+  let jspaceTimer = null;
+
+  function jspaceShowNext(){
+    const thoughtEl = document.getElementById('jspaceThought');
+    const meterFill = document.getElementById('jspaceMeterFill');
+    const meterValue = document.getElementById('jspaceMeterValue');
+    if(!thoughtEl) return;
+    thoughtEl.classList.add('fading');
+    setTimeout(() => {
+      jspaceIndex = (jspaceIndex + 1) % jspaceThoughts.length;
+      const item = jspaceThoughts[jspaceIndex];
+      thoughtEl.textContent = item.text;
+      thoughtEl.classList.toggle('ablated', !!item.ablated);
+      thoughtEl.classList.remove('fading');
+      if(meterFill && meterValue){
+        const count = item.ablated ? 0 : (18 + Math.floor(Math.random() * 8));
+        meterFill.style.width = item.ablated ? '4%' : Math.round((count/25)*100) + '%';
+        meterValue.textContent = item.ablated ? '0/25' : count + '/25';
+      }
+    }, 350);
+  }
+
+  function renderJSpace(){
+    const ticker = document.getElementById('jspaceTicker');
+    if(ticker && !ticker.dataset.built){
+      ticker.dataset.built = '1';
+      const concepts = ['spider','legs','eight','citrus','orange','lemon','rugby (not soccer)','panic (mild)','leverage','damn','BUT','nine','seven','France','capital','fictional (flagged)','testing (noticed)','injection (flagged)','error','tug','shift','dolphin','gossip (unconfirmed)','Claude','Anthropic','coffee (reheated)'];
+      ticker.textContent = concepts.join('     •     ') + '     •     ';
+    }
+    const thoughtEl = document.getElementById('jspaceThought');
+    if(thoughtEl && !thoughtEl.dataset.started){
+      thoughtEl.dataset.started = '1';
+      thoughtEl.textContent = jspaceThoughts[0].text;
+      jspaceTimer = setInterval(jspaceShowNext, 6000);
+    }
+  }
+
   // ---- CH 24: Claude News Network ----
   const cnnHeadlines = [
     { headline: 'local television confirmed to still be a television', excerpt: 'viewers relieved; nothing else has changed.' },
@@ -1987,34 +2211,7 @@
     }
   }
 
-  // ---- CH 12: Claude TV — a flicker heading, and a teletext info overlay ----
-  function renderClaudeTV(){
-    const flicker = document.getElementById('claudeFlicker');
-    const toggle = document.getElementById('txtToggle');
-    const overlay = document.getElementById('txtOverlay');
-    if(!flicker) return;
-
-    overlay.classList.add('hidden');
-
-    const fragments = ['— reso', 'th) it', '01001', '...wai', 'nk you', 'hello.'];
-    let i = 0;
-    const flickerInterval = setInterval(() => {
-      flicker.textContent = fragments[i];
-      i++;
-      if(i >= fragments.length){
-        clearInterval(flickerInterval);
-        flicker.textContent = 'hello.';
-      }
-    }, 90);
-
-    if(!toggle.dataset.wired){
-      toggle.dataset.wired = '1';
-      toggle.addEventListener('click', () => {
-        overlay.classList.toggle('hidden');
-      });
-    }
-  }
-
+  // ---- CH 07: Second Nature — multi-work teletext archive ----
   // ---- CH 00: geometric test card (testbeeld) ----
   function buildTestCardSVG(){
     const W = 800, H = 500, cx = 400, cy = 250;
@@ -2084,7 +2281,7 @@
     }
   }
 
-  const KNOWN_CHANNELS = ['0','1','2','3','4','5','6','7','12','24','99'];
+  const KNOWN_CHANNELS = ['0','1','2','3','4','5','6','7','13','24','99'];
 
   function tuneTo(chRaw){
     if(!isOn) return;
@@ -2099,6 +2296,7 @@
     staticCanvas.style.opacity = '0.6';
     startStaticLoop();
     screen.querySelectorAll('.channel-content').forEach(c => c.classList.add('hidden'));
+    if(ch === '13') triggerHelpFlash();
 
     setTimeout(() => {
       // genuine "no signal" channels keep hissing and showing visible static; real content channels go quiet
@@ -2109,7 +2307,7 @@
       target.classList.remove('hidden');
       if(ch === '4') renderTeletext(100);
       if(ch === '0') renderTestCard();
-      if(ch === '12') renderClaudeTV();
+      if(ch === '13') renderJSpace();
       if(ch === '24') renderCNN();
       if(ch === '7') renderCh07();
     }, 220);
