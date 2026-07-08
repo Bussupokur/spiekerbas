@@ -864,6 +864,22 @@
     margin-bottom:22px;
   }
 
+  .chan-updown{ display:none; }
+  .chan-btn{
+    width:44px; height:44px;
+    border-radius:6px;
+    background: linear-gradient(180deg, #38383d 0%, #2a2a2e 45%, #18181b 100%);
+    border:1px solid #0a0a0b;
+    color:#d9d9dc;
+    font-size:16px;
+    cursor:pointer;
+    box-shadow:
+      0 3px 0 #050506,
+      inset 0 1px 0 rgba(255,255,255,0.18),
+      inset 0 -3px 4px rgba(0,0,0,0.5);
+  }
+  .chan-btn:active{ transform:translateY(2px); box-shadow:inset 0 2px 4px rgba(0,0,0,0.6); }
+
   .grille{
     width:100%;
     flex:1;
@@ -958,15 +974,13 @@
       gap:10px 14px;
     }
     .panel-label{ display:none; }
-    .keypad{
+    .keypad{ display:none; }
+    .chan-updown{
       order:1;
-      width:auto;
-      flex:1 1 auto;
-      grid-template-columns: repeat(3, 44px);
-      gap:7px;
+      display:flex;
+      gap:10px;
+      flex:0 0 auto;
     }
-    .key{ padding:11px 0; font-size:16px; }
-    .key.zero{ grid-column: 1 / 2; }
 
     .vol-block{
       order:2;
@@ -981,8 +995,7 @@
   }
 
   @media (max-width: 420px){
-    .keypad{ grid-template-columns: repeat(3, 38px); gap:6px; }
-    .key{ font-size:14px; padding:9px 0; }
+    .chan-btn{ width:38px; height:38px; font-size:14px; }
     .vol-track{ height:64px; }
   }
   #mobileNotice{
@@ -1271,6 +1284,11 @@
       <div class="key" data-key="8">8</div>
       <div class="key" data-key="9">9</div>
       <div class="key zero" data-key="0">0</div>
+    </div>
+
+    <div class="chan-updown" id="chanUpDown">
+      <button class="chan-btn" id="chanUp" type="button" aria-label="channel up">▲</button>
+      <button class="chan-btn" id="chanDown" type="button" aria-label="channel down">▼</button>
     </div>
 
     <div class="vol-block">
@@ -1880,6 +1898,21 @@
   keys.forEach(k => {
     k.addEventListener('click', () => pressDigit(k.dataset.key));
   });
+
+  // ---- mobile channel up/down (replaces the keypad on small screens) ----
+  const chanUp = document.getElementById('chanUp');
+  const chanDown = document.getElementById('chanDown');
+
+  function stepChannel(delta){
+    if(!isOn) return;
+    let current = parseInt(currentChannel, 10);
+    if(isNaN(current)) current = 0;
+    const next = ((current + delta) % 100 + 100) % 100;
+    tuneTo(next.toString());
+  }
+
+  if(chanUp) chanUp.addEventListener('click', () => stepChannel(1));
+  if(chanDown) chanDown.addEventListener('click', () => stepChannel(-1));
 
   // ---- VOL slider (drag or click within the track) ----
   function setVolVisual(level){
