@@ -2005,7 +2005,7 @@
     <div class="split-divider"></div>
     <div class="split-option" data-split="library">library of manifestos</div>
     <div class="split-divider"></div>
-    <div class="split-option" data-split="essays">essays</div>
+    <div class="split-option" data-split="second-nature-archive">second nature archives</div>
   </div>
   <button id="split-back"><svg width="16" height="16" viewBox="0 0 16 16" fill="none">
       <circle cx="8" cy="8" r="7" stroke="rgba(235,220,195,0.35)" stroke-width="0.8"/>
@@ -3128,7 +3128,7 @@ document.querySelectorAll('.split-option').forEach(opt=>{
           });
         },300);
       },800);
-    } else {
+    } else if(which==='library'){
       // fade split out, fade library in
       splitPage.style.transition='opacity 0.8s ease';
       splitPage.style.opacity='0';
@@ -3293,10 +3293,12 @@ document.getElementById('essays-inner').addEventListener('click', e=>{
   },800);
 });
 
-// add essays to split options
+// second nature archives — opens the archive site directly
 document.querySelectorAll('.split-option').forEach(opt=>{
-  if(opt.dataset.split==='essays'){
-    opt.addEventListener('click', openEssays);
+  if(opt.dataset.split==='second-nature-archive'){
+    opt.addEventListener('click', () => {
+      window.open('https://second-nature.spiekerbas.xyz/', '_blank');
+    });
   }
 });
 
