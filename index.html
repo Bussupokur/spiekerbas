@@ -2239,7 +2239,7 @@
     <div class="antant-eyebrow">field dispatch — garden robotics division</div>
     <div class="antant-title">anti ant tank</div>
     <div class="antant-tagline">ants are small. so we're thinking big — a two-unit ai system that knows your garden, does its rounds, and handles ants without ever harming one.</div>
-    <div class="antant-status">status — stage 1: tank driving &amp; streaming to youtube</div>
+    <div class="antant-status">status — concept &amp; planning. nothing built yet.</div>
 
     <div class="antant-section">
       <div class="antant-label">the problem</div>
@@ -2248,7 +2248,7 @@
 
     <div class="antant-section">
       <div class="antant-label">the solution</div>
-      <div class="antant-body">A two-unit robotic sentry, split so each half does only what it's best at.</div>
+      <div class="antant-body">A two-unit robotic sentry, split so each half does only what it's best at — and both units stream live, so you get a full front-row seat to your garden's tiniest security detail.</div>
       <div class="antant-twocol" style="margin-top:1.4rem;">
         <div>
           <div class="antant-unit-name">the watchtower — the brains</div>
@@ -2271,7 +2271,23 @@
       <div class="antant-body">2. It radios the Tank the precise target, not a vague direction. All the thinking happens here, where there's power to spare.</div>
       <div class="antant-body">3. The Tank executes — navigates, confirms at close range, mists. In and out.</div>
       <div class="antant-body">4. Between alerts, it patrols a mapped route and returns to its dock to recharge.</div>
-      <div class="antant-body">5. You watch the whole operation live on YouTube, streamed from the Tank's own camera.</div>
+      <div class="antant-body">5. You watch the whole thing, both angles — ground-level from the Tank, wide overhead from the Watchtower.</div>
+    </div>
+
+    <div class="antant-section">
+      <div class="antant-label">two cameras, two views, your choice of screen</div>
+      <div class="antant-body">Both feeds are worth watching for different reasons — the Tank's view is the action cam, the Watchtower's is the tactical map. Two ways to get both in front of you:</div>
+      <div class="antant-twocol" style="margin-top:1.4rem;">
+        <div>
+          <div class="antant-unit-name">two youtube streams</div>
+          <div class="antant-unit-role">Simplest option — each Pi's camera to its own live stream, or two scheduled streams on one channel. No extra hardware, just twice the streaming setup.</div>
+        </div>
+        <div>
+          <div class="antant-unit-name">a companion website</div>
+          <div class="antant-unit-role">Both feeds side by side, a proper mission-control feel — and a natural home for battery level, last detection, patrol log down the line.</div>
+        </div>
+      </div>
+      <div class="antant-body" style="margin-top:1.2rem;">Either path runs on the same hardware — a hosting decision, not a wiring one. Easy to start with YouTube and add the website later.</div>
     </div>
 
     <div class="antant-section">
@@ -2295,6 +2311,7 @@
         <tr><td>deterrent</td><td>small submersible pump + fine-mist nozzle</td></tr>
         <tr><td>power</td><td>rechargeable battery pack, charging module &amp; dock</td></tr>
         <tr><td>enclosures</td><td>weatherproof, both units</td></tr>
+        <tr><td>companion site</td><td>optional — side-by-side dual-camera mission control, an alternative to youtube</td></tr>
       </table>
     </div>
 
@@ -2304,11 +2321,13 @@
     </div>
 
     <div class="antant-section">
-      <div class="antant-label">roadmap</div>
-      <div class="antant-stage done"><span class="antant-stage-mark">✓</span> stage 1 — tank driving and streaming to youtube</div>
+      <div class="antant-label">planned build order</div>
+      <div class="antant-body" style="margin-bottom:0.8rem;">To be clear: this is a concept in active planning. Nothing has been purchased, and nothing has been built yet — what follows is the intended order, not a progress report.</div>
+      <div class="antant-stage"><span class="antant-stage-mark">○</span> stage 1 — build the tank: driving and streaming to youtube</div>
       <div class="antant-stage"><span class="antant-stage-mark">○</span> stage 2 — teach it a patrol route to repeat automatically</div>
       <div class="antant-stage"><span class="antant-stage-mark">○</span> stage 3 — add the watchtower, motion detection, the misting response</div>
       <div class="antant-stage"><span class="antant-stage-mark">○</span> stage 4 — train and deploy the ant-recognition model</div>
+      <div class="antant-stage"><span class="antant-stage-mark">○</span> stage 5 — bring both camera feeds online, as dual streams or a companion site</div>
     </div>
 
     <div class="antant-section">
@@ -3992,6 +4011,23 @@ document.addEventListener('DOMContentLoaded', function() {
   // start countdown after queue is visible
   setTimeout(scheduleNext, 4000);
 });
+
+// ── DIRECT LINK: #anti-ant-tank skips the intro and opens the page directly ──
+(function handleDeepLink(){
+  if(location.hash !== '#anti-ant-tank') return;
+
+  // a safe default so shared UI (like the back button) has a colour to fall back to
+  pickedHSL = { h: 96, s: 35, l: 45 };
+
+  const arrival = document.getElementById('arrival');
+  if(arrival) arrival.style.display = 'none';
+
+  portal.style.transition = 'none';
+  portal.style.opacity = '0';
+  portal.style.pointerEvents = 'none';
+
+  document.getElementById('antant-page').classList.add('visible');
+})();
 
 </script>
 
