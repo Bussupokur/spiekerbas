@@ -3491,6 +3491,7 @@ document.querySelectorAll('.split-option').forEach(opt=>{
         cancelAnimationFrame(sRaf); sRaf=null;
         document.getElementById('antant-page').classList.add('visible');
         document.getElementById('antant-inner').scrollTop = 0;
+        history.pushState(null, '', '#anti-ant-tank');
       },800);
     }
   });
@@ -3668,6 +3669,7 @@ document.getElementById('antant-back').addEventListener('click', ()=>{
     sH=pickedHSL.h; sS=pickedHSL.s; sL=pickedHSL.l;
     loopSplit();
     splitPage.classList.add('visible');
+    history.pushState(null, '', location.pathname + location.search);
   },800);
 });
 
