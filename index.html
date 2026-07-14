@@ -1484,6 +1484,7 @@
     text-align: center;
   }
   #antant-inner::-webkit-scrollbar { display: none; }
+  #antant-inner > * { flex-shrink: 0; }
 
   /* chase game: move a tank with mouse/finger, catch the ants */
   .antant-game-wrap {
@@ -1593,6 +1594,7 @@
     box-shadow: 0 20px 60px rgba(0,0,0,0.5);
     border-radius: 4px;
     overflow: hidden;
+    flex-shrink: 0;
   }
   .antant-image-frame img { display: block; width: 100%; height: auto; }
 
