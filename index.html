@@ -3925,6 +3925,17 @@ document.getElementById('info-ui').addEventListener('touchmove', e => {
   e.stopPropagation();
 }, { passive: true });
 
+// ── DIRECT LINK: #anti-ant-tank skips the intro and opens the page directly ──
+if(location.hash === '#anti-ant-tank'){
+  pickedHSL = { h: 96, s: 35, l: 45 };
+  const arrival = document.getElementById('arrival');
+  if(arrival) arrival.style.display = 'none';
+  portal.style.transition = 'none';
+  portal.style.opacity = '0';
+  portal.style.pointerEvents = 'none';
+  document.getElementById('antant-page').classList.add('visible');
+}
+
 });
 
 // ── WAITING ROOM ──
@@ -4014,22 +4025,7 @@ document.addEventListener('DOMContentLoaded', function() {
   setTimeout(scheduleNext, 4000);
 });
 
-// ── DIRECT LINK: #anti-ant-tank skips the intro and opens the page directly ──
-(function handleDeepLink(){
-  if(location.hash !== '#anti-ant-tank') return;
-
-  // a safe default so shared UI (like the back button) has a colour to fall back to
-  pickedHSL = { h: 96, s: 35, l: 45 };
-
-  const arrival = document.getElementById('arrival');
-  if(arrival) arrival.style.display = 'none';
-
-  portal.style.transition = 'none';
-  portal.style.opacity = '0';
-  portal.style.pointerEvents = 'none';
-
-  document.getElementById('antant-page').classList.add('visible');
-})();
+// ── DIRECT LINK: #anti-ant-tank skips the intro and opens the page directly ── (moved inside main scope, see above)
 
 </script>
 
