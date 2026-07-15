@@ -331,9 +331,10 @@ export default async function middleware(request) {
 
     const id = newSessionId();
     const active = await redis.get('visitor:active');
+    const queueLength = await redis.llen('visitor:queue');
 
-    if (!active) {
-      // slot is free — claim it
+    if (!active && queueLength === 0) {
+      // slot is free AND nobody's already waiting — claim it directly
       await redis.set('visitor:active', { sessionId: id, enteredAt: Date.now() }, { ex: HEARTBEAT_TTL_SECONDS });
       url.searchParams.delete('enter');
       return new Response(null, {
@@ -348,7 +349,9 @@ export default async function middleware(request) {
       });
     }
 
-    // slot taken — join the queue
+    // slot taken, OR people are already waiting — join the back of the queue.
+    // (Even a momentarily-free slot doesn't let a new visitor skip ahead
+    // of anyone who got here first.)
     await redis.rpush('visitor:queue', id);
     url.searchParams.delete('enter');
     return new Response(null, {
