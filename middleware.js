@@ -289,32 +289,87 @@ function queueHTML(position) {
 </html>`;
 }
 
+function ownerStatusHTML(info) {
+  const fmtRecord = (r) => r ? JSON.stringify(r, null, 2) : '(empty — nobody active)';
+  const actionsLine = info.didClearQueue || info.didClearActive
+    ? `<p style="color:#a8e05f;">Action taken: ${info.didClearQueue ? 'queue cleared. ' : ''}${info.didClearActive ? 'active session cleared.' : ''}</p>
+       <p style="font-size:12px;">Queue length before: ${info.queueLenBefore} → after: ${info.queueLenAfter}</p>
+       <p style="font-size:12px;">Active before:</p><pre>${fmtRecord(info.activeBefore)}</pre>
+       <p style="font-size:12px;">Active after:</p><pre>${fmtRecord(info.activeAfter)}</pre>`
+    : `<p style="font-size:12px;">Current queue length: ${info.queueLenAfter}</p>
+       <p style="font-size:12px;">Current active session:</p><pre>${fmtRecord(info.activeAfter)}</pre>`;
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Owner status — spiekerbas</title>
+<style>
+  body{ background:#0c0c0d; color:#ebdcc3; font-family: Arial, sans-serif; padding: 2rem; max-width: 640px; margin: 0 auto; line-height: 1.6; }
+  h1{ font-size: 18px; }
+  pre{ background:#1a1a1b; padding: 12px; border-radius: 4px; font-size: 12px; overflow-x:auto; white-space: pre-wrap; }
+  a{ color:#a8e05f; }
+  .actions{ margin-top: 2rem; display:flex; gap: 1rem; flex-wrap: wrap; }
+  .actions a{ border:1px solid rgba(235,220,195,0.3); padding: 8px 14px; border-radius: 4px; text-decoration:none; font-size: 13px; }
+</style>
+</head>
+<body>
+  <h1>owner status — you are recognized as owner</h1>
+  ${actionsLine}
+  <div class="actions">
+    <a href="/owner-status">refresh status</a>
+  </div>
+  <p style="font-size:11px; color:rgba(235,220,195,0.4); margin-top:2rem;">
+    To clear the queue: add &clearqueue=1 to your ?owner=... link.<br>
+    To clear the active session: add &clearactive=1.<br>
+    You can combine both in one visit.
+  </p>
+</body>
+</html>`;
+}
+
 // ── MAIN ──
 export default async function middleware(request) {
   const url = new URL(request.url);
 
-  // ── OWNER BYPASS ──
-  if (url.searchParams.get('owner') === OWNER_SECRET) {
-    // optional one-time actions, only usable alongside the real secret
-    if (url.searchParams.get('clearqueue') === '1') {
-      await redis.del('visitor:queue');
-    }
-    if (url.searchParams.get('clearactive') === '1') {
-      await redis.del('visitor:active');
-    }
-    url.searchParams.delete('owner');
-    url.searchParams.delete('clearqueue');
-    url.searchParams.delete('clearactive');
-    return new Response(null, {
-      status: 302,
-      headers: {
-        Location: url.pathname + url.search,
-        'Set-Cookie': setCookieHeader('owner', '1', 31536000), // 1 year
-      },
-    });
+  // ── OWNER BYPASS + VISIBLE DEBUG TOOLS ──
+  const ownerParam = (url.searchParams.get('owner') || '').trim();
+  const secretMatches = ownerParam.length > 0 && ownerParam === OWNER_SECRET.trim();
+
+  if (secretMatches) {
+    const didClearQueue = url.searchParams.get('clearqueue') === '1';
+    const didClearActive = url.searchParams.get('clearactive') === '1';
+
+    let queueLenBefore = await redis.llen('visitor:queue');
+    let activeBefore = safeParseRecord(await redis.get('visitor:active'));
+
+    if (didClearQueue) await redis.del('visitor:queue');
+    if (didClearActive) await redis.del('visitor:active');
+
+    const queueLenAfter = await redis.llen('visitor:queue');
+    const activeAfter = safeParseRecord(await redis.get('visitor:active'));
+
+    const headers = new Headers({ 'content-type': 'text/html; charset=utf-8' });
+    headers.append('Set-Cookie', setCookieHeader('owner', '1', 31536000));
+
+    return new Response(ownerStatusHTML({
+      didClearQueue, didClearActive,
+      queueLenBefore, activeBefore,
+      queueLenAfter, activeAfter,
+    }), { status: 200, headers });
   }
+
   const isOwner = getCookie(request, 'owner') === '1';
   if (isOwner) {
+    if (url.pathname === '/owner-status') {
+      const queueLen = await redis.llen('visitor:queue');
+      const active = safeParseRecord(await redis.get('visitor:active'));
+      return new Response(ownerStatusHTML({ queueLenAfter: queueLen, activeAfter: active }), {
+        status: 200,
+        headers: { 'content-type': 'text/html; charset=utf-8' },
+      });
+    }
     return; // unlimited, ungated access — no schedule, no queue, no timer
   }
 
