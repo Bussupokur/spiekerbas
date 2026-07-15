@@ -24,7 +24,7 @@ export const config = {
 const SCHEDULE = {
   // day index: [ [startHour, endHour], ... ] — 24h, Europe/Amsterdam
   0: [[14, 18]], // Sunday
-  3: [[12, 18]], // Wednesday
+  3: [[12, 20]], // Wednesday
   5: [[19, 23]], // Friday
   6: [[19, 23]], // Saturday
 };
