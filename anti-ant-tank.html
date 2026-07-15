@@ -36,22 +36,21 @@
     pointer-events: none;
   }
 
-  #back-link{
-    position: fixed;
-    top: 22px; left: 24px;
-    z-index: 20;
+  .page-footer{
+    margin-top: clamp(2rem,4vh,3rem);
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    letter-spacing: 0.18em;
-    text-transform: lowercase;
-    color: rgba(230,245,220,0.65);
+    gap: 6px;
     text-decoration: none;
+    color: rgba(230,245,220,0.6);
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    text-transform: lowercase;
     transition: color 0.3s ease;
   }
-  #back-link:hover{ color: var(--cream); }
-  #back-link svg{ display:block; }
+  .page-footer:hover{ color: var(--cream); }
+  .page-footer svg{ display:block; opacity: 0.75; }
 
   #page{
     position: relative;
@@ -123,8 +122,50 @@
     font-weight: 600;
     border-radius: 3px;
     padding: 0.5rem 1.1rem;
-    margin-bottom: clamp(2.5rem,5vh,4rem);
+    margin-bottom: clamp(1.6rem,3vh,2.4rem);
   }
+
+  .scanner-wrap{
+    margin: 0 0 clamp(2.5rem,5vh,4rem);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 9px;
+  }
+  .scanner-bar{
+    display: flex;
+    gap: 3px;
+    width: 220px;
+    height: 14px;
+    padding: 3px;
+    background: #0a1810;
+    border: 1px solid rgba(160,220,130,0.3);
+    border-radius: 4px;
+    box-shadow: inset 0 0 6px rgba(0,0,0,0.6);
+  }
+  .scanner-seg{
+    flex: 1;
+    border-radius: 2px;
+    background: rgba(155,227,110,0.12);
+  }
+  .scanner-seg.trail{
+    background: rgba(155,227,110,0.4);
+    box-shadow: 0 0 4px rgba(155,227,110,0.4);
+  }
+  .scanner-seg.active{
+    background: #9be36e;
+    box-shadow: 0 0 8px 2px rgba(155,227,110,0.85);
+  }
+  .scanner-text{
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: lowercase;
+    color: rgba(255,150,130,0.8);
+    font-style: italic;
+    transition: opacity 0.35s ease;
+    min-height: 1.4em;
+  }
+  .scanner-text.fading{ opacity: 0; }
 
   .section{
     width: 100%;
@@ -201,14 +242,6 @@
 
 <canvas id="bg-ants"></canvas>
 
-<a id="back-link" href="https://www.spiekerbas.xyz/">
-  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-    <circle cx="8" cy="8" r="7" stroke="rgba(230,245,220,0.55)" stroke-width="0.8"/>
-    <line x1="8" y1="11.5" x2="8" y2="4.5" stroke="rgba(230,245,220,0.55)" stroke-width="0.8"/>
-    <polyline points="5.5,7 8,4.5 10.5,7" stroke="rgba(230,245,220,0.55)" stroke-width="0.8" fill="none" stroke-linejoin="round"/>
-  </svg>
-  back to spiekerbas
-</a>
 
 <div id="page">
 
@@ -222,6 +255,11 @@
   <h1>anti ant tank</h1>
   <div class="tagline">ants are small. so we're thinking big — a two-unit ai system that knows your garden, does its rounds, and handles ants without ever harming one.</div>
   <div class="status">status — concept &amp; planning. nothing built yet.</div>
+
+  <div class="scanner-wrap">
+    <div class="scanner-bar" id="scannerBar"></div>
+    <div class="scanner-text" id="scannerText">scanning... no bugs found.</div>
+  </div>
 
   <div class="section">
     <div class="label">the problem</div>
@@ -273,6 +311,11 @@
   </div>
 
   <div class="section">
+    <div class="label">how was your day, tank?</div>
+    <div class="body-text">Once it's running, the Tank emails a short daily report — patrol time, ants caught, any close calls. Less a system log, more a note left on the counter: quiet day, three confirmed, one leaf that had it coming.</div>
+  </div>
+
+  <div class="section">
     <div class="label">teaching the watchtower to actually know an ant</div>
     <div class="body-text">Plain motion detection can't tell an ant from a suspiciously ant-shaped leaf. So the Watchtower gets a proper trained model instead: a few hundred close-up photos, sorted into "ant" and "not ant" with a free tool like Teachable Machine, trained into a lightweight classifier it can run continuously. Every blob it spots gets a second opinion before the Tank is ever dispatched.</div>
   </div>
@@ -317,17 +360,73 @@
     <div class="body-text">Detection will be highly accurate, not flawless — expect the very occasional misfire on a windblown leaf, not a perfect record.</div>
     <div class="body-text">A single mist isn't a one-time cure for a trail, but the system itself is permanent — it doesn't need to fix everything forever, just handle it every time it recurs.</div>
     <div class="body-text">Battery life is much better with the idle-until-signaled design, but not infinite — the dock makes it a non-issue, but it's one more thing to build right.</div>
-    <div class="body-text">"Knows the garden" means a calibrated map, not live adaptive intelligence. Move a planter, and it needs a quick recalibration — this isn't a robot that remaps itself on the fly.</div>
   </div>
 
   <div class="support-note">If you want to make this real, faster — to maybe have your own someday — <a href="https://www.paypal.me/bsspkr" target="_blank" rel="noopener">buy me a decaf</a>.</div>
 
   <div class="close-line">ants are small. anti ant tank thinks big.</div>
 
+  <a class="page-footer" href="https://www.spiekerbas.xyz/">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="8" r="7" stroke="rgba(230,245,220,0.6)" stroke-width="0.8"/>
+      <line x1="8" y1="11.5" x2="8" y2="4.5" stroke="rgba(230,245,220,0.6)" stroke-width="0.8"/>
+      <polyline points="5.5,7 8,4.5 10.5,7" stroke="rgba(230,245,220,0.6)" stroke-width="0.8" fill="none" stroke-linejoin="round"/>
+    </svg>
+    spiekerbas
+  </a>
+
 </div>
 
 <script>
 // ── AMBIENT BACKGROUND ANTS: wandering across the whole page, purely decorative ──
+// ── SCANNER: stepped LED-segment sweep, not a continuous blur ──
+(function initScannerBar(){
+  const bar = document.getElementById('scannerBar');
+  if(!bar) return;
+  const SEG_COUNT = 9;
+  const segs = [];
+  for(let i = 0; i < SEG_COUNT; i++){
+    const s = document.createElement('div');
+    s.className = 'scanner-seg';
+    bar.appendChild(s);
+    segs.push(s);
+  }
+
+  let pos = 0;
+  let dir = 1;
+  setInterval(() => {
+    segs.forEach((s, i) => s.classList.remove('active', 'trail'));
+    segs[pos].classList.add('active');
+    const trailIdx = pos - dir;
+    if(trailIdx >= 0 && trailIdx < SEG_COUNT) segs[trailIdx].classList.add('trail');
+
+    pos += dir;
+    if(pos >= SEG_COUNT - 1 || pos <= 0) dir *= -1;
+  }, 180);
+})();
+
+// ── SCANNER: rotating deadpan status text ──
+(function initScanner(){
+  const el = document.getElementById('scannerText');
+  if(!el) return;
+  const lines = [
+    'scanning... no bugs found.',
+    '0 ants detected. 0 exceptions thrown.',
+    'terrace clear. suspiciously calm.',
+    'false positive rate: acceptable.',
+    'scanning... still no bugs. good sign, or bad sensor.'
+  ];
+  let i = 0;
+  setInterval(() => {
+    el.classList.add('fading');
+    setTimeout(() => {
+      i = (i + 1) % lines.length;
+      el.textContent = lines[i];
+      el.classList.remove('fading');
+    }, 350);
+  }, 3200);
+})();
+
 (function initBackgroundAnts(){
   const canvas = document.getElementById('bg-ants');
   const ctx = canvas.getContext('2d');
