@@ -156,6 +156,11 @@ function welcomeHTML() {
     <div class="status-pill open">open now</div>
     <h1>we're open</h1>
     <p>step through whenever you're ready.</p>
+    <div class="hours-table">
+      <div><span>fri &ndash; sat</span>19:00 &ndash; 23:00</div>
+      <div><span>sun</span>14:00 &ndash; 18:00</div>
+      <div><span>wed</span>12:00 &ndash; 18:00</div>
+    </div>
     <a class="enter-btn" href="/?enter=1">come on in</a>
   </div>
 </body>
