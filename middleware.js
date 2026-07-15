@@ -72,6 +72,14 @@ function newSessionId() {
   return crypto.randomUUID();
 }
 
+function safeParseRecord(raw) {
+  if (!raw) return null;
+  if (typeof raw === 'string') {
+    try { return JSON.parse(raw); } catch (e) { return null; }
+  }
+  return raw; // already an object
+}
+
 // ── STYLES (shared by every gate screen) ──
 const PAGE_STYLES = `
   :root{
@@ -287,7 +295,16 @@ export default async function middleware(request) {
 
   // ── OWNER BYPASS ──
   if (url.searchParams.get('owner') === OWNER_SECRET) {
+    // optional one-time actions, only usable alongside the real secret
+    if (url.searchParams.get('clearqueue') === '1') {
+      await redis.del('visitor:queue');
+    }
+    if (url.searchParams.get('clearactive') === '1') {
+      await redis.del('visitor:active');
+    }
     url.searchParams.delete('owner');
+    url.searchParams.delete('clearqueue');
+    url.searchParams.delete('clearactive');
     return new Response(null, {
       status: 302,
       headers: {
@@ -307,7 +324,7 @@ export default async function middleware(request) {
 
   // ── ALREADY ACTIVE: validate against the real record on every request ──
   if (entered && sessionId) {
-    const record = await redis.get('visitor:active');
+    const record = safeParseRecord(await redis.get('visitor:active'));
     if (record && record.sessionId === sessionId) {
       const elapsedSeconds = (Date.now() - record.enteredAt) / 1000;
       if (elapsedSeconds < VISIT_DURATION_SECONDS) {
@@ -330,23 +347,17 @@ export default async function middleware(request) {
     }
 
     const id = newSessionId();
-    const active = await redis.get('visitor:active');
+    const active = safeParseRecord(await redis.get('visitor:active'));
     const queueLength = await redis.llen('visitor:queue');
 
     if (!active && queueLength === 0) {
       // slot is free AND nobody's already waiting — claim it directly
-      await redis.set('visitor:active', { sessionId: id, enteredAt: Date.now() }, { ex: HEARTBEAT_TTL_SECONDS });
+      await redis.set('visitor:active', JSON.stringify({ sessionId: id, enteredAt: Date.now() }), { ex: HEARTBEAT_TTL_SECONDS });
       url.searchParams.delete('enter');
-      return new Response(null, {
-        status: 302,
-        headers: {
-          Location: url.pathname + url.search,
-          'Set-Cookie': [
-            setCookieHeader('entered', '1', 86400),
-            setCookieHeader('sessionId', id, 86400),
-          ].join(', '),
-        },
-      });
+      const headers = new Headers({ Location: url.pathname + url.search });
+      headers.append('Set-Cookie', setCookieHeader('entered', '1', 86400));
+      headers.append('Set-Cookie', setCookieHeader('sessionId', id, 86400));
+      return new Response(null, { status: 302, headers });
     }
 
     // slot taken, OR people are already waiting — join the back of the queue.
@@ -366,13 +377,13 @@ export default async function middleware(request) {
   // ── HAS A SESSION, NOT YET ENTERED: are they queued? ──
   if (sessionId && !entered) {
     if (open) {
-      const active = await redis.get('visitor:active');
+      const active = safeParseRecord(await redis.get('visitor:active'));
       const position = await redis.lpos('visitor:queue', sessionId);
 
       if (!active && position === 0) {
         // slot is free and they're first in line — promote them
         await redis.lpop('visitor:queue');
-        await redis.set('visitor:active', { sessionId, enteredAt: Date.now() }, { ex: HEARTBEAT_TTL_SECONDS });
+        await redis.set('visitor:active', JSON.stringify({ sessionId, enteredAt: Date.now() }), { ex: HEARTBEAT_TTL_SECONDS });
         return new Response(null, {
           status: 302,
           headers: {
