@@ -5,6 +5,13 @@
 // through "come on in" first. Once they do, a cookie remembers that for
 // the rest of their visit, so it doesn't repeat on every page load.
 
+import { Redis } from '@upstash/redis';
+
+const redis = new Redis({
+  url: process.env.KV_REST_API_URL,
+  token: process.env.KV_REST_API_TOKEN,
+});
+
 export const config = {
   matcher: '/((?!favicon.ico).*)',
 };
@@ -82,6 +89,13 @@ const PAGE_STYLES = `
     text-transform:lowercase;
     margin-top: 1.6rem;
     font-family: Arial, sans-serif;
+  }
+  .debug-note{
+    font-size:10px;
+    letter-spacing:0.05em;
+    color: rgba(160,220,130,0.55);
+    font-family: Arial, sans-serif;
+    margin-top: 0.6rem;
   }
   h1{
     font-size: clamp(28px,5vw,44px);
@@ -175,7 +189,7 @@ function closedHTML() {
 </html>`;
 }
 
-function welcomeHTML() {
+function welcomeHTML(storageStatus) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -200,6 +214,7 @@ function welcomeHTML() {
       <div><span>wed</span>12:00 &ndash; 18:00</div>
     </div>
     <div class="live-clock" id="liveClock"></div>
+    <div class="debug-note">${storageStatus}</div>
   </div>
   <script>
     function tickClock(){
@@ -220,7 +235,7 @@ function welcomeHTML() {
 </html>`;
 }
 
-export default function middleware(request) {
+export default async function middleware(request) {
   const url = new URL(request.url);
 
   // already entered this session — let everything through, no repeat screen
@@ -250,8 +265,31 @@ export default function middleware(request) {
     });
   }
 
+  if (!open) {
+    return new Response(closedHTML(), {
+      status: 200,
+      headers: { 'content-type': 'text/html; charset=utf-8' },
+    });
+  }
+
+  // ── STEP 2: prove the shared store actually works ──
+  // Not a real queue yet — just a write, then a read-back, so we can see
+  // the storage piece is genuinely connected before building real logic
+  // on top of it. Shown as a small debug line on the welcome screen.
+  let storageStatus;
+  try {
+    const now = Date.now();
+    await redis.set('debug:lastPing', now);
+    const readBack = await redis.get('debug:lastPing');
+    storageStatus = readBack === now
+      ? 'storage check: connected — wrote and read back ' + now
+      : 'storage check: connected, but read-back did not match (wrote ' + now + ', got ' + readBack + ')';
+  } catch (err) {
+    storageStatus = 'storage check: failed — ' + (err && err.message ? err.message : 'unknown error');
+  }
+
   // first visit this session — always a threshold screen, never a silent pass-through
-  return new Response(open ? welcomeHTML() : closedHTML(), {
+  return new Response(welcomeHTML(storageStatus), {
     status: 200,
     headers: { 'content-type': 'text/html; charset=utf-8' },
   });
