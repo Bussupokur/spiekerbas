@@ -15,6 +15,14 @@ const redis = new Redis({
 const VISIT_DURATION_SECONDS = 30 * 60;
 const HEARTBEAT_TTL_SECONDS = 25;
 
+function safeParseRecord(raw) {
+  if (!raw) return null;
+  if (typeof raw === 'string') {
+    try { return JSON.parse(raw); } catch (e) { return null; }
+  }
+  return raw;
+}
+
 function getCookie(req, name) {
   const cookie = req.headers.cookie || '';
   const found = cookie.split(';').map((c) => c.trim()).find((c) => c.startsWith(name + '='));
@@ -28,7 +36,7 @@ export default async function handler(req, res) {
     return res.status(200).json({ active: false });
   }
 
-  const record = await redis.get('visitor:active');
+  const record = safeParseRecord(await redis.get('visitor:active'));
   if (!record || record.sessionId !== sessionId) {
     return res.status(200).json({ active: false });
   }
@@ -42,7 +50,7 @@ export default async function handler(req, res) {
   }
 
   // refresh the heartbeat TTL — this is what proves they're still here
-  await redis.set('visitor:active', record, { ex: HEARTBEAT_TTL_SECONDS });
+  await redis.set('visitor:active', JSON.stringify(record), { ex: HEARTBEAT_TTL_SECONDS });
 
   return res.status(200).json({
     active: true,
