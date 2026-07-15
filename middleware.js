@@ -166,7 +166,7 @@ function closedHTML() {
       }).formatToParts(new Date());
       const map = {};
       parts.forEach(p => map[p.type] = p.value);
-      el.textContent = `${map.weekday} ${map.hour}:${map.minute}:${map.second} — Amsterdam time`;
+      el.textContent = map.weekday + ' ' + map.hour + ':' + map.minute + ':' + map.second + ' \u2014 Amsterdam time';
     }
     tickClock();
     setInterval(tickClock, 1000);
@@ -211,7 +211,7 @@ function welcomeHTML() {
       }).formatToParts(new Date());
       const map = {};
       parts.forEach(p => map[p.type] = p.value);
-      el.textContent = `${map.weekday} ${map.hour}:${map.minute}:${map.second} — Amsterdam time`;
+      el.textContent = map.weekday + ' ' + map.hour + ':' + map.minute + ':' + map.second + ' \u2014 Amsterdam time';
     }
     tickClock();
     setInterval(tickClock, 1000);
