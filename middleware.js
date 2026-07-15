@@ -115,6 +115,13 @@ const PAGE_STYLES = `
     transition: color 0.3s ease, border-color 0.3s ease;
   }
   .enter-btn:hover{ color: var(--cream); border-color: rgba(235,220,195,0.7); }
+  .timer-note{
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    color: rgba(235,220,195,0.45);
+    font-style: italic;
+    margin-top: 0.9rem;
+  }
 `;
 
 function closedHTML() {
@@ -160,8 +167,9 @@ function welcomeHTML() {
   <div id="stage">
     <div class="status-pill open">open now</div>
     <h1>we're open</h1>
-    <p>step through whenever you're ready.</p>
+    <p>nothing starts until you actually step through — no timer, no queue slot claimed, until you click.</p>
     <a class="enter-btn" href="/?enter=1">come on in</a>
+    <div class="timer-note">your 30 minutes starts once you enter.</div>
     <div class="hours-table">
       <div><span>fri &ndash; sat</span>19:00 &ndash; 23:00</div>
       <div><span>sun</span>14:00 &ndash; 18:00</div>
