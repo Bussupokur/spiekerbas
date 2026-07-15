@@ -884,86 +884,6 @@
   }
 
 
-  /* ── WAITING ROOM ── */
-  #waiting-room {
-    position: fixed;
-    inset: 0;
-    z-index: 50;
-    background: #0a0908;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 1.4rem;
-    opacity: 1;
-    pointer-events: auto;
-    transition: opacity 1.8s ease;
-  }
-
-  #waiting-room.fade-out {
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  #waiting-welcome {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(19px, 1.8vw, 26px);
-    font-weight: 300;
-    letter-spacing: 0.12em;
-    color: rgba(235,220,195,0.85);
-    text-align: center;
-    opacity: 0;
-    transition: opacity 1.8s ease;
-  }
-
-  #waiting-queue {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(18px, 1.6vw, 24px);
-    font-weight: 300;
-    font-style: italic;
-    letter-spacing: 0.06em;
-    color: rgba(235,220,195,0.65);
-    text-align: center;
-    opacity: 0;
-    transition: opacity 1.6s ease;
-  }
-
-  #waiting-queue-en {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(14px, 1.1vw, 17px);
-    font-weight: 300;
-    letter-spacing: 0.2em;
-    color: rgba(235,220,195,0.3);
-    text-align: center;
-    opacity: 0;
-    transition: opacity 1.4s ease;
-    margin-top: 0.3rem;
-  }
-
-  #waiting-risk {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(18px, 1.6vw, 24px);
-    font-weight: 300;
-    font-style: italic;
-    letter-spacing: 0.08em;
-    color: rgba(235,220,195,0.7);
-    text-align: center;
-    opacity: 0;
-    transition: opacity 2s ease;
-  }
-
-  #waiting-risk-en {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(14px, 1.1vw, 17px);
-    font-weight: 300;
-    letter-spacing: 0.2em;
-    color: rgba(235,220,195,0.3);
-    text-align: center;
-    opacity: 0;
-    transition: opacity 1.6s ease;
-    margin-top: 0.3rem;
-  }
-
 
   /* ── WORK PAGE ── */
   #work-page {
@@ -3425,92 +3345,6 @@ document.getElementById('info-ui').addEventListener('touchmove', e => {
 
 });
 
-// ── WAITING ROOM ──
-
-
-document.addEventListener('DOMContentLoaded', function() {
-  const room    = document.getElementById('waiting-room');
-  const welcome = document.getElementById('waiting-welcome');
-  const queue   = document.getElementById('waiting-queue');
-  const queueEn = document.getElementById('waiting-queue-en');
-  const risk    = document.getElementById('waiting-risk');
-  const riskEn  = document.getElementById('waiting-risk-en');
-
-  // random number 2-7
-  const n = Math.floor(Math.random() * 6) + 2;
-
-  queue.textContent   = 'Er zijn nog ' + n + ' wachtenden voor u.';
-  queueEn.textContent = 'You are number ' + (n + 1) + ' in line.';
-
-  // show welcome and queue
-  setTimeout(() => { welcome.style.opacity = 1; }, 600);
-  setTimeout(() => { queue.style.opacity = 1; }, 1800);
-  setTimeout(() => { queueEn.style.opacity = 1; }, 2600);
-
-  // countdown with random intervals
-  let currentN = n;
-
-  function randomDelay(min, max) {
-    return Math.floor(Math.random() * (max - min) + min);
-  }
-
-  function scheduleNext() {
-    if (currentN <= 0) {
-      // fade out queue and welcome
-      setTimeout(() => {
-        welcome.style.transition = 'opacity 1s ease';
-        welcome.style.opacity = 0;
-        queue.style.transition = 'opacity 1s ease';
-        queue.style.opacity = 0;
-        queueEn.style.transition = 'opacity 1s ease';
-        queueEn.style.opacity = 0;
-      }, 600);
-      // risk text
-      setTimeout(() => { risk.style.opacity = 1; }, 2200);
-      setTimeout(() => { riskEn.style.opacity = 1; }, 3000);
-      setTimeout(() => { risk.style.opacity = 0; riskEn.style.opacity = 0; }, 5500);
-      // site begins
-      setTimeout(() => {
-        room.style.pointerEvents = 'none';
-        room.classList.add('fade-out');
-        setTimeout(() => { room.style.display = 'none'; }, 1900);
-      }, 6800);
-      return;
-    }
-
-    currentN--;
-    const delay = currentN === 0
-      ? randomDelay(300, 700)
-      : currentN === 1
-        ? randomDelay(700, 1400)
-        : randomDelay(1500, 4000);
-
-    setTimeout(() => {
-      // flash dim, update, brighten
-      queue.style.transition = 'opacity 0.25s ease';
-      queueEn.style.transition = 'opacity 0.25s ease';
-      queue.style.opacity = '0.1';
-      queueEn.style.opacity = '0.05';
-      setTimeout(() => {
-        if (currentN === 0) {
-          queue.textContent = 'U bent aan de beurt.';
-          queueEn.textContent = 'You are next.';
-        } else {
-          queue.textContent = 'Er zijn nog ' + currentN + ' wachtenden voor u.';
-          queueEn.textContent = 'You are number ' + (currentN + 1) + ' in line.';
-        }
-        queue.style.transition = 'opacity 0.5s ease';
-        queueEn.style.transition = 'opacity 0.5s ease';
-        queue.style.opacity = '1';
-        queueEn.style.opacity = '1';
-        scheduleNext();
-      }, 280);
-    }, delay);
-  }
-
-  // start countdown after queue is visible
-  setTimeout(scheduleNext, 4000);
-});
 
 
 </script>
@@ -3612,18 +3446,6 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 
 
-<!-- WAITING ROOM -->
-<div id="waiting-room">
-  <div id="waiting-welcome">Welkom bij spiekerbas.</div>
-  <div>
-    <div id="waiting-queue"></div>
-    <div id="waiting-queue-en"></div>
-  </div>
-  <div>
-    <div id="waiting-risk">Betreed op eigen risico.</div>
-    <div id="waiting-risk-en">enter at own risk</div>
-  </div>
-</div>
 
 </body>
 </html>
