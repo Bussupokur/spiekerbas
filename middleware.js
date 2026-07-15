@@ -29,8 +29,7 @@ const SCHEDULE = {
   6: [[19, 23]], // Saturday
 };
 
-const VISIT_DURATION_SECONDS = 30 * 60; // 30-minute cap per visit
-const HEARTBEAT_TTL_SECONDS = 25;       // silence longer than this = slot freed
+const SESSION_DURATION_SECONDS = 5 * 60; // fixed session length, for now — no matter what
 
 // CHANGE THIS to your own private passphrase before deploying.
 // Visiting /?owner=<this value> gives you unlimited, ungated access.
@@ -251,7 +250,7 @@ function welcomeHTML(storageStatus) {
     <h1>we're open</h1>
     <p>one visitor at a time. nothing starts until you actually step through — no timer, no queue slot claimed, until you click.</p>
     <a class="enter-btn" href="/?enter=1">come on in</a>
-    <div class="timer-note">your 30 minutes starts once you enter.</div>
+    <div class="timer-note">your 5 minutes starts once you enter — no matter what.</div>
     <div class="hours-table">
       <div><span>fri &ndash; sat</span>19:00 &ndash; 23:00</div>
       <div><span>sun</span>14:00 &ndash; 18:00</div>
@@ -381,23 +380,19 @@ export default async function middleware(request) {
   const sessionId = getCookie(request, 'sessionId');
   const entered = getCookie(request, 'entered') === '1';
 
-  // ── ALREADY ACTIVE: validate against the real record on every request ──
+  // ── ALREADY ACTIVE: Redis's own TTL is the only clock. No heartbeat,
+  //    no manual elapsed-time math. The record simply won't exist once
+  //    5 minutes are up, active browsing or not, tab open or not. ──
   if (entered && sessionId) {
     const record = safeParseRecord(await redis.get('visitor:active'));
-    const stillValid = record && record.sessionId === sessionId
-      && (Date.now() - record.enteredAt) / 1000 < VISIT_DURATION_SECONDS;
+    const stillValid = record && record.sessionId === sessionId;
 
     if (stillValid) {
       return; // genuinely still valid — let them through to the real site
     }
 
-    // invalid for any reason (never active, expired, 30-min cap hit,
-    // or belongs to someone else entirely) — actively clear the stale
-    // cookies and force a clean redirect, rather than silently carrying
-    // broken state into the rest of this request.
-    if (record && record.sessionId === sessionId) {
-      await redis.del('visitor:active'); // it was genuinely theirs, just timed out
-    }
+    // invalid for any reason (never active, timed out, or belongs to
+    // someone else) — clear the stale cookies and force a clean redirect.
     const headers = new Headers({ Location: url.pathname + url.search });
     headers.append('Set-Cookie', clearCookieHeader('entered'));
     headers.append('Set-Cookie', clearCookieHeader('sessionId'));
@@ -418,8 +413,9 @@ export default async function middleware(request) {
     const queueLength = await redis.llen('visitor:queue');
 
     if (!active && queueLength === 0) {
-      // slot is free AND nobody's already waiting — claim it directly
-      await redis.set('visitor:active', JSON.stringify({ sessionId: id, enteredAt: Date.now() }), { ex: HEARTBEAT_TTL_SECONDS });
+      // slot is free AND nobody's already waiting — claim it directly,
+      // for the FULL session length. Not a heartbeat window.
+      await redis.set('visitor:active', JSON.stringify({ sessionId: id, enteredAt: Date.now() }), { ex: SESSION_DURATION_SECONDS });
       url.searchParams.delete('enter');
       const headers = new Headers({ Location: url.pathname + url.search });
       headers.append('Set-Cookie', setCookieHeader('entered', '1', 86400));
@@ -428,8 +424,6 @@ export default async function middleware(request) {
     }
 
     // slot taken, OR people are already waiting — join the back of the queue.
-    // (Even a momentarily-free slot doesn't let a new visitor skip ahead
-    // of anyone who got here first.)
     await redis.rpush('visitor:queue', id);
     url.searchParams.delete('enter');
     return new Response(null, {
@@ -448,9 +442,9 @@ export default async function middleware(request) {
       const position = await redis.lpos('visitor:queue', sessionId);
 
       if (!active && position === 0) {
-        // slot is free and they're first in line — promote them
+        // slot is free and they're first in line — promote them, full session length
         await redis.lpop('visitor:queue');
-        await redis.set('visitor:active', JSON.stringify({ sessionId, enteredAt: Date.now() }), { ex: HEARTBEAT_TTL_SECONDS });
+        await redis.set('visitor:active', JSON.stringify({ sessionId, enteredAt: Date.now() }), { ex: SESSION_DURATION_SECONDS });
         return new Response(null, {
           status: 302,
           headers: {
