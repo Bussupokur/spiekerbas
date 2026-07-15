@@ -68,6 +68,10 @@ function setCookieHeader(name, value, maxAgeSeconds) {
   return `${name}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAgeSeconds}; SameSite=Lax; Secure`;
 }
 
+function clearCookieHeader(name) {
+  return `${name}=; Path=/; Max-Age=0; SameSite=Lax; Secure`;
+}
+
 function newSessionId() {
   return crypto.randomUUID();
 }
@@ -380,16 +384,24 @@ export default async function middleware(request) {
   // ── ALREADY ACTIVE: validate against the real record on every request ──
   if (entered && sessionId) {
     const record = safeParseRecord(await redis.get('visitor:active'));
-    if (record && record.sessionId === sessionId) {
-      const elapsedSeconds = (Date.now() - record.enteredAt) / 1000;
-      if (elapsedSeconds < VISIT_DURATION_SECONDS) {
-        return; // still valid — let them through to the real site
-      }
-      // 30-minute cap reached — end the session
-      await redis.del('visitor:active');
+    const stillValid = record && record.sessionId === sessionId
+      && (Date.now() - record.enteredAt) / 1000 < VISIT_DURATION_SECONDS;
+
+    if (stillValid) {
+      return; // genuinely still valid — let them through to the real site
     }
-    // record missing, mismatched, or just expired — session is over.
-    // Fall through to be re-gated from scratch.
+
+    // invalid for any reason (never active, expired, 30-min cap hit,
+    // or belongs to someone else entirely) — actively clear the stale
+    // cookies and force a clean redirect, rather than silently carrying
+    // broken state into the rest of this request.
+    if (record && record.sessionId === sessionId) {
+      await redis.del('visitor:active'); // it was genuinely theirs, just timed out
+    }
+    const headers = new Headers({ Location: url.pathname + url.search });
+    headers.append('Set-Cookie', clearCookieHeader('entered'));
+    headers.append('Set-Cookie', clearCookieHeader('sessionId'));
+    return new Response(null, { status: 302, headers });
   }
 
   // ── VISITOR JUST CLICKED "COME ON IN" ──
