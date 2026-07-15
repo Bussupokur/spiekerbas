@@ -75,6 +75,14 @@ const PAGE_STYLES = `
   }
   .status-pill.open{ background:#a8e05f; color:#1a2e10; }
   .status-pill.closed{ background:#5a5a55; color:#e8e0d0; }
+  .live-clock{
+    font-size:12px;
+    letter-spacing:0.18em;
+    color: var(--cream-faint);
+    text-transform:lowercase;
+    margin-top: 1.6rem;
+    font-family: Arial, sans-serif;
+  }
   h1{
     font-size: clamp(28px,5vw,44px);
     font-weight:300; font-style:italic;
@@ -146,7 +154,23 @@ function closedHTML() {
       <div><span>sun</span>14:00 &ndash; 18:00</div>
       <div><span>mon &ndash; thu</span>closed</div>
     </div>
+    <div class="live-clock" id="liveClock"></div>
   </div>
+  <script>
+    function tickClock(){
+      const el = document.getElementById('liveClock');
+      if(!el) return;
+      const parts = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Europe/Amsterdam',
+        weekday: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+      }).formatToParts(new Date());
+      const map = {};
+      parts.forEach(p => map[p.type] = p.value);
+      el.textContent = `${map.weekday} ${map.hour}:${map.minute}:${map.second} — Amsterdam time`;
+    }
+    tickClock();
+    setInterval(tickClock, 1000);
+  </script>
 </body>
 </html>`;
 }
@@ -175,7 +199,23 @@ function welcomeHTML() {
       <div><span>sun</span>14:00 &ndash; 18:00</div>
       <div><span>wed</span>12:00 &ndash; 18:00</div>
     </div>
+    <div class="live-clock" id="liveClock"></div>
   </div>
+  <script>
+    function tickClock(){
+      const el = document.getElementById('liveClock');
+      if(!el) return;
+      const parts = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Europe/Amsterdam',
+        weekday: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+      }).formatToParts(new Date());
+      const map = {};
+      parts.forEach(p => map[p.type] = p.value);
+      el.textContent = `${map.weekday} ${map.hour}:${map.minute}:${map.second} — Amsterdam time`;
+    }
+    tickClock();
+    setInterval(tickClock, 1000);
+  </script>
 </body>
 </html>`;
 }
