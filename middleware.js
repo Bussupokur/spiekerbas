@@ -89,7 +89,11 @@ const PAGE_STYLES = `
     margin: 0 0 1.8rem;
   }
   .hours-table{
-    display:inline-block; text-align:left;
+    display:block;
+    width:fit-content;
+    margin-left:auto;
+    margin-right:auto;
+    text-align:left;
     font-size:14px; color: var(--cream-faint);
     letter-spacing:0.04em;
     margin-bottom: 2rem;
@@ -107,6 +111,7 @@ const PAGE_STYLES = `
     text-decoration: none;
     border: 1px solid rgba(235,220,195,0.35);
     padding: 0.7rem 1.8rem;
+    margin-top: 0.4rem;
     transition: color 0.3s ease, border-color 0.3s ease;
   }
   .enter-btn:hover{ color: var(--cream); border-color: rgba(235,220,195,0.7); }
@@ -156,12 +161,12 @@ function welcomeHTML() {
     <div class="status-pill open">open now</div>
     <h1>we're open</h1>
     <p>step through whenever you're ready.</p>
+    <a class="enter-btn" href="/?enter=1">come on in</a>
     <div class="hours-table">
       <div><span>fri &ndash; sat</span>19:00 &ndash; 23:00</div>
       <div><span>sun</span>14:00 &ndash; 18:00</div>
       <div><span>wed</span>12:00 &ndash; 18:00</div>
     </div>
-    <a class="enter-btn" href="/?enter=1">come on in</a>
   </div>
 </body>
 </html>`;
