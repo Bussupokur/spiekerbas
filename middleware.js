@@ -1,9 +1,9 @@
 // middleware.js
-// Runs before every request reaches the site. Decides whether the shop
-// is "open" based on a fixed schedule (Europe/Amsterdam time). If closed,
-// visitors see this page instead of the real site — nothing else loads.
-//
-// Placeholder schedule for now — swap in real hours whenever you decide them.
+// Runs before every request reaches the site. There is ALWAYS a threshold
+// screen first — a welcome screen when open, a closed screen when not.
+// Nobody lands directly on the real site without deliberately stepping
+// through "come on in" first. Once they do, a cookie remembers that for
+// the rest of their visit, so it doesn't repeat on every page load.
 
 export const config = {
   matcher: '/((?!favicon.ico).*)',
@@ -12,7 +12,6 @@ export const config = {
 const SCHEDULE = {
   // day index: [ [startHour, endHour], ... ] — 24h, Europe/Amsterdam
   0: [[14, 18]], // Sunday
-  3: [[0, 24]],  // Wednesday — temporary, added for testing today. Remove once confirmed working.
   5: [[19, 23]], // Friday
   6: [[19, 23]], // Saturday
 };
@@ -42,16 +41,12 @@ function isOpenNow() {
   return windows.some(([start, end]) => hour >= start && hour < end);
 }
 
-const CLOSED_HTML = `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Closed for now — spiekerbas</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
-<style>
+function hasEnteredCookie(request) {
+  const cookie = request.headers.get('cookie') || '';
+  return cookie.split(';').some((c) => c.trim().startsWith('entered=1'));
+}
+
+const PAGE_STYLES = `
   :root{
     --cream:#ebdcc3;
     --cream-dim: rgba(235,220,195,0.75);
@@ -76,8 +71,9 @@ const CLOSED_HTML = `<!DOCTYPE html>
     border-radius: 3px;
     margin-bottom: 1.6rem;
     font-family: Arial, sans-serif;
-    background:#5a5a55; color:#e8e0d0;
   }
+  .status-pill.open{ background:#a8e05f; color:#1a2e10; }
+  .status-pill.closed{ background:#5a5a55; color:#e8e0d0; }
   h1{
     font-size: clamp(28px,5vw,44px);
     font-weight:300; font-style:italic;
@@ -95,14 +91,41 @@ const CLOSED_HTML = `<!DOCTYPE html>
     display:inline-block; text-align:left;
     font-size:14px; color: var(--cream-faint);
     letter-spacing:0.04em;
+    margin-bottom: 2rem;
   }
   .hours-table div{ padding: 3px 0; }
   .hours-table span{ display:inline-block; width: 110px; color: var(--cream-dim); }
-</style>
+  .enter-btn{
+    display:inline-block;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(15px,1.6vw,18px);
+    letter-spacing: 0.3em;
+    text-transform: lowercase;
+    color: var(--cream-dim);
+    text-decoration: none;
+    border: 1px solid rgba(235,220,195,0.35);
+    padding: 0.7rem 1.8rem;
+    transition: color 0.3s ease, border-color 0.3s ease;
+  }
+  .enter-btn:hover{ color: var(--cream); border-color: rgba(235,220,195,0.7); }
+`;
+
+function closedHTML() {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Closed for now — spiekerbas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>${PAGE_STYLES}</style>
 </head>
 <body>
   <div id="stage">
-    <div class="status-pill">closed</div>
+    <div class="status-pill closed">closed</div>
     <h1>closed for now</h1>
     <p>back during opening hours — see the schedule below.</p>
     <div class="hours-table">
@@ -113,13 +136,63 @@ const CLOSED_HTML = `<!DOCTYPE html>
   </div>
 </body>
 </html>`;
+}
+
+function welcomeHTML() {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>spiekerbas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>${PAGE_STYLES}</style>
+</head>
+<body>
+  <div id="stage">
+    <div class="status-pill open">open now</div>
+    <h1>we're open</h1>
+    <p>step through whenever you're ready.</p>
+    <a class="enter-btn" href="/?enter=1">come on in</a>
+  </div>
+</body>
+</html>`;
+}
 
 export default function middleware(request) {
-  if (isOpenNow()) {
-    return; // open — let the real site through untouched
+  const url = new URL(request.url);
+
+  // already entered this session — let everything through, no repeat screen
+  if (hasEnteredCookie(request)) {
+    return;
   }
 
-  return new Response(CLOSED_HTML, {
+  const open = isOpenNow();
+
+  // visitor just clicked "come on in" from the welcome screen
+  if (url.searchParams.get('enter') === '1') {
+    if (!open) {
+      // schedule flipped to closed between page load and click — send them
+      // back to the (now closed) threshold instead of letting them through
+      return new Response(closedHTML(), {
+        status: 200,
+        headers: { 'content-type': 'text/html; charset=utf-8' },
+      });
+    }
+    url.searchParams.delete('enter');
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: url.pathname + url.search,
+        'Set-Cookie': 'entered=1; Path=/; Max-Age=86400; SameSite=Lax',
+      },
+    });
+  }
+
+  // first visit this session — always a threshold screen, never a silent pass-through
+  return new Response(open ? welcomeHTML() : closedHTML(), {
     status: 200,
     headers: { 'content-type': 'text/html; charset=utf-8' },
   });
