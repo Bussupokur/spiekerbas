@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anti Ant Tank — a friendly garden sentry</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#f2fbea;
+    --cream-dim: rgba(230,245,220,0.85);
+    --cream-faint: rgba(230,245,220,0.6);
+  }
+  *{ box-sizing: border-box; }
+  html,body{
+    margin:0;
+    min-height:100%;
+    background:
+      radial-gradient(120% 90% at 15% 0%, rgba(126,199,88,0.28) 0%, transparent 55%),
+      radial-gradient(120% 90% at 90% 15%, rgba(255,196,64,0.14) 0%, transparent 50%),
+      linear-gradient(160deg, #163a1e 0%, #0e2415 45%, #0a1810 100%);
+    font-family: 'Cormorant Garamond', serif;
+    color: var(--cream);
+    overflow-x: hidden;
+  }
+
+  /* ambient wandering ants across the whole page background */
+  #bg-ants{
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  #back-link{
+    position: fixed;
+    top: 22px; left: 24px;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: lowercase;
+    color: rgba(230,245,220,0.65);
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+  #back-link:hover{ color: var(--cream); }
+  #back-link svg{ display:block; }
+
+  #page{
+    position: relative;
+    z-index: 1;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: clamp(4.5rem,9vh,7rem) clamp(1.4rem,6vw,2rem) 5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  /* interactive game */
+  .game-wrap{ width: 100%; margin: 0 0 clamp(1.6rem,3.5vh,2.6rem); }
+  #antant-game{
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 7;
+    background: linear-gradient(180deg, #7bb84a 0%, #5a9636 100%);
+    border-radius: 8px;
+    border: 1px solid rgba(160,220,130,0.35);
+    touch-action: none;
+    cursor: none;
+  }
+  .score{
+    text-align: center;
+    margin-top: 0.7rem;
+    font-style: italic;
+    font-size: clamp(14px,1.6vw,18px);
+    color: var(--cream-dim);
+  }
+  .score b{ color:#ffd23f; font-style:normal; font-weight:600; font-size:1.25em; }
+
+  .eyebrow{
+    font-size: clamp(11px,1.2vw,14px);
+    font-weight: 300;
+    letter-spacing: 0.32em;
+    color: rgba(190,230,170,0.65);
+    text-transform: lowercase;
+    margin-bottom: 0.8rem;
+  }
+  h1{
+    font-size: clamp(38px,6vw,72px);
+    font-weight: 300;
+    font-style: italic;
+    letter-spacing: 0.03em;
+    color: var(--cream);
+    text-transform: lowercase;
+    line-height: 1.05;
+    margin: 0;
+  }
+  .tagline{
+    font-size: clamp(16px,1.8vw,21px);
+    font-weight: 400;
+    font-style: italic;
+    line-height: 1.7;
+    color: var(--cream-dim);
+    max-width: 640px;
+    margin: 1.2rem 0 1.6rem;
+  }
+  .status{
+    display: inline-block;
+    font-size: clamp(10px,1vw,12px);
+    letter-spacing: 0.22em;
+    text-transform: lowercase;
+    color: #1a2e10;
+    background: #a8e05f;
+    font-weight: 600;
+    border-radius: 3px;
+    padding: 0.5rem 1.1rem;
+    margin-bottom: clamp(2.5rem,5vh,4rem);
+  }
+
+  .section{
+    width: 100%;
+    text-align: left;
+    padding: clamp(1.6rem,3.5vh,2.6rem) 0;
+    border-top: 0.5px solid rgba(160,220,130,0.18);
+  }
+  .section:last-of-type{ border-bottom: 0.5px solid rgba(160,220,130,0.18); }
+  .label{
+    font-size: clamp(11px,1.2vw,13px);
+    font-weight: 300;
+    letter-spacing: 0.3em;
+    color: #9be36e;
+    text-transform: lowercase;
+    margin-bottom: 0.9rem;
+  }
+  .body-text{
+    font-size: clamp(16px,1.7vw,19px);
+    font-weight: 400;
+    line-height: 1.75;
+    color: rgba(255,255,255,0.92);
+  }
+  .body-text + .body-text{ margin-top: 0.9rem; }
+
+  .image-frame{
+    width: 100%;
+    margin: 0.4rem 0 clamp(2rem,4vh,3rem);
+    border: 1px solid rgba(160,220,130,0.35);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .image-frame img{ display:block; width:100%; height:auto; }
+
+  .twocol{ display:grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+  .unit-name{ font-style: italic; font-size: clamp(18px,2.1vw,23px); color: var(--cream); margin-bottom: 0.5rem; }
+  .unit-role{ font-size: clamp(14px,1.5vw,16px); line-height: 1.7; color: var(--cream-dim); }
+
+  table.parts{ width:100%; border-collapse: collapse; font-size: clamp(14px,1.5vw,16px); }
+  table.parts td{ padding: 0.6rem 0.8rem 0.6rem 0; border-top: 0.5px solid rgba(160,220,130,0.15); color: rgba(255,255,255,0.9); vertical-align: top; }
+  table.parts td:first-child{ color:#9be36e; font-style: italic; white-space: nowrap; padding-right: 1.4rem; }
+
+  .stage{ display:flex; gap:0.8rem; padding:0.5rem 0; font-size: clamp(14px,1.5vw,16px); color: rgba(255,255,255,0.88); }
+  .stage-mark{ color: rgba(160,220,130,0.85); flex: 0 0 auto; }
+
+  .close-line{ font-size: clamp(17px,2vw,22px); font-style: italic; color: var(--cream); margin: clamp(2rem,4vh,3rem) 0 1rem; }
+
+  .support-note{
+    font-size: clamp(13px,1.4vw,15px);
+    font-style: italic;
+    color: var(--cream-faint);
+    margin-top: clamp(1.6rem,3vh,2.4rem);
+    max-width: 480px;
+  }
+  .support-note a{
+    font-weight: 600;
+    font-style: normal;
+    color: #ffd23f;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255,210,63,0.4);
+    transition: color 0.25s ease, border-color 0.25s ease;
+  }
+  .support-note a:hover{
+    color: #fff;
+    border-color: rgba(255,255,255,0.6);
+  }
+
+  @media (max-width: 640px){
+    .twocol{ grid-template-columns: 1fr; gap: 1.4rem; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bg-ants"></canvas>
+
+<a id="back-link" href="https://www.spiekerbas.xyz/">
+  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+    <circle cx="8" cy="8" r="7" stroke="rgba(230,245,220,0.55)" stroke-width="0.8"/>
+    <line x1="8" y1="11.5" x2="8" y2="4.5" stroke="rgba(230,245,220,0.55)" stroke-width="0.8"/>
+    <polyline points="5.5,7 8,4.5 10.5,7" stroke="rgba(230,245,220,0.55)" stroke-width="0.8" fill="none" stroke-linejoin="round"/>
+  </svg>
+  back to spiekerbas
+</a>
+
+<div id="page">
+
+  <div class="game-wrap">
+    <canvas id="antant-game"></canvas>
+    <div class="score">ants captured: <b id="antant-score-val">0</b></div>
+    <div class="score">high score: <b>13275</b> by Myrmecophage2848</div>
+  </div>
+
+  <div class="eyebrow">field dispatch — garden robotics division</div>
+  <h1>anti ant tank</h1>
+  <div class="tagline">ants are small. so we're thinking big — a two-unit ai system that knows your garden, does its rounds, and handles ants without ever harming one.</div>
+  <div class="status">status — concept &amp; planning. nothing built yet.</div>
+
+  <div class="section">
+    <div class="label">the problem</div>
+    <div class="body-text">Every summer, ants find a way into the house. The usual fixes are ugly, toxic, or both — poison bait stations, chemical sprays, powder lines redrawn by hand. None of it is elegant. None of it treats the ants as anything but something to exterminate rather than politely redirect.</div>
+  </div>
+
+  <div class="section">
+    <div class="label">the solution</div>
+    <div class="body-text">A two-unit robotic sentry, split so each half does only what it's best at — and both units stream live, so you get a full front-row seat to your garden's tiniest security detail.</div>
+    <div class="twocol" style="margin-top:1.4rem;">
+      <div>
+        <div class="unit-name">the watchtower — the brains</div>
+        <div class="unit-role">A fixed, mains-powered overhead camera. Holds the trained model, learns the garden's layout, keeps constant watch — free to run the smart stuff since it never worries about battery.</div>
+      </div>
+      <div>
+        <div class="unit-name">the tank — the executioner</div>
+        <div class="unit-role">A small, lean rover that carries out orders. Doesn't think hard — shows up and acts. Roll to the coordinates, confirm, mist, done.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="image-frame">
+    <img src="anti-ant-tank-blueprint.png" alt="Anti Ant Tank system blueprint — the Tank rover and the Watchtower overhead unit">
+  </div>
+
+  <div class="section">
+    <div class="label">how it works</div>
+    <div class="body-text">1. The Watchtower spots trouble, and knows exactly where — a one-time calibration maps its camera view to real coordinates in the garden.</div>
+    <div class="body-text">2. It radios the Tank the precise target, not a vague direction. All the thinking happens here, where there's power to spare.</div>
+    <div class="body-text">3. The Tank executes — navigates, confirms at close range, mists. In and out.</div>
+    <div class="body-text">4. Between alerts, it patrols a mapped route and returns to its dock to recharge.</div>
+    <div class="body-text">5. You watch the whole thing, both angles — ground-level from the Tank, wide overhead from the Watchtower.</div>
+  </div>
+
+  <div class="section">
+    <div class="label">two cameras, two views, your choice of screen</div>
+    <div class="body-text">Both feeds are worth watching for different reasons — the Tank's view is the action cam, the Watchtower's is the tactical map. Two ways to get both in front of you:</div>
+    <div class="twocol" style="margin-top:1.4rem;">
+      <div>
+        <div class="unit-name">two youtube streams</div>
+        <div class="unit-role">Simplest option — each Pi's camera to its own live stream, or two scheduled streams on one channel. No extra hardware, just twice the streaming setup.</div>
+      </div>
+      <div>
+        <div class="unit-name">a companion website</div>
+        <div class="unit-role">Both feeds side by side, a proper mission-control feel — and a natural home for battery level, last detection, patrol log down the line.</div>
+      </div>
+    </div>
+    <div class="body-text" style="margin-top:1.2rem;">Either path runs on the same hardware — a hosting decision, not a wiring one. Easy to start with YouTube and add the website later.</div>
+  </div>
+
+  <div class="section">
+    <div class="label">teaching the watchtower to actually know an ant</div>
+    <div class="body-text">Plain motion detection can't tell an ant from a suspiciously ant-shaped leaf. So the Watchtower gets a proper trained model instead: a few hundred close-up photos, sorted into "ant" and "not ant" with a free tool like Teachable Machine, trained into a lightweight classifier it can run continuously. Every blob it spots gets a second opinion before the Tank is ever dispatched.</div>
+  </div>
+
+  <div class="section">
+    <div class="label">power — mostly idle, occasionally lethal to ant complacency</div>
+    <div class="body-text">The Tank doesn't patrol constantly. It sits idle until the Watchtower signals, then wakes, confirms, sprays — a handful of times a day, not hours of continuous driving. That idle-first design stretches battery life from hours to days, and a simple charging dock (think robot-vacuum home base) makes the whole cycle fire-and-forget.</div>
+  </div>
+
+  <div class="section">
+    <div class="label">what's in the box</div>
+    <table class="parts">
+      <tr><td>watchtower</td><td>Raspberry Pi Zero 2 W — the brains, holds the model and the garden map</td></tr>
+      <tr><td>tank</td><td>Raspberry Pi Zero — the executioner, just enough to navigate and act</td></tr>
+      <tr><td>eyes</td><td>2× Pi Camera Module</td></tr>
+      <tr><td>drivetrain</td><td>wheels, tracks, or an 8-wheel spider rig</td></tr>
+      <tr><td>obstacle sense</td><td>HC-SR04 ultrasonic sensor</td></tr>
+      <tr><td>deterrent</td><td>small submersible pump + fine-mist nozzle</td></tr>
+      <tr><td>power</td><td>rechargeable battery pack, charging module &amp; dock</td></tr>
+      <tr><td>enclosures</td><td>weatherproof, both units</td></tr>
+      <tr><td>companion site</td><td>optional — side-by-side dual-camera mission control, an alternative to youtube</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="label">estimated cost</div>
+    <div class="body-text">€110–175 in parts. A garage-hobbyist build, not an investor-scale one.</div>
+  </div>
+
+  <div class="section">
+    <div class="label">planned build order</div>
+    <div class="body-text" style="margin-bottom:0.8rem;">To be clear: this is a concept in active planning. Nothing has been purchased, and nothing has been built yet — what follows is the intended order, not a progress report.</div>
+    <div class="stage"><span class="stage-mark">○</span> stage 1 — build the tank: driving and streaming to youtube</div>
+    <div class="stage"><span class="stage-mark">○</span> stage 2 — teach it a patrol route to repeat automatically</div>
+    <div class="stage"><span class="stage-mark">○</span> stage 3 — add the watchtower, motion detection, the misting response</div>
+    <div class="stage"><span class="stage-mark">○</span> stage 4 — train and deploy the ant-recognition model, train and deploy the anti ant AI</div>
+    <div class="stage"><span class="stage-mark">○</span> stage 5 — bring both camera feeds online, as dual streams or a companion site</div>
+  </div>
+
+  <div class="section">
+    <div class="label">known unknowns</div>
+    <div class="body-text">Detection will be highly accurate, not flawless — expect the very occasional misfire on a windblown leaf, not a perfect record.</div>
+    <div class="body-text">A single mist isn't a one-time cure for a trail, but the system itself is permanent — it doesn't need to fix everything forever, just handle it every time it recurs.</div>
+    <div class="body-text">Battery life is much better with the idle-until-signaled design, but not infinite — the dock makes it a non-issue, but it's one more thing to build right.</div>
+    <div class="body-text">"Knows the garden" means a calibrated map, not live adaptive intelligence. Move a planter, and it needs a quick recalibration — this isn't a robot that remaps itself on the fly.</div>
+  </div>
+
+  <div class="support-note">If you want to make this real, faster — to maybe have your own someday — <a href="https://www.paypal.me/bsspkr" target="_blank" rel="noopener">buy me a decaf</a>.</div>
+
+  <div class="close-line">ants are small. anti ant tank thinks big.</div>
+
+</div>
+
+<script>
+// ── AMBIENT BACKGROUND ANTS: wandering across the whole page, purely decorative ──
+(function initBackgroundAnts(){
+  const canvas = document.getElementById('bg-ants');
+  const ctx = canvas.getContext('2d');
+
+  function resize(){
+    canvas.width = window.innerWidth * 2;
+    canvas.height = window.innerHeight * 2;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const ANT_COUNT = 22;
+  const ants = [];
+  for(let i = 0; i < ANT_COUNT; i++){
+    ants.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      angle: Math.random() * Math.PI * 2,
+      speed: 0.3 + Math.random() * 0.5,
+      turnBias: (Math.random() - 0.5) * 0.05,
+      size: 0.7 + Math.random() * 0.6
+    });
+  }
+
+  function loop(){
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const fontBase = canvas.width * 0.011;
+
+    ants.forEach(ant => {
+      ant.angle += ant.turnBias + (Math.random() - 0.5) * 0.06;
+      ant.x += Math.cos(ant.angle) * ant.speed * ant.size;
+      ant.y += Math.sin(ant.angle) * ant.speed * ant.size;
+
+      if(ant.x < -20) ant.x = canvas.width + 20;
+      if(ant.x > canvas.width + 20) ant.x = -20;
+      if(ant.y < -20) ant.y = canvas.height + 20;
+      if(ant.y > canvas.height + 20) ant.y = -20;
+
+      ctx.save();
+      ctx.globalAlpha = 0.4;
+      ctx.translate(ant.x, ant.y);
+      ctx.rotate(ant.angle + Math.PI / 2);
+      ctx.font = (fontBase * ant.size) + 'px serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('🐜', 0, 0);
+      ctx.restore();
+    });
+
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+})();
+
+// ── INTERACTIVE GAME: move the tank, catch the ants ──
+(function initAntantGame(){
+  const canvas = document.getElementById('antant-game');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  function resizeCanvas(){
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = Math.max(200, rect.width) * 2;
+    canvas.height = Math.max(90, rect.height) * 2;
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  let score = 0;
+  const scoreEl = document.getElementById('antant-score-val');
+
+  function spawnAnt(){
+    return {
+      x: 30 + Math.random() * (canvas.width - 60),
+      y: 30 + Math.random() * (canvas.height - 60),
+      vx: (Math.random() - 0.5) * 2.2,
+      vy: (Math.random() - 0.5) * 2.2,
+      scale: 1,
+      captured: false
+    };
+  }
+
+  const ants = [];
+  for(let i = 0; i < 6; i++) ants.push(spawnAnt());
+
+  const tank = { x: 0, y: 0 };
+  const target = { x: 0, y: 0 };
+  let ready = false;
+
+  function setTargetFromEvent(e){
+    const rect = canvas.getBoundingClientRect();
+    const point = e.touches ? e.touches[0] : e;
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    target.x = (point.clientX - rect.left) * scaleX;
+    target.y = (point.clientY - rect.top) * scaleY;
+    if(!ready){ tank.x = target.x; tank.y = target.y; ready = true; }
+  }
+
+  canvas.addEventListener('pointermove', setTargetFromEvent);
+  canvas.addEventListener('pointerdown', setTargetFromEvent);
+  canvas.addEventListener('touchstart', (e)=>{ e.preventDefault(); setTargetFromEvent(e); }, {passive:false});
+  canvas.addEventListener('touchmove', (e)=>{ e.preventDefault(); setTargetFromEvent(e); }, {passive:false});
+
+  function loop(){
+    if(ready){
+      tank.x += (target.x - tank.x) * 0.15;
+      tank.y += (target.y - tank.y) * 0.15;
+    } else {
+      tank.x = canvas.width / 2;
+      tank.y = canvas.height / 2;
+    }
+
+    const captureRadius = canvas.width * 0.045;
+
+    ants.forEach(ant => {
+      if(ant.captured){
+        ant.scale -= 0.06;
+        if(ant.scale <= 0) Object.assign(ant, spawnAnt());
+        return;
+      }
+
+      ant.x += ant.vx;
+      ant.y += ant.vy;
+      if(ant.x < 16 || ant.x > canvas.width - 16) ant.vx *= -1;
+      if(ant.y < 16 || ant.y > canvas.height - 16) ant.vy *= -1;
+
+      const dx = ant.x - tank.x, dy = ant.y - tank.y;
+      const dist = Math.hypot(dx, dy) || 1;
+
+      if(dist < 110){
+        ant.vx += (dx / dist) * 0.18;
+        ant.vy += (dy / dist) * 0.18;
+        const speed = Math.hypot(ant.vx, ant.vy);
+        const maxSpeed = 3.4;
+        if(speed > maxSpeed){ ant.vx = ant.vx / speed * maxSpeed; ant.vy = ant.vy / speed * maxSpeed; }
+      }
+
+      if(ready && dist < captureRadius){
+        ant.captured = true;
+        score++;
+        if(scoreEl) scoreEl.textContent = score;
+      }
+    });
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = 'rgba(94,63,26,0.35)';
+    for(let i = 0; i < 5; i++){
+      ctx.beginPath();
+      ctx.ellipse((i * 173) % canvas.width, (i * 251) % canvas.height, canvas.width*0.06, canvas.width*0.03, 0, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    ctx.beginPath();
+    ctx.arc(tank.x, tank.y, captureRadius, 0, Math.PI*2);
+    ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+    ctx.lineWidth = Math.max(1, canvas.width*0.002);
+    ctx.stroke();
+
+    const antFont = canvas.width * 0.045;
+    ctx.font = antFont + 'px serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ants.forEach(ant => {
+      ctx.save();
+      ctx.globalAlpha = Math.max(ant.scale, 0);
+      ctx.translate(ant.x, ant.y);
+      ctx.scale(ant.scale, ant.scale);
+      ctx.beginPath();
+      ctx.arc(0, 0, antFont*0.5, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(255,255,255,0.75)';
+      ctx.fill();
+      ctx.fillStyle = '#000';
+      ctx.fillText('🐜', 0, 0);
+      ctx.restore();
+    });
+
+    const tankFont = canvas.width * 0.06;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(tank.x, tank.y, tankFont*0.62, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    ctx.fill();
+    ctx.font = tankFont + 'px serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🚜', tank.x, tank.y);
+    ctx.restore();
+
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+</script>
+
+</body>
+</html>
