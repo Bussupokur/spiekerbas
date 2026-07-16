@@ -28,6 +28,7 @@ export default async function handler(req, res) {
     const expiresAt = Date.now() + SESSION_DURATION_SECONDS * 1000;
     await redis.set('queue:nowServing', nextTicket);
     await redis.set('queue:nowServingUntil', expiresAt);
+    await redis.set('queue:lastHeartbeat', Date.now());
     const admitCookie = await signAdmission(nextTicket, expiresAt);
 
     res.setHeader('Set-Cookie', [
