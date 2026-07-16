@@ -42,14 +42,17 @@
     flex-direction: column;
     align-items: center;
     gap: 6px;
+  }
+  .page-footer a{
     text-decoration: none;
     color: rgba(230,245,220,0.6);
     font-size: 12px;
     letter-spacing: 0.22em;
     text-transform: lowercase;
     transition: color 0.3s ease;
+    display: block;
   }
-  .page-footer:hover{ color: var(--cream); }
+  .page-footer a:hover{ color: var(--cream); }
   .page-footer svg{ display:block; opacity: 0.75; }
 
   #page{
@@ -366,14 +369,16 @@
 
   <div class="close-line">ants are small. anti ant tank thinks big.</div>
 
-  <a class="page-footer" href="https://www.spiekerbas.xyz/">
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-      <circle cx="8" cy="8" r="7" stroke="rgba(230,245,220,0.6)" stroke-width="0.8"/>
-      <line x1="8" y1="11.5" x2="8" y2="4.5" stroke="rgba(230,245,220,0.6)" stroke-width="0.8"/>
-      <polyline points="5.5,7 8,4.5 10.5,7" stroke="rgba(230,245,220,0.6)" stroke-width="0.8" fill="none" stroke-linejoin="round"/>
-    </svg>
-    spiekerbas
-  </a>
+  <div class="page-footer">
+    <a href="https://www.spiekerbas.xyz/#projects" aria-label="back to projects">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="7" stroke="rgba(230,245,220,0.6)" stroke-width="0.8"/>
+        <line x1="8" y1="11.5" x2="8" y2="4.5" stroke="rgba(230,245,220,0.6)" stroke-width="0.8"/>
+        <polyline points="5.5,7 8,4.5 10.5,7" stroke="rgba(230,245,220,0.6)" stroke-width="0.8" fill="none" stroke-linejoin="round"/>
+      </svg>
+    </a>
+    <a href="https://www.spiekerbas.xyz/">spiekerbas</a>
+  </div>
 
 </div>
 
