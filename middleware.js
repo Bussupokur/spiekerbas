@@ -252,6 +252,39 @@ export default async function middleware(request) {
     });
   }
   if (getCookie(request, 'owner') === '1') {
+    if (url.pathname === '/owner-status') {
+      const nextTicket = parseInt((await redis.get('queue:nextTicket')) || '0', 10);
+      const nowServing = parseInt((await redis.get('queue:nowServing')) || '0', 10);
+      const nowServingUntil = parseInt((await redis.get('queue:nowServingUntil')) || '0', 10);
+      const lastHeartbeat = parseInt((await redis.get('queue:lastHeartbeat')) || '0', 10);
+      const now = Date.now();
+
+      const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>Owner status</title>
+<style>
+  body{ background:#0c0c0d; color:#ebdcc3; font-family: Arial, sans-serif; padding: 2rem; max-width: 640px; margin: 0 auto; line-height: 1.8; }
+  pre{ background:#1a1a1b; padding: 14px; border-radius: 4px; font-size: 13px; }
+  a{ color:#a8e05f; }
+</style>
+</head><body>
+  <h1>owner status — raw queue state</h1>
+  <pre>nextTicket:        ${nextTicket}
+nowServing:        ${nowServing}
+nowServingUntil:   ${nowServingUntil}  (${nowServingUntil ? Math.round((nowServingUntil - now)/1000) + 's remaining' : 'never set'})
+lastHeartbeat:     ${lastHeartbeat}  (${lastHeartbeat ? Math.round((now - lastHeartbeat)/1000) + 's ago' : 'never set'})
+queue length (approx): ${Math.max(0, nextTicket - nowServing)}</pre>
+  <p><a href="/owner-status">refresh</a></p>
+  <p style="font-size:12px;color:rgba(235,220,195,0.5);">
+    To reset everything: add &reset=1 to your ?owner=... link once, then remove it.
+  </p>
+</body></html>`;
+
+      if (url.searchParams.get('reset') === '1') {
+        await redis.del('queue:nextTicket', 'queue:nowServing', 'queue:nowServingUntil', 'queue:lastHeartbeat');
+      }
+
+      return new Response(html, { status: 200, headers: { 'content-type': 'text/html; charset=utf-8' } });
+    }
     return; // unlimited, ungated access
   }
 
