@@ -5,7 +5,7 @@
 // decides which screen to show.
 
 import {
-  redis, isOpenNow, getCookie, verifyAdmission, OWNER_SECRET, setCookieHeader, clearCookieHeader,
+  redis, isOpenNow, getCookie, verifyAdmission, OWNER_SECRET, setCookieHeader, clearCookieHeader, getAmsterdamDateKey,
 } from './lib/gate.js';
 
 export const config = {
@@ -98,6 +98,19 @@ const PAGE_STYLES = `
     margin-top: 1.6rem;
     font-family: Arial, sans-serif;
   }
+  .contact-note{
+    font-size:11px;
+    letter-spacing:0.06em;
+    color: rgba(235,220,195,0.4);
+    font-family: Arial, sans-serif;
+    margin-top: 0.7rem;
+  }
+  .contact-note a{
+    color: rgba(235,220,195,0.6);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(235,220,195,0.25);
+  }
+  .contact-note a:hover{ color: var(--cream); }
   .queue-position{
     font-size: clamp(40px,8vw,64px);
     font-weight:300; font-style:italic;
@@ -148,6 +161,7 @@ function closedHTML() {
       <div><span>mon, tue, thu</span>closed</div>
     </div>
     <div class="live-clock" id="liveClock"></div>
+    <div class="contact-note">questions? <a href="mailto:inquiries@spiekerbas.xyz">inquiries@spiekerbas.xyz</a></div>
   </div>
   ${CLOCK_SCRIPT}
 </body>
@@ -179,6 +193,7 @@ function welcomeHTML() {
       <div><span>wed</span>12:00 &ndash; 18:00</div>
     </div>
     <div class="live-clock" id="liveClock"></div>
+    <div class="contact-note">questions? <a href="mailto:inquiries@spiekerbas.xyz">inquiries@spiekerbas.xyz</a></div>
   </div>
   ${CLOCK_SCRIPT}
   <script>
@@ -257,6 +272,9 @@ export default async function middleware(request) {
       const nowServing = parseInt((await redis.get('queue:nowServing')) || '0', 10);
       const nowServingUntil = parseInt((await redis.get('queue:nowServingUntil')) || '0', 10);
       const lastHeartbeat = parseInt((await redis.get('queue:lastHeartbeat')) || '0', 10);
+      const totalVisits = parseInt((await redis.get('stats:visits:total')) || '0', 10);
+      const todayKey = getAmsterdamDateKey();
+      const todayVisits = parseInt((await redis.get(`stats:visits:${todayKey}`)) || '0', 10);
       const now = Date.now();
 
       const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
@@ -272,7 +290,10 @@ export default async function middleware(request) {
 nowServing:        ${nowServing}
 nowServingUntil:   ${nowServingUntil}  (${nowServingUntil ? Math.round((nowServingUntil - now)/1000) + 's remaining' : 'never set'})
 lastHeartbeat:     ${lastHeartbeat}  (${lastHeartbeat ? Math.round((now - lastHeartbeat)/1000) + 's ago' : 'never set'})
-queue length (approx): ${Math.max(0, nextTicket - nowServing)}</pre>
+queue length (approx): ${Math.max(0, nextTicket - nowServing)}
+
+visits today (${todayKey}): ${todayVisits}
+visits total:      ${totalVisits}</pre>
   <p><a href="/owner-status">refresh</a></p>
   <p style="font-size:12px;color:rgba(235,220,195,0.5);">
     To reset everything: add &reset=1 to your ?owner=... link once, then remove it.
