@@ -46,8 +46,11 @@
     position: absolute;
     inset: 0;
     background: var(--dark);
+    background-size: cover;
+    background-position: center;
     opacity: 0;
     will-change: opacity;
+    transition: background-image 0.4s ease;
   }
 
   #name {
@@ -259,6 +262,17 @@
     pointer-events: auto;
   }
 
+  #portal-hue-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    background-size: cover;
+    background-position: center;
+    transition: background-image 1.4s ease;
+  }
+
   #portal-canvas {
     position: absolute;
     inset: 0;
@@ -266,6 +280,7 @@
     height: 100%;
     pointer-events: none;
     z-index: 1;
+    opacity: 0.65;
   }
 
   #portal-inner {
@@ -1626,6 +1641,7 @@
 
 <!-- PORTAL -->
 <div id="portal">
+  <div id="portal-hue-bg"></div>
   <canvas id="portal-canvas"></canvas>
   <div id="welcome-wrap">
     <div id="welcome-nl">Welkom in het portaal</div>
@@ -2192,6 +2208,7 @@ function handleWheelPick(clientX, clientY) {
   if (!hsl) return;
 
   pickedHSL = hsl;
+  setArrivalHueBackground(hsl.h);
   const hex = hslToHex(hsl.h, hsl.s, hsl.l);
 
   wheelDot.style.display = 'block';
@@ -2268,10 +2285,54 @@ function resizePortal() {
 resizePortal();
 window.addEventListener('resize', resizePortal);
 
+// ── PORTAL HUE BACKGROUND ──
+// 12 buckets across the color wheel (30° each). Each has a placeholder
+// gradient (visible right away) and a predictable filename slot — drop a
+// real square photo in with that exact name later and it'll be used
+// automatically, no code changes needed. The gradient stays as an
+// automatic fallback if the photo file doesn't exist yet.
+const HUE_BUCKETS = [
+  { name: 'sunset-fire',      max: 30,  gradient: 'linear-gradient(160deg, #7a1e12, #d9642c)', file: 'red-sunsetfire.jpg' },
+  { name: 'warm-dawn',        max: 60,  gradient: 'linear-gradient(160deg, #a85a12, #e0a83c)', file: 'orange-warmdawn.jpg' },
+  { name: 'golden-hour',      max: 90,  gradient: 'linear-gradient(160deg, #8a7a12, #e0d060)', file: 'yellow-goldenhour.jpg' },
+  { name: 'spring-meadow',    max: 120, gradient: 'linear-gradient(160deg, #5a7a1a, #a8d060)', file: 'yellowgreen-springmeadow.jpg' },
+  { name: 'forest',           max: 150, gradient: 'linear-gradient(160deg, #1a4a2a, #3a8a52)', file: 'green-forest.jpg' },
+  { name: 'tropical-water',   max: 180, gradient: 'linear-gradient(160deg, #12564a, #2ca890)', file: 'teal-tropicalwater.jpg' },
+  { name: 'shallow-sea',      max: 210, gradient: 'linear-gradient(160deg, #124a56, #2c8ea8)', file: 'cyan-shallowsea.jpg' },
+  { name: 'blue-sky',         max: 240, gradient: 'linear-gradient(160deg, #1a3a6a, #4a86c8)', file: 'blue-bluemountains.png' },
+  { name: 'twilight',         max: 270, gradient: 'linear-gradient(160deg, #221a5a, #4a3a9a)', file: 'indigo-twilight.jpg' },
+  { name: 'dusk-lavender',    max: 300, gradient: 'linear-gradient(160deg, #3a1a5a, #7a4ab0)', file: 'violet-dusklavender.jpg' },
+  { name: 'neon-night',       max: 330, gradient: 'linear-gradient(160deg, #4a1250, #a03a9a)', file: 'magenta-neonnight.jpg' },
+  { name: 'rose-dawn',        max: 360, gradient: 'linear-gradient(160deg, #6a1230, #d9426a)', file: 'pink-rosedawn.jpg' },
+];
+
+function setPortalHueBackground(hue) {
+  const bucket = HUE_BUCKETS.find(b => hue <= b.max) || HUE_BUCKETS[HUE_BUCKETS.length - 1];
+  const bg = document.getElementById('portal-hue-bg');
+  if (!bg) return;
+  // dark scrim sits on top, guaranteeing text stays legible no matter
+  // how bright the underlying photo turns out to be. Real photo (if it
+  // exists) shows beneath the scrim; the gradient is the fallback while
+  // the file's still a placeholder.
+  const scrim = 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5))';
+  bg.style.backgroundImage = `${scrim}, url('${bucket.file}'), ${bucket.gradient}`;
+}
+
+// same 12-bucket mapping, but for the arrival screen's paint-veil —
+// updates live as the visitor drags around the color wheel, before
+// they've even pressed enter. Reuses HUE_BUCKETS so both screens always
+// agree on which photo/gradient belongs to which part of the wheel.
+function setArrivalHueBackground(hue) {
+  const bucket = HUE_BUCKETS.find(b => hue <= b.max) || HUE_BUCKETS[HUE_BUCKETS.length - 1];
+  const scrim = 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5))';
+  paintVeil.style.backgroundImage = `${scrim}, url('${bucket.file}'), ${bucket.gradient}`;
+}
+
 function startPortal(hsl) {
   portalH = hsl.h;
   portalS = hsl.s;
   portalL = hsl.l;
+  setPortalHueBackground(hsl.h);
   animatePortal();
 }
 
