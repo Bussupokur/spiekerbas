@@ -3446,5 +3446,31 @@ document.getElementById('info-ui').addEventListener('touchmove', e => {
 </div>
 
 
+<!-- HEARTBEAT: pings every ~10s so the gate system knows this visit is
+     still active. A no-op unless the "admit" cookie is set. If the ping
+     ever comes back "not current" (bumped for inactivity), sends the
+     visitor back through the gate right away. -->
+<script>
+(function(){
+  function getCookie(name){
+    var match = document.cookie.split('; ').find(function(row){ return row.indexOf(name + '=') === 0; });
+    return match ? match.split('=')[1] : null;
+  }
+  if(!getCookie('admit')) return;
+
+  function ping(){
+    fetch('/api/heartbeat', { method: 'POST', credentials: 'same-origin' })
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if(!data.ok){ window.location.href = '/'; }
+      })
+      .catch(function(){ /* network hiccup — just try again next tick */ });
+  }
+
+  ping();
+  setInterval(ping, 10000);
+})();
+</script>
+
 </body>
 </html>
