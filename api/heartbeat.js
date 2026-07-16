@@ -1,59 +1,26 @@
 // api/heartbeat.js
-// Pinged every 10 seconds by the browser while a visitor is actively on
-// the site. Refreshes their presence in the shared store and reports
-// back how much time they have left. If they've timed out, hit their
-// 30-minute cap, or lost their slot for any reason, this tells the
-// browser to send them back through the gate.
+// Pinged every ~10 seconds by whoever's currently admitted. Its only job:
+// update the last-heartbeat timestamp. It does NOT extend the 5-minute
+// session — that stays fixed, no matter what. This is purely so /api/status
+// (polled by waiting visitors) can notice quickly if the current visitor
+// has gone quiet, and free the slot early instead of waiting the full
+// 5 minutes for someone who's already left.
 
-import { Redis } from '@upstash/redis';
-
-const redis = new Redis({
-  url: process.env.KV_REST_API_URL,
-  token: process.env.KV_REST_API_TOKEN,
-});
-
-const VISIT_DURATION_SECONDS = 30 * 60;
-const HEARTBEAT_TTL_SECONDS = 25;
-
-function safeParseRecord(raw) {
-  if (!raw) return null;
-  if (typeof raw === 'string') {
-    try { return JSON.parse(raw); } catch (e) { return null; }
-  }
-  return raw;
-}
-
-function getCookie(req, name) {
-  const cookie = req.headers.cookie || '';
-  const found = cookie.split(';').map((c) => c.trim()).find((c) => c.startsWith(name + '='));
-  return found ? decodeURIComponent(found.split('=').slice(1).join('=')) : null;
-}
+import { redis, getCookie, verifyAdmission } from '../lib/gate.js';
 
 export default async function handler(req, res) {
-  const sessionId = getCookie(req, 'sessionId');
-
-  if (!sessionId) {
-    return res.status(200).json({ active: false });
+  const admitCookie = getCookie(req, 'admit');
+  const admission = await verifyAdmission(admitCookie);
+  if (!admission) {
+    return res.status(200).json({ ok: false });
   }
 
-  const record = safeParseRecord(await redis.get('visitor:active'));
-  if (!record || record.sessionId !== sessionId) {
-    return res.status(200).json({ active: false });
+  const nowServing = parseInt((await redis.get('queue:nowServing')) || '0', 10);
+  if (admission.ticket !== nowServing) {
+    // already bumped — someone else has been promoted in the meantime
+    return res.status(200).json({ ok: false });
   }
 
-  const elapsedSeconds = (Date.now() - record.enteredAt) / 1000;
-  const remainingSeconds = Math.max(0, VISIT_DURATION_SECONDS - elapsedSeconds);
-
-  if (remainingSeconds <= 0) {
-    await redis.del('visitor:active');
-    return res.status(200).json({ active: false });
-  }
-
-  // refresh the heartbeat TTL — this is what proves they're still here
-  await redis.set('visitor:active', JSON.stringify(record), { ex: HEARTBEAT_TTL_SECONDS });
-
-  return res.status(200).json({
-    active: true,
-    remainingSeconds: Math.round(remainingSeconds),
-  });
+  await redis.set('queue:lastHeartbeat', Date.now());
+  return res.status(200).json({ ok: true });
 }
