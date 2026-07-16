@@ -1,15 +1,23 @@
 // api/status.js
 // Polled by anyone waiting in line. This is also where the queue
-// actually advances — either the 5-minute hard cap has genuinely run
-// out, OR the current visitor's heartbeat has gone quiet for 30+
-// seconds (left, closed the tab, lost connection — doesn't matter
-// which). Either way, whoever polls next notices and moves the queue
-// forward. This is the "pull" model: it only advances when someone's
-// there to notice, not via anything the current visitor has to do.
+// actually advances.
+//
+// Two separate rules work together:
+// 1. The rightful next ticket (nowServing + 1) can claim their turn the
+//    moment the previous slot is free — either the 5-minute cap ran out,
+//    or the previous visitor's heartbeat went quiet for 30+ seconds.
+// 2. If THAT ticket also never claims it — within a further grace
+//    window — anyone else still polling may skip straight past them.
+//    This is what stops a single abandoned ticket from permanently
+//    jamming the whole queue. It stays fair in practice: the only way a
+//    later ticket ever reaches this branch is if everyone ahead of them
+//    has genuinely stopped polling for the entire grace window — if any
+//    of them were still around, they'd have claimed their own turn first.
 
 import {
   redis, isOpenNow, getCookie, setCookieHeader,
-  signAdmission, SESSION_DURATION_SECONDS, HEARTBEAT_TIMEOUT_SECONDS, getAmsterdamDateKey,
+  signAdmission, SESSION_DURATION_SECONDS, HEARTBEAT_TIMEOUT_SECONDS,
+  NEXT_IN_LINE_GRACE_SECONDS, getAmsterdamDateKey,
 } from '../lib/gate.js';
 
 export default async function handler(req, res) {
@@ -26,18 +34,30 @@ export default async function handler(req, res) {
   const nowServing = parseInt((await redis.get('queue:nowServing')) || '0', 10);
   const nowServingUntil = parseInt((await redis.get('queue:nowServingUntil')) || '0', 10);
   const lastHeartbeat = parseInt((await redis.get('queue:lastHeartbeat')) || '0', 10);
+  const now = Date.now();
 
-  const hardCapExpired = Date.now() >= nowServingUntil;
-  const heartbeatStale = nowServing > 0 && (Date.now() - lastHeartbeat) > HEARTBEAT_TIMEOUT_SECONDS * 1000;
+  const hardCapExpired = now >= nowServingUntil;
+  const heartbeatStale = nowServing > 0 && (now - lastHeartbeat) > HEARTBEAT_TIMEOUT_SECONDS * 1000;
   const slotAbandoned = hardCapExpired || heartbeatStale;
 
-  if (slotAbandoned && ticket === nowServing + 1) {
-    // it's genuinely our turn next, and the previous turn is over —
-    // either it ran its course, or they went quiet. Advance and admit.
-    const expiresAt = Date.now() + SESSION_DURATION_SECONDS * 1000;
+  // when did the slot actually become free? (whichever rule triggered it)
+  const slotFreedAt = heartbeatStale
+    ? lastHeartbeat + HEARTBEAT_TIMEOUT_SECONDS * 1000
+    : nowServingUntil;
+
+  const isRightfulNext = ticket === nowServing + 1;
+  const rightfulNextHasHadFairChance = slotAbandoned && (now - slotFreedAt) > NEXT_IN_LINE_GRACE_SECONDS * 1000;
+
+  const canClaim = slotAbandoned && (
+    isRightfulNext ||
+    (ticket > nowServing + 1 && rightfulNextHasHadFairChance)
+  );
+
+  if (canClaim) {
+    const expiresAt = now + SESSION_DURATION_SECONDS * 1000;
     await redis.set('queue:nowServing', ticket);
     await redis.set('queue:nowServingUntil', expiresAt);
-    await redis.set('queue:lastHeartbeat', Date.now());
+    await redis.set('queue:lastHeartbeat', now);
     await redis.incr('stats:visits:total');
     await redis.incr(`stats:visits:${getAmsterdamDateKey()}`);
     const admitCookie = await signAdmission(ticket, expiresAt);
