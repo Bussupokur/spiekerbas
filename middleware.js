@@ -281,7 +281,6 @@ export default async function middleware(request) {
       const now = Date.now();
 
       const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
-<meta http-equiv="refresh" content="3">
 <title>Owner status</title>
 <style>
   body{ background:#0c0c0d; color:#ebdcc3; font-family: Arial, sans-serif; padding: 2rem; max-width: 640px; margin: 0 auto; line-height: 1.8; }
@@ -289,7 +288,7 @@ export default async function middleware(request) {
   a{ color:#a8e05f; }
 </style>
 </head><body>
-  <h1>owner status — raw queue state <span style="font-size:11px;color:rgba(235,220,195,0.4);">(auto-refreshes every 3s)</span></h1>
+  <h1>owner status — raw queue state</h1>
   <pre>nextTicket:        ${nextTicket}
 nowServing:        ${nowServing}
 nowServingUntil:   ${nowServingUntil}  (${nowServingUntil ? Math.round((nowServingUntil - now)/1000) + 's remaining' : 'never set'})
