@@ -2329,6 +2329,16 @@ const HUE_BUCKETS = [
 const WHITE_ENTRY = { gradient: 'linear-gradient(160deg, #dfe6ea, #ffffff)', file: 'white-snowypeaks.png' };
 const BLACK_ENTRY = { gradient: 'linear-gradient(160deg, #000000, #16181c)', file: 'black-starlitmountains.png' };
 
+// preload every real photo the moment the page loads — well before the
+// visitor ever reaches the color wheel (there's a whole scroll + name
+// sequence first). By the time they're actually picking, the images are
+// already cached, so switching buckets shows the photo instantly instead
+// of flashing the gradient first while the file fetches over the network.
+(function preloadHueImages(){
+  const files = [...HUE_BUCKETS.map(b => b.file), WHITE_ENTRY.file, BLACK_ENTRY.file];
+  files.forEach(f => { const img = new Image(); img.src = f; });
+})();
+
 function setPortalHueBackground(hsl) {
   const bg = document.getElementById('portal-hue-bg');
   if (!bg) return;
