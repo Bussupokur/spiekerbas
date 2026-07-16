@@ -9,7 +9,7 @@
 
 import {
   redis, isOpenNow, getCookie, setCookieHeader,
-  signAdmission, SESSION_DURATION_SECONDS, HEARTBEAT_TIMEOUT_SECONDS,
+  signAdmission, SESSION_DURATION_SECONDS, HEARTBEAT_TIMEOUT_SECONDS, getAmsterdamDateKey,
 } from '../lib/gate.js';
 
 export default async function handler(req, res) {
@@ -38,6 +38,8 @@ export default async function handler(req, res) {
     await redis.set('queue:nowServing', ticket);
     await redis.set('queue:nowServingUntil', expiresAt);
     await redis.set('queue:lastHeartbeat', Date.now());
+    await redis.incr('stats:visits:total');
+    await redis.incr(`stats:visits:${getAmsterdamDateKey()}`);
     const admitCookie = await signAdmission(ticket, expiresAt);
 
     res.setHeader('Set-Cookie', [
