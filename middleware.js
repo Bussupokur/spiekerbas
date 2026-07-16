@@ -1,89 +1,17 @@
 // middleware.js
-// The full gate system: opening hours, a real queue, a heartbeat-based
-// "one visitor at a time" slot, a 30-minute visit cap, and an owner
-// bypass. Runs before every request.
-//
-// How presence works: an "active visitor" record in the shared store
-// carries a short TTL (25s). The browser pings /api/heartbeat every
-// 10 seconds to refresh it. Stop pinging for any reason — closed tab,
-// clicked an external link, connection dropped — and the record just
-// expires on its own. Nobody has to detect "leaving" explicitly.
+// Thin gate: opening hours, and checking the signed admission cookie.
+// That's it. All the actual queue logic (claiming a slot, advancing the
+// line) lives in /api/enter.js and /api/status.js — this file just
+// decides which screen to show.
 
-import { Redis } from '@upstash/redis';
-
-const redis = new Redis({
-  url: process.env.KV_REST_API_URL,
-  token: process.env.KV_REST_API_TOKEN,
-});
+import {
+  isOpenNow, getCookie, verifyAdmission, OWNER_SECRET, setCookieHeader,
+} from './lib/gate.js';
 
 export const config = {
   matcher: '/((?!favicon.ico|api/).*)',
 };
 
-// ── CONFIG ──
-const SCHEDULE = {
-  // day index: [ [startHour, endHour], ... ] — 24h, Europe/Amsterdam
-  0: [[14, 18]], // Sunday
-  3: [[12, 20]], // Wednesday
-  5: [[19, 23]], // Friday
-  6: [[19, 23]], // Saturday
-};
-
-const SESSION_DURATION_SECONDS = 5 * 60; // fixed session length, for now — no matter what
-
-// CHANGE THIS to your own private passphrase before deploying.
-// Visiting /?owner=<this value> gives you unlimited, ungated access.
-const OWNER_SECRET = 'change-me-to-your-own-secret';
-
-// ── TIME / SCHEDULE ──
-function getAmsterdamNow() {
-  const now = new Date();
-  const parts = new Intl.DateTimeFormat('en-GB', {
-    timeZone: 'Europe/Amsterdam',
-    weekday: 'short',
-    hour: '2-digit',
-    hour12: false,
-  }).formatToParts(now);
-  const map = {};
-  parts.forEach((p) => (map[p.type] = p.value));
-  const dayMap = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
-  return { day: dayMap[map.weekday], hour: parseInt(map.hour, 10) };
-}
-
-function isOpenNow() {
-  const { day, hour } = getAmsterdamNow();
-  const windows = SCHEDULE[day] || [];
-  return windows.some(([start, end]) => hour >= start && hour < end);
-}
-
-// ── COOKIES ──
-function getCookie(request, name) {
-  const cookie = request.headers.get('cookie') || '';
-  const found = cookie.split(';').map((c) => c.trim()).find((c) => c.startsWith(name + '='));
-  return found ? decodeURIComponent(found.split('=').slice(1).join('=')) : null;
-}
-
-function setCookieHeader(name, value, maxAgeSeconds) {
-  return `${name}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAgeSeconds}; SameSite=Lax; Secure`;
-}
-
-function clearCookieHeader(name) {
-  return `${name}=; Path=/; Max-Age=0; SameSite=Lax; Secure`;
-}
-
-function newSessionId() {
-  return crypto.randomUUID();
-}
-
-function safeParseRecord(raw) {
-  if (!raw) return null;
-  if (typeof raw === 'string') {
-    try { return JSON.parse(raw); } catch (e) { return null; }
-  }
-  return raw; // already an object
-}
-
-// ── STYLES (shared by every gate screen) ──
 const PAGE_STYLES = `
   :root{
     --cream:#ebdcc3;
@@ -150,6 +78,8 @@ const PAGE_STYLES = `
     border: 1px solid rgba(235,220,195,0.35);
     padding: 0.7rem 1.8rem;
     margin-top: 0.4rem;
+    cursor: pointer;
+    background: none;
     transition: color 0.3s ease, border-color 0.3s ease;
   }
   .enter-btn:hover{ color: var(--cream); border-color: rgba(235,220,195,0.7); }
@@ -167,13 +97,6 @@ const PAGE_STYLES = `
     text-transform:lowercase;
     margin-top: 1.6rem;
     font-family: Arial, sans-serif;
-  }
-  .debug-note{
-    font-size:10px;
-    letter-spacing:0.05em;
-    color: rgba(160,220,130,0.55);
-    font-family: Arial, sans-serif;
-    margin-top: 0.6rem;
   }
   .queue-position{
     font-size: clamp(40px,8vw,64px);
@@ -201,7 +124,6 @@ const CLOCK_SCRIPT = `
   </script>
 `;
 
-// ── SCREENS ──
 function closedHTML() {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -232,7 +154,7 @@ function closedHTML() {
 </html>`;
 }
 
-function welcomeHTML(storageStatus) {
+function welcomeHTML() {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -248,8 +170,8 @@ function welcomeHTML(storageStatus) {
   <div id="stage">
     <div class="status-pill open">open now</div>
     <h1>we're open</h1>
-    <p>one visitor at a time. nothing starts until you actually step through — no timer, no queue slot claimed, until you click.</p>
-    <a class="enter-btn" href="/?enter=1">come on in</a>
+    <p>one visitor at a time. nothing starts until you actually step through.</p>
+    <button class="enter-btn" id="enterBtn">come on in</button>
     <div class="timer-note">your 5 minutes starts once you enter — no matter what.</div>
     <div class="hours-table">
       <div><span>fri &ndash; sat</span>19:00 &ndash; 23:00</div>
@@ -257,9 +179,18 @@ function welcomeHTML(storageStatus) {
       <div><span>wed</span>12:00 &ndash; 18:00</div>
     </div>
     <div class="live-clock" id="liveClock"></div>
-    ${storageStatus ? `<div class="debug-note">${storageStatus}</div>` : ''}
   </div>
   ${CLOCK_SCRIPT}
+  <script>
+    document.getElementById('enterBtn').addEventListener('click', function(){
+      fetch('/api/enter', { method: 'POST', credentials: 'same-origin' })
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+          window.location.href = '/';
+        })
+        .catch(function(){ window.location.href = '/'; });
+    });
+  </script>
 </body>
 </html>`;
 }
@@ -280,191 +211,51 @@ function queueHTML(position) {
   <div id="stage">
     <div class="status-pill queue">one at a time</div>
     <h1>you're in line</h1>
-    <div class="queue-position">${position}</div>
-    <p>someone else is here right now. this page checks again automatically — no need to refresh yourself.</p>
+    <div class="queue-position" id="queuePosition">${position}</div>
+    <p>this updates on its own — no need to refresh yourself.</p>
     <div class="live-clock" id="liveClock"></div>
   </div>
   ${CLOCK_SCRIPT}
   <script>
-    setTimeout(function(){ window.location.reload(); }, 8000);
+    function poll(){
+      fetch('/api/status', { credentials: 'same-origin' })
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+          if(data.closed){ window.location.href = '/'; return; }
+          if(data.admitted){ window.location.href = '/'; return; }
+          if(data.position){
+            document.getElementById('queuePosition').textContent = data.position;
+          }
+        })
+        .catch(function(){ /* try again next tick */ });
+    }
+    poll();
+    setInterval(poll, 4000);
   </script>
 </body>
 </html>`;
 }
 
-function ownerStatusHTML(info) {
-  const fmtRecord = (r) => r ? JSON.stringify(r, null, 2) : '(empty — nobody active)';
-  const actionsLine = info.didClearQueue || info.didClearActive
-    ? `<p style="color:#a8e05f;">Action taken: ${info.didClearQueue ? 'queue cleared. ' : ''}${info.didClearActive ? 'active session cleared.' : ''}</p>
-       <p style="font-size:12px;">Queue length before: ${info.queueLenBefore} → after: ${info.queueLenAfter}</p>
-       <p style="font-size:12px;">Active before:</p><pre>${fmtRecord(info.activeBefore)}</pre>
-       <p style="font-size:12px;">Active after:</p><pre>${fmtRecord(info.activeAfter)}</pre>`
-    : `<p style="font-size:12px;">Current queue length: ${info.queueLenAfter}</p>
-       <p style="font-size:12px;">Current active session:</p><pre>${fmtRecord(info.activeAfter)}</pre>`;
-
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Owner status — spiekerbas</title>
-<style>
-  body{ background:#0c0c0d; color:#ebdcc3; font-family: Arial, sans-serif; padding: 2rem; max-width: 640px; margin: 0 auto; line-height: 1.6; }
-  h1{ font-size: 18px; }
-  pre{ background:#1a1a1b; padding: 12px; border-radius: 4px; font-size: 12px; overflow-x:auto; white-space: pre-wrap; }
-  a{ color:#a8e05f; }
-  .actions{ margin-top: 2rem; display:flex; gap: 1rem; flex-wrap: wrap; }
-  .actions a{ border:1px solid rgba(235,220,195,0.3); padding: 8px 14px; border-radius: 4px; text-decoration:none; font-size: 13px; }
-</style>
-</head>
-<body>
-  <h1>owner status — you are recognized as owner</h1>
-  ${actionsLine}
-  <div class="actions">
-    <a href="/owner-status">refresh status</a>
-  </div>
-  <p style="font-size:11px; color:rgba(235,220,195,0.4); margin-top:2rem;">
-    To clear the queue: add &clearqueue=1 to your ?owner=... link.<br>
-    To clear the active session: add &clearactive=1.<br>
-    You can combine both in one visit.
-  </p>
-</body>
-</html>`;
-}
-
-// ── MAIN ──
 export default async function middleware(request) {
   const url = new URL(request.url);
 
-  // ── OWNER BYPASS + VISIBLE DEBUG TOOLS ──
+  // ── OWNER BYPASS ──
   const ownerParam = (url.searchParams.get('owner') || '').trim();
-  const secretMatches = ownerParam.length > 0 && ownerParam === OWNER_SECRET.trim();
-
-  if (secretMatches) {
-    const didClearQueue = url.searchParams.get('clearqueue') === '1';
-    const didClearActive = url.searchParams.get('clearactive') === '1';
-
-    let queueLenBefore = await redis.llen('visitor:queue');
-    let activeBefore = safeParseRecord(await redis.get('visitor:active'));
-
-    if (didClearQueue) await redis.del('visitor:queue');
-    if (didClearActive) await redis.del('visitor:active');
-
-    const queueLenAfter = await redis.llen('visitor:queue');
-    const activeAfter = safeParseRecord(await redis.get('visitor:active'));
-
-    const headers = new Headers({ 'content-type': 'text/html; charset=utf-8' });
-    headers.append('Set-Cookie', setCookieHeader('owner', '1', 31536000));
-
-    return new Response(ownerStatusHTML({
-      didClearQueue, didClearActive,
-      queueLenBefore, activeBefore,
-      queueLenAfter, activeAfter,
-    }), { status: 200, headers });
-  }
-
-  const isOwner = getCookie(request, 'owner') === '1';
-  if (isOwner) {
-    if (url.pathname === '/owner-status') {
-      const queueLen = await redis.llen('visitor:queue');
-      const active = safeParseRecord(await redis.get('visitor:active'));
-      return new Response(ownerStatusHTML({ queueLenAfter: queueLen, activeAfter: active }), {
-        status: 200,
-        headers: { 'content-type': 'text/html; charset=utf-8' },
-      });
-    }
-    return; // unlimited, ungated access — no schedule, no queue, no timer
-  }
-
-  const open = isOpenNow();
-  const sessionId = getCookie(request, 'sessionId');
-  const entered = getCookie(request, 'entered') === '1';
-
-  // ── ALREADY ACTIVE: Redis's own TTL is the only clock. No heartbeat,
-  //    no manual elapsed-time math. The record simply won't exist once
-  //    5 minutes are up, active browsing or not, tab open or not. ──
-  if (entered && sessionId) {
-    const record = safeParseRecord(await redis.get('visitor:active'));
-    const stillValid = record && record.sessionId === sessionId;
-
-    if (stillValid) {
-      return; // genuinely still valid — let them through to the real site
-    }
-
-    // invalid for any reason (never active, timed out, or belongs to
-    // someone else) — clear the stale cookies and force a clean redirect.
-    const headers = new Headers({ Location: url.pathname + url.search });
-    headers.append('Set-Cookie', clearCookieHeader('entered'));
-    headers.append('Set-Cookie', clearCookieHeader('sessionId'));
-    return new Response(null, { status: 302, headers });
-  }
-
-  // ── VISITOR JUST CLICKED "COME ON IN" ──
-  if (url.searchParams.get('enter') === '1') {
-    if (!open) {
-      return new Response(closedHTML(), {
-        status: 200,
-        headers: { 'content-type': 'text/html; charset=utf-8' },
-      });
-    }
-
-    const id = newSessionId();
-    const active = safeParseRecord(await redis.get('visitor:active'));
-    const queueLength = await redis.llen('visitor:queue');
-
-    if (!active && queueLength === 0) {
-      // slot is free AND nobody's already waiting — claim it directly,
-      // for the FULL session length. Not a heartbeat window.
-      await redis.set('visitor:active', JSON.stringify({ sessionId: id, enteredAt: Date.now() }), { ex: SESSION_DURATION_SECONDS });
-      url.searchParams.delete('enter');
-      const headers = new Headers({ Location: url.pathname + url.search });
-      headers.append('Set-Cookie', setCookieHeader('entered', '1', 86400));
-      headers.append('Set-Cookie', setCookieHeader('sessionId', id, 86400));
-      return new Response(null, { status: 302, headers });
-    }
-
-    // slot taken, OR people are already waiting — join the back of the queue.
-    await redis.rpush('visitor:queue', id);
-    url.searchParams.delete('enter');
+  if (ownerParam && ownerParam === OWNER_SECRET.trim()) {
+    url.searchParams.delete('owner');
     return new Response(null, {
       status: 302,
       headers: {
         Location: url.pathname + url.search,
-        'Set-Cookie': setCookieHeader('sessionId', id, 86400),
+        'Set-Cookie': setCookieHeader('owner', '1', 31536000),
       },
     });
   }
-
-  // ── HAS A SESSION, NOT YET ENTERED: are they queued? ──
-  if (sessionId && !entered) {
-    if (open) {
-      const active = safeParseRecord(await redis.get('visitor:active'));
-      const position = await redis.lpos('visitor:queue', sessionId);
-
-      if (!active && position === 0) {
-        // slot is free and they're first in line — promote them, full session length
-        await redis.lpop('visitor:queue');
-        await redis.set('visitor:active', JSON.stringify({ sessionId, enteredAt: Date.now() }), { ex: SESSION_DURATION_SECONDS });
-        return new Response(null, {
-          status: 302,
-          headers: {
-            Location: url.pathname + url.search,
-            'Set-Cookie': setCookieHeader('entered', '1', 86400),
-          },
-        });
-      }
-
-      if (position !== null && position >= 0) {
-        return new Response(queueHTML(position + 1), {
-          status: 200,
-          headers: { 'content-type': 'text/html; charset=utf-8' },
-        });
-      }
-    }
-    // not in the queue (never joined, or hours closed) — treat as fresh
+  if (getCookie(request, 'owner') === '1') {
+    return; // unlimited, ungated access
   }
 
-  // ── CLOSED: always a closed screen, no exceptions ──
+  const open = isOpenNow();
   if (!open) {
     return new Response(closedHTML(), {
       status: 200,
@@ -472,18 +263,24 @@ export default async function middleware(request) {
     });
   }
 
-  // ── FRESH VISITOR, OPEN HOURS: prove storage works, show the welcome screen ──
-  let storageStatus;
-  try {
-    const now = Date.now();
-    await redis.set('debug:lastPing', now);
-    const readBack = await redis.get('debug:lastPing');
-    storageStatus = readBack === now ? null : 'storage check: read-back mismatch';
-  } catch (err) {
-    storageStatus = 'storage check: failed — ' + (err && err.message ? err.message : 'unknown error');
+  // ── ADMITTED? Check the signed cookie — no Redis call needed. ──
+  const admitCookie = getCookie(request, 'admit');
+  const admission = await verifyAdmission(admitCookie);
+  if (admission) {
+    return; // genuinely, verifiably admitted — let them through
   }
 
-  return new Response(welcomeHTML(storageStatus), {
+  // ── HAVE A TICKET, WAITING? ──
+  const ticket = getCookie(request, 'ticket');
+  if (ticket) {
+    return new Response(queueHTML('…'), {
+      status: 200,
+      headers: { 'content-type': 'text/html; charset=utf-8' },
+    });
+  }
+
+  // ── FRESH VISITOR ──
+  return new Response(welcomeHTML(), {
     status: 200,
     headers: { 'content-type': 'text/html; charset=utf-8' },
   });
