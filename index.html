@@ -2169,7 +2169,7 @@ function fadeSentence() {
 
 // ── COLOUR WHEEL ──
 function drawWheel() {
-  const cx = 85, cy = 85, r = 82;
+  const cx = 85, cy = 85, r = 74;
   for (let angle = 0; angle < 360; angle++) {
     const start = (angle - 1) * Math.PI / 180;
     const end = (angle + 1) * Math.PI / 180;
@@ -2184,17 +2184,40 @@ function drawWheel() {
     wc.fillStyle = grad;
     wc.fill();
   }
+
+  // thin black ring — a genuine clickable zone for "black", not decoration
+  wc.beginPath();
+  wc.arc(cx, cy, (r + 82) / 2, 0, Math.PI * 2);
+  wc.strokeStyle = '#000';
+  wc.lineWidth = 82 - r;
+  wc.stroke();
+
+  // small white dot at the center — a genuine clickable zone for "white"
+  wc.beginPath();
+  wc.arc(cx, cy, 6, 0, Math.PI * 2);
+  wc.fillStyle = '#fff';
+  wc.fill();
 }
 drawWheel();
 
 function getHSLFromWheel(x, y) {
-  const cx = 85, cy = 85, r = 82;
+  const cx = 85, cy = 85;
+  const rMain = 74, rOuter = 82, rCenter = 6;
   const dx = x - cx, dy = y - cy;
   const dist = Math.sqrt(dx*dx + dy*dy);
-  if (dist > r) return null;
+
+  if (dist <= rCenter) {
+    return { h: 0, s: 0, l: 95, special: 'white' };
+  }
+  if (dist > rMain && dist <= rOuter) {
+    return { h: 0, s: 0, l: 5, special: 'black' };
+  }
+  if (dist > rOuter) return null;
+
   const h = (Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360;
-  const s = clamp(dist / r, 0, 1) * 90;
-  const l = 55 - (dist / r) * 38;
+  const normDist = clamp((dist - rCenter) / (rMain - rCenter), 0, 1);
+  const s = normDist * 90;
+  const l = 55 - normDist * 38;
   return { h, s, l };
 }
 
@@ -2208,7 +2231,7 @@ function handleWheelPick(clientX, clientY) {
   if (!hsl) return;
 
   pickedHSL = hsl;
-  setArrivalHueBackground(hsl.h);
+  setArrivalHueBackground(hsl);
   const hex = hslToHex(hsl.h, hsl.s, hsl.l);
 
   wheelDot.style.display = 'block';
@@ -2292,47 +2315,47 @@ window.addEventListener('resize', resizePortal);
 // automatically, no code changes needed. The gradient stays as an
 // automatic fallback if the photo file doesn't exist yet.
 const HUE_BUCKETS = [
-  { name: 'sunset-fire',      max: 30,  gradient: 'linear-gradient(160deg, #7a1e12, #d9642c)', file: 'red-sunsetfire.jpg' },
-  { name: 'warm-dawn',        max: 60,  gradient: 'linear-gradient(160deg, #a85a12, #e0a83c)', file: 'orange-warmdawn.jpg' },
-  { name: 'golden-hour',      max: 90,  gradient: 'linear-gradient(160deg, #8a7a12, #e0d060)', file: 'yellow-goldenhour.jpg' },
-  { name: 'spring-meadow',    max: 120, gradient: 'linear-gradient(160deg, #5a7a1a, #a8d060)', file: 'yellowgreen-springmeadow.jpg' },
-  { name: 'forest',           max: 150, gradient: 'linear-gradient(160deg, #1a4a2a, #3a8a52)', file: 'green-forest.jpg' },
-  { name: 'tropical-water',   max: 180, gradient: 'linear-gradient(160deg, #12564a, #2ca890)', file: 'teal-tropicalwater.jpg' },
-  { name: 'shallow-sea',      max: 210, gradient: 'linear-gradient(160deg, #124a56, #2c8ea8)', file: 'cyan-shallowsea.jpg' },
-  { name: 'blue-sky',         max: 240, gradient: 'linear-gradient(160deg, #1a3a6a, #4a86c8)', file: 'blue-bluemountains.png' },
-  { name: 'twilight',         max: 270, gradient: 'linear-gradient(160deg, #221a5a, #4a3a9a)', file: 'indigo-twilight.jpg' },
-  { name: 'dusk-lavender',    max: 300, gradient: 'linear-gradient(160deg, #3a1a5a, #7a4ab0)', file: 'violet-dusklavender.jpg' },
-  { name: 'neon-night',       max: 330, gradient: 'linear-gradient(160deg, #4a1250, #a03a9a)', file: 'magenta-neonnight.jpg' },
-  { name: 'rose-dawn',        max: 360, gradient: 'linear-gradient(160deg, #6a1230, #d9426a)', file: 'pink-rosedawn.jpg' },
+  { name: 'red-sunsetcanyon',    max: 40,  gradient: 'linear-gradient(160deg, #7a1e12, #d9642c)', file: 'red-sunsetcanyon.png' },
+  { name: 'orange-desertdunes',  max: 80,  gradient: 'linear-gradient(160deg, #a85a12, #e0a83c)', file: 'orange-desertdunes.png' },
+  { name: 'yellow-prairie',      max: 120, gradient: 'linear-gradient(160deg, #8a7a12, #e0d060)', file: 'yellow-prairie.png' },
+  { name: 'green-ancientforest', max: 160, gradient: 'linear-gradient(160deg, #1a4a2a, #3a8a52)', file: 'green-ancientforest.png' },
+  { name: 'cyan-tropicallagoon', max: 200, gradient: 'linear-gradient(160deg, #12564a, #2ca890)', file: 'cyan-tropicallagoon.png' },
+  { name: 'blue-bluemountains',  max: 240, gradient: 'linear-gradient(160deg, #1a3a6a, #4a86c8)', file: 'blue-bluemountains.png' },
+  { name: 'indigo-twilightpeaks',max: 280, gradient: 'linear-gradient(160deg, #221a5a, #4a3a9a)', file: 'indigo-twilightpeaks.png' },
+  { name: 'violet-lavenderhighlands', max: 320, gradient: 'linear-gradient(160deg, #3a1a5a, #7a4ab0)', file: 'violet-lavenderhighlands.png' },
+  { name: 'pink-blossomvalley',  max: 360, gradient: 'linear-gradient(160deg, #6a1230, #d9426a)', file: 'pink-blossomvalley.png' },
 ];
 
-function setPortalHueBackground(hue) {
-  const bucket = HUE_BUCKETS.find(b => hue <= b.max) || HUE_BUCKETS[HUE_BUCKETS.length - 1];
+const WHITE_ENTRY = { gradient: 'linear-gradient(160deg, #dfe6ea, #ffffff)', file: 'white-snowypeaks.png' };
+const BLACK_ENTRY = { gradient: 'linear-gradient(160deg, #000000, #16181c)', file: 'black-starlitmountains.png' };
+
+function setPortalHueBackground(hsl) {
   const bg = document.getElementById('portal-hue-bg');
   if (!bg) return;
-  // dark scrim sits on top, guaranteeing text stays legible no matter
-  // how bright the underlying photo turns out to be. Real photo (if it
-  // exists) shows beneath the scrim; the gradient is the fallback while
-  // the file's still a placeholder.
   const scrim = 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5))';
-  bg.style.backgroundImage = `${scrim}, url('${bucket.file}'), ${bucket.gradient}`;
+  const entry = hsl.special === 'white' ? WHITE_ENTRY
+              : hsl.special === 'black' ? BLACK_ENTRY
+              : (HUE_BUCKETS.find(b => hsl.h <= b.max) || HUE_BUCKETS[HUE_BUCKETS.length - 1]);
+  bg.style.backgroundImage = `${scrim}, url('${entry.file}'), ${entry.gradient}`;
 }
 
 // same 12-bucket mapping, but for the arrival screen's paint-veil —
 // updates live as the visitor drags around the color wheel, before
 // they've even pressed enter. Reuses HUE_BUCKETS so both screens always
 // agree on which photo/gradient belongs to which part of the wheel.
-function setArrivalHueBackground(hue) {
-  const bucket = HUE_BUCKETS.find(b => hue <= b.max) || HUE_BUCKETS[HUE_BUCKETS.length - 1];
+function setArrivalHueBackground(hsl) {
   const scrim = 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5))';
-  paintVeil.style.backgroundImage = `${scrim}, url('${bucket.file}'), ${bucket.gradient}`;
+  const entry = hsl.special === 'white' ? WHITE_ENTRY
+              : hsl.special === 'black' ? BLACK_ENTRY
+              : (HUE_BUCKETS.find(b => hsl.h <= b.max) || HUE_BUCKETS[HUE_BUCKETS.length - 1]);
+  paintVeil.style.backgroundImage = `${scrim}, url('${entry.file}'), ${entry.gradient}`;
 }
 
 function startPortal(hsl) {
   portalH = hsl.h;
   portalS = hsl.s;
   portalL = hsl.l;
-  setPortalHueBackground(hsl.h);
+  setPortalHueBackground(hsl);
   animatePortal();
 }
 
