@@ -5,7 +5,7 @@
 // decides which screen to show.
 
 import {
-  isOpenNow, getCookie, verifyAdmission, OWNER_SECRET, setCookieHeader,
+  redis, isOpenNow, getCookie, verifyAdmission, OWNER_SECRET, setCookieHeader, clearCookieHeader,
 } from './lib/gate.js';
 
 export const config = {
@@ -263,11 +263,21 @@ export default async function middleware(request) {
     });
   }
 
-  // ── ADMITTED? Check the signed cookie — no Redis call needed. ──
+  // ── ADMITTED? Check the signed cookie, then confirm it's still current ──
   const admitCookie = getCookie(request, 'admit');
   const admission = await verifyAdmission(admitCookie);
   if (admission) {
-    return; // genuinely, verifiably admitted — let them through
+    const nowServing = parseInt((await redis.get('queue:nowServing')) || '0', 10);
+    if (admission.ticket === nowServing) {
+      return; // still genuinely the current visitor
+    }
+    // ticket no longer matches — someone else was promoted because this
+    // visitor's heartbeat went quiet. Clear the stale cookies and send
+    // them back through the gate fresh.
+    const headers = new Headers({ Location: url.pathname + url.search });
+    headers.append('Set-Cookie', clearCookieHeader('admit'));
+    headers.append('Set-Cookie', clearCookieHeader('ticket'));
+    return new Response(null, { status: 302, headers });
   }
 
   // ── HAVE A TICKET, WAITING? ──
