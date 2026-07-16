@@ -3469,6 +3469,9 @@ document.getElementById('info-ui').addEventListener('touchmove', e => {
 
   ping();
   setInterval(ping, 10000);
+  document.addEventListener('visibilitychange', function(){
+    if(!document.hidden){ ping(); }
+  });
 })();
 </script>
 
