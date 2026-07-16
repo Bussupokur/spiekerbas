@@ -1,13 +1,15 @@
 // api/status.js
 // Polled by anyone waiting in line. This is also where the queue
-// actually advances — if the currently-admitted person's time is up,
-// whoever polls next notices that and moves nowServing forward. This is
-// the "pull" model: the queue only advances when someone's there to
-// notice, rather than needing the admitted visitor to signal anything.
+// actually advances — either the 5-minute hard cap has genuinely run
+// out, OR the current visitor's heartbeat has gone quiet for 30+
+// seconds (left, closed the tab, lost connection — doesn't matter
+// which). Either way, whoever polls next notices and moves the queue
+// forward. This is the "pull" model: it only advances when someone's
+// there to notice, not via anything the current visitor has to do.
 
 import {
   redis, isOpenNow, getCookie, setCookieHeader,
-  signAdmission, SESSION_DURATION_SECONDS,
+  signAdmission, SESSION_DURATION_SECONDS, HEARTBEAT_TIMEOUT_SECONDS,
 } from '../lib/gate.js';
 
 export default async function handler(req, res) {
@@ -23,13 +25,19 @@ export default async function handler(req, res) {
 
   const nowServing = parseInt((await redis.get('queue:nowServing')) || '0', 10);
   const nowServingUntil = parseInt((await redis.get('queue:nowServingUntil')) || '0', 10);
+  const lastHeartbeat = parseInt((await redis.get('queue:lastHeartbeat')) || '0', 10);
 
-  if (Date.now() >= nowServingUntil && ticket === nowServing + 1) {
-    // the previous turn has expired, and it's genuinely our turn next —
-    // advance the queue and admit ourselves.
+  const hardCapExpired = Date.now() >= nowServingUntil;
+  const heartbeatStale = nowServing > 0 && (Date.now() - lastHeartbeat) > HEARTBEAT_TIMEOUT_SECONDS * 1000;
+  const slotAbandoned = hardCapExpired || heartbeatStale;
+
+  if (slotAbandoned && ticket === nowServing + 1) {
+    // it's genuinely our turn next, and the previous turn is over —
+    // either it ran its course, or they went quiet. Advance and admit.
     const expiresAt = Date.now() + SESSION_DURATION_SECONDS * 1000;
     await redis.set('queue:nowServing', ticket);
     await redis.set('queue:nowServingUntil', expiresAt);
+    await redis.set('queue:lastHeartbeat', Date.now());
     const admitCookie = await signAdmission(ticket, expiresAt);
 
     res.setHeader('Set-Cookie', [
