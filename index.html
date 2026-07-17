@@ -683,69 +683,32 @@
     pointer-events: none;
     transition: opacity 1.6s ease;
     overflow: hidden;
-    background: #060605;
+    background: #050907;
     display: flex;
     align-items: center;
     justify-content: center;
   }
   #channelzero-page.visible { opacity: 1; pointer-events: auto; }
-  #channelzero-static {
+  #channelzero-testcard {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     z-index: 0;
-    opacity: 0.22;
     pointer-events: none;
-  }
-  #channelzero-wordmark {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1;
-    pointer-events: none;
-    font-family: 'Cormorant Garamond', serif;
-    font-weight: 300;
-    font-style: italic;
-    letter-spacing: 0.12em;
-    font-size: clamp(60px, 16vw, 220px);
-    color: rgba(235,220,195,0.06);
-    text-transform: lowercase;
-    white-space: nowrap;
-    user-select: none;
-  }
-  #channelzero-scanlines {
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    pointer-events: none;
-    background: repeating-linear-gradient(
-      to bottom,
-      rgba(0,0,0,0.18) 0px,
-      rgba(0,0,0,0.18) 1px,
-      transparent 1px,
-      transparent 3px
-    );
-  }
-  #channelzero-vignette {
-    position: absolute;
-    inset: 0;
-    z-index: 3;
-    pointer-events: none;
-    background: radial-gradient(120% 100% at 50% 50%, transparent 40%, rgba(0,0,0,0.65) 100%);
   }
   #channelzero-inner {
     position: relative;
-    z-index: 4;
+    z-index: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2.2rem;
+    gap: 1.6rem;
     text-align: center;
-    padding: 2rem;
+    padding: 2rem 2.4rem;
     max-width: 560px;
+    background: rgba(4,10,6,0.82);
+    border: 1px solid rgba(140,230,160,0.4);
   }
   .cz-line-nl {
     font-family: 'Cormorant Garamond', serif;
@@ -784,7 +747,7 @@
   }
   #channelzero-back {
     position: absolute;
-    z-index: 4;
+    z-index: 1;
     bottom: 7%;
     left: 50%;
     transform: translateX(-50%);
@@ -1793,10 +1756,62 @@
 
 <!-- CHANNEL ZERO TV THRESHOLD PAGE -->
 <div id="channelzero-page">
-  <canvas id="channelzero-static"></canvas>
-  <div id="channelzero-wordmark">channel zero</div>
-  <div id="channelzero-scanlines"></div>
-  <div id="channelzero-vignette"></div>
+  <svg id="channelzero-testcard" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+    <rect width="800" height="600" fill="#050907"/>
+    <!-- grid -->
+    <g stroke="rgba(120,220,150,0.16)" stroke-width="1">
+      <line x1="50" y1="0" x2="50" y2="600"/><line x1="120" y1="0" x2="120" y2="600"/>
+      <line x1="190" y1="0" x2="190" y2="600"/><line x1="260" y1="0" x2="260" y2="600"/>
+      <line x1="330" y1="0" x2="330" y2="600"/><line x1="400" y1="0" x2="400" y2="600"/>
+      <line x1="470" y1="0" x2="470" y2="600"/><line x1="540" y1="0" x2="540" y2="600"/>
+      <line x1="610" y1="0" x2="610" y2="600"/><line x1="680" y1="0" x2="680" y2="600"/>
+      <line x1="750" y1="0" x2="750" y2="600"/>
+      <line x1="0" y1="50" x2="800" y2="50"/><line x1="0" y1="110" x2="800" y2="110"/>
+      <line x1="0" y1="170" x2="800" y2="170"/><line x1="0" y1="230" x2="800" y2="230"/>
+      <line x1="0" y1="290" x2="800" y2="290"/><line x1="0" y1="350" x2="800" y2="350"/>
+      <line x1="0" y1="410" x2="800" y2="410"/><line x1="0" y1="470" x2="800" y2="470"/>
+      <line x1="0" y1="530" x2="800" y2="530"/>
+    </g>
+    <!-- crosshair -->
+    <g stroke="rgba(140,230,160,0.55)" stroke-width="1.2">
+      <line x1="400" y1="0" x2="400" y2="600"/>
+      <line x1="0" y1="300" x2="800" y2="300"/>
+    </g>
+    <!-- concentric circles -->
+    <circle cx="400" cy="300" r="185" fill="none" stroke="rgba(140,230,160,0.55)" stroke-width="1.2"/>
+    <circle cx="400" cy="300" r="115" fill="none" stroke="rgba(140,230,160,0.4)" stroke-width="1"/>
+    <!-- corner resolution wedges -->
+    <g stroke="rgba(140,230,160,0.45)" stroke-width="1">
+      <line x1="0" y1="0" x2="90" y2="0"/><line x1="0" y1="0" x2="0" y2="90"/>
+      <line x1="0" y1="0" x2="70" y2="14"/><line x1="0" y1="0" x2="50" y2="30"/>
+      <line x1="0" y1="0" x2="30" y2="50"/><line x1="0" y1="0" x2="14" y2="70"/>
+
+      <line x1="800" y1="0" x2="710" y2="0"/><line x1="800" y1="0" x2="800" y2="90"/>
+      <line x1="800" y1="0" x2="730" y2="14"/><line x1="800" y1="0" x2="750" y2="30"/>
+      <line x1="800" y1="0" x2="770" y2="50"/><line x1="800" y1="0" x2="786" y2="70"/>
+
+      <line x1="0" y1="600" x2="90" y2="600"/><line x1="0" y1="600" x2="0" y2="510"/>
+      <line x1="0" y1="600" x2="70" y2="586"/><line x1="0" y1="600" x2="50" y2="570"/>
+      <line x1="0" y1="600" x2="30" y2="550"/><line x1="0" y1="600" x2="14" y2="530"/>
+
+      <line x1="800" y1="600" x2="710" y2="600"/><line x1="800" y1="600" x2="800" y2="510"/>
+      <line x1="800" y1="600" x2="730" y2="586"/><line x1="800" y1="600" x2="750" y2="570"/>
+      <line x1="800" y1="600" x2="770" y2="550"/><line x1="800" y1="600" x2="786" y2="530"/>
+    </g>
+    <!-- color bars -->
+    <g>
+      <rect x="290" y="560" width="46" height="24" fill="#c8c8c8"/>
+      <rect x="336" y="560" width="46" height="24" fill="#c8c832"/>
+      <rect x="382" y="560" width="46" height="24" fill="#32c8c8"/>
+      <rect x="428" y="560" width="46" height="24" fill="#32c832"/>
+      <rect x="474" y="560" width="46" height="24" fill="#c832c8"/>
+      <rect x="520" y="560" width="46" height="24" fill="#c83232"/>
+      <rect x="566" y="560" width="46" height="24" fill="#3232c8"/>
+    </g>
+    <!-- CH 00 / SIGNAL label -->
+    <text x="770" y="40" text-anchor="end" fill="rgba(140,230,160,0.85)" font-family="Arial, sans-serif" font-weight="bold" font-size="22" letter-spacing="2">CH 00</text>
+    <text x="770" y="60" text-anchor="end" fill="rgba(140,230,160,0.6)" font-family="Arial, sans-serif" font-size="12" letter-spacing="3">SIGNAL</text>
+  </svg>
   <div id="channelzero-inner">
     <div class="cz-line-nl">Dit is een portaal zonder terugweg.</div>
     <div class="cz-line-en">this is a one-way portal</div>
@@ -2810,43 +2825,6 @@ document.getElementById('connect-back').addEventListener('click', closeConnect);
 
 // ── CHANNEL ZERO TV PAGE ──
 const channelzeroPage = document.getElementById('channelzero-page');
-
-// ── CHANNEL ZERO THRESHOLD: animated static, foreshadowing the broadcast ──
-(function initChannelZeroStatic(){
-  const canvas = document.getElementById('channelzero-static');
-  if(!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const W = 160, H = 90; // small internal resolution, scaled up via CSS for a chunky retro look
-  canvas.width = W; canvas.height = H;
-  canvas.style.width = '100%';
-  canvas.style.height = '100%';
-  canvas.style.imageRendering = 'pixelated';
-
-  const imageData = ctx.createImageData(W, H);
-  function drawNoiseFrame(){
-    const data = imageData.data;
-    for(let i = 0; i < data.length; i += 4){
-      const v = Math.random() * 255;
-      data[i] = v; data[i+1] = v; data[i+2] = v; data[i+3] = 255;
-    }
-    ctx.putImageData(imageData, 0, 0);
-  }
-
-  let running = false;
-  function tick(){
-    if(!running) return;
-    drawNoiseFrame();
-    setTimeout(tick, 90); // a handful of frames a second, not a smooth 60fps — feels more like real static
-  }
-
-  // only animate while the threshold screen is actually visible
-  const observer = new MutationObserver(() => {
-    const isVisible = channelzeroPage.classList.contains('visible');
-    if(isVisible && !running){ running = true; tick(); }
-    if(!isVisible && running){ running = false; }
-  });
-  observer.observe(channelzeroPage, { attributes: true, attributeFilter: ['class'] });
-})();
 
 function closeChannelZero(){
   channelzeroPage.classList.remove('visible');
