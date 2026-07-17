@@ -184,7 +184,7 @@ function welcomeHTML() {
     <div class="status-pill open">open</div>
     <h1>open</h1>
     <p>enter at eigen risico.</p>
-    <a class="enter-btn" href="/">enter</a>
+    <a class="enter-btn" href="/?enter=1">enter</a>
     <div class="hours-label">opening times</div>
     <div class="hours-table">
       <div><span>vrijdag</span>all day</div>
@@ -317,8 +317,24 @@ visits total:      ${totalVisits}</pre>
     });
   }
 
-  // ── QUEUE SYSTEM OFF: hours are the only check. ──
+  // ── QUEUE SYSTEM OFF: hours are the only check, plus a simple ──
+  // "already stepped through" cookie so clicking enter actually works
+  // and the rest of the site stays reachable, not stuck re-showing this
+  // screen on every single click.
   if (!QUEUE_ENABLED) {
+    if (url.searchParams.get('enter') === '1') {
+      url.searchParams.delete('enter');
+      return new Response(null, {
+        status: 302,
+        headers: {
+          Location: url.pathname + url.search,
+          'Set-Cookie': setCookieHeader('seen', '1', 21600),
+        },
+      });
+    }
+    if (getCookie(request, 'seen') === '1') {
+      return; // already stepped through today — let the real site load
+    }
     return new Response(welcomeHTML(), {
       status: 200,
       headers: { 'content-type': 'text/html; charset=utf-8' },
