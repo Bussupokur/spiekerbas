@@ -67,6 +67,14 @@ const PAGE_STYLES = `
     letter-spacing:0.04em;
     margin-bottom: 2rem;
   }
+  .hours-label{
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: lowercase;
+    color: rgba(235,220,195,0.45);
+    font-family: Arial, sans-serif;
+    margin-bottom: 0.6rem;
+  }
   .hours-table div{ padding: 3px 0; }
   .hours-table span{ display:inline-block; width: 110px; color: var(--cream-dim); }
   .enter-btn{
@@ -120,7 +128,7 @@ const CLOCK_SCRIPT = `
       }).formatToParts(new Date());
       var map = {};
       parts.forEach(function(p){ map[p.type] = p.value; });
-      el.textContent = map.weekday + ' ' + map.hour + ':' + map.minute + ':' + map.second + ' \u2014 Nederlandse tijd';
+      el.textContent = map.hour + ':' + map.minute + ':' + map.second + ' \u2014 Amsterdam';
     }
     tickClock();
     setInterval(tickClock, 1000);
@@ -144,11 +152,12 @@ function closedHTML() {
     <div class="status-pill closed">gesloten</div>
     <h1>nu gesloten</h1>
     <p>terug tijdens openingstijden — zie hieronder.</p>
+    <div class="hours-label">opening times</div>
     <div class="hours-table">
-      <div><span>vrijdag</span>hele dag</div>
-      <div><span>zaterdag</span>hele dag</div>
-      <div><span>zondag</span>hele dag</div>
-      <div><span>ma, di, wo, do</span>gesloten</div>
+      <div><span>vrijdag</span>all day</div>
+      <div><span>zaterdag</span>all day</div>
+      <div><span>zondag</span>all day</div>
+      <div><span>ma, di, wo, do</span>closed</div>
     </div>
     <div class="live-clock" id="liveClock"></div>
     <div class="contact-note">vragen? <a href="mailto:inquiries@spiekerbas.xyz">inquiries@spiekerbas.xyz</a></div>
@@ -173,13 +182,14 @@ function welcomeHTML() {
 <body>
   <div id="stage">
     <div class="status-pill open">open</div>
-    <h1>we zijn open</h1>
-    <p>kom binnen wanneer je klaar bent.</p>
-    <a class="enter-btn" href="/">kom binnen</a>
+    <h1>open</h1>
+    <p>enter at eigen risico.</p>
+    <a class="enter-btn" href="/">enter</a>
+    <div class="hours-label">opening times</div>
     <div class="hours-table">
-      <div><span>vrijdag</span>hele dag</div>
-      <div><span>zaterdag</span>hele dag</div>
-      <div><span>zondag</span>hele dag</div>
+      <div><span>vrijdag</span>all day</div>
+      <div><span>zaterdag</span>all day</div>
+      <div><span>zondag</span>all day</div>
     </div>
     <div class="live-clock" id="liveClock"></div>
     <div class="contact-note">vragen? <a href="mailto:inquiries@spiekerbas.xyz">inquiries@spiekerbas.xyz</a></div>
