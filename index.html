@@ -36,7 +36,7 @@
   #painting {
     position: absolute;
     inset: 0;
-    background-image: url('delete.png');
+    background-image: url('arrivalspiekerbas.jpg');
     background-size: cover;
     background-position: center 40%;
     will-change: opacity;
@@ -1266,7 +1266,16 @@
     overflow: hidden;
   }
   #projects-split.visible { opacity: 1; pointer-events: auto; }
-  #split-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  #split-hue-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    background-size: cover;
+    background-position: center;
+  }
+  #split-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; opacity: 0.65; }
   #split-inner {
     position: absolute;
     inset: 0;
@@ -1935,6 +1944,7 @@
 
 <!-- PROJECTS SPLIT PAGE -->
 <div id="projects-split">
+  <div id="split-hue-bg"></div>
   <canvas id="split-canvas"></canvas>
   <div id="split-inner">
     <div class="split-option" data-split="research">future studies<span class="split-sub">research without development</span></div>
@@ -2367,6 +2377,18 @@ function startPortal(hsl) {
   portalL = hsl.l;
   setPortalHueBackground(hsl);
   animatePortal();
+}
+
+// same bucket data again, for the projects split screen — so whichever
+// color a visitor chose on entry follows them from the portal into here too
+function setSplitHueBackground(hsl) {
+  const bg = document.getElementById('split-hue-bg');
+  if (!bg) return;
+  const scrim = 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5))';
+  const entry = hsl.special === 'white' ? WHITE_ENTRY
+              : hsl.special === 'black' ? BLACK_ENTRY
+              : (HUE_BUCKETS.find(b => hsl.h <= b.max) || HUE_BUCKETS[HUE_BUCKETS.length - 1]);
+  bg.style.backgroundImage = `${scrim}, url('${entry.file}'), ${entry.gradient}`;
 }
 
 function animatePortal() {
@@ -3100,6 +3122,7 @@ function loopSplit(){
 function openSplit(){
   if(!pickedHSL) return;
   sH=pickedHSL.h; sS=pickedHSL.s; sL=pickedHSL.l;
+  setSplitHueBackground(pickedHSL);
   if(sRaf){cancelAnimationFrame(sRaf);sRaf=null;}
   loopSplit();
   portal.style.transition='opacity 0.8s ease';
@@ -3436,6 +3459,21 @@ document.getElementById('info-ui').addEventListener('touchstart', e => {
 document.getElementById('info-ui').addEventListener('touchmove', e => {
   e.stopPropagation();
 }, { passive: true });
+
+// ── DIRECT LINK: #projects skips the intro and opens the projects split screen directly ──
+if(location.hash === '#projects'){
+  pickedHSL = pickedHSL || { h: 96, s: 35, l: 45 };
+  const arrivalEl = document.getElementById('arrival');
+  if(arrivalEl) arrivalEl.style.display = 'none';
+  sH = pickedHSL.h; sS = pickedHSL.s; sL = pickedHSL.l;
+  setSplitHueBackground(pickedHSL);
+  if(sRaf){ cancelAnimationFrame(sRaf); sRaf = null; }
+  loopSplit();
+  portal.style.transition = 'none';
+  portal.style.opacity = '0';
+  portal.style.pointerEvents = 'none';
+  splitPage.classList.add('visible');
+}
 
 });
 
