@@ -1,11 +1,15 @@
 // middleware.js
-// Thin gate: opening hours, and checking the signed admission cookie.
-// That's it. All the actual queue logic (claiming a slot, advancing the
-// line) lives in /api/enter.js and /api/status.js — this file just
-// decides which screen to show.
+// Thin gate: opening hours, and (when QUEUE_ENABLED) checking the signed
+// admission cookie. All the actual queue logic lives in /api/enter.js and
+// /api/status.js — this file just decides which screen to show.
+//
+// QUEUE_ENABLED currently false (see lib/gate.js) — the gate only checks
+// hours. No tickets, no waiting, no session limit. Flip it back to true
+// later to re-enable everything below without rebuilding it.
 
 import {
-  redis, isOpenNow, getCookie, verifyAdmission, OWNER_SECRET, setCookieHeader, clearCookieHeader, getAmsterdamDateKey,
+  redis, isOpenNow, getCookie, verifyAdmission, OWNER_SECRET, setCookieHeader,
+  clearCookieHeader, getAmsterdamDateKey, QUEUE_ENABLED,
 } from './lib/gate.js';
 
 export const config = {
@@ -40,7 +44,6 @@ const PAGE_STYLES = `
   }
   .status-pill.open{ background:#a8e05f; color:#1a2e10; }
   .status-pill.closed{ background:#5a5a55; color:#e8e0d0; }
-  .status-pill.queue{ background:#ffd23f; color:#3a2c05; }
   h1{
     font-size: clamp(28px,5vw,44px);
     font-weight:300; font-style:italic;
@@ -83,13 +86,6 @@ const PAGE_STYLES = `
     transition: color 0.3s ease, border-color 0.3s ease;
   }
   .enter-btn:hover{ color: var(--cream); border-color: rgba(235,220,195,0.7); }
-  .timer-note{
-    font-size: 12px;
-    letter-spacing: 0.08em;
-    color: rgba(235,220,195,0.45);
-    font-style: italic;
-    margin-top: 0.9rem;
-  }
   .live-clock{
     font-size:12px;
     letter-spacing:0.18em;
@@ -111,12 +107,6 @@ const PAGE_STYLES = `
     border-bottom: 1px solid rgba(235,220,195,0.25);
   }
   .contact-note a:hover{ color: var(--cream); }
-  .queue-position{
-    font-size: clamp(40px,8vw,64px);
-    font-weight:300; font-style:italic;
-    color: #ffd23f;
-    margin: 0.4rem 0 1.2rem;
-  }
 `;
 
 const CLOCK_SCRIPT = `
@@ -124,13 +114,13 @@ const CLOCK_SCRIPT = `
     function tickClock(){
       var el = document.getElementById('liveClock');
       if(!el) return;
-      var parts = new Intl.DateTimeFormat('en-GB', {
+      var parts = new Intl.DateTimeFormat('nl-NL', {
         timeZone: 'Europe/Amsterdam',
         weekday: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
       }).formatToParts(new Date());
       var map = {};
       parts.forEach(function(p){ map[p.type] = p.value; });
-      el.textContent = map.weekday + ' ' + map.hour + ':' + map.minute + ':' + map.second + ' \\u2014 Amsterdam time';
+      el.textContent = map.weekday + ' ' + map.hour + ':' + map.minute + ':' + map.second + ' \u2014 Nederlandse tijd';
     }
     tickClock();
     setInterval(tickClock, 1000);
@@ -139,11 +129,11 @@ const CLOCK_SCRIPT = `
 
 function closedHTML() {
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Closed for now — spiekerbas</title>
+<title>Gesloten — spiekerbas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
@@ -151,17 +141,17 @@ function closedHTML() {
 </head>
 <body>
   <div id="stage">
-    <div class="status-pill closed">closed</div>
-    <h1>closed for now</h1>
-    <p>back during opening hours — see the schedule below.</p>
+    <div class="status-pill closed">gesloten</div>
+    <h1>nu gesloten</h1>
+    <p>terug tijdens openingstijden — zie hieronder.</p>
     <div class="hours-table">
-      <div><span>fri &ndash; sat</span>19:00 &ndash; 23:00</div>
-      <div><span>sun</span>14:00 &ndash; 18:00</div>
-      <div><span>wed</span>12:00 &ndash; 18:00</div>
-      <div><span>mon, tue, thu</span>closed</div>
+      <div><span>vrijdag</span>hele dag</div>
+      <div><span>zaterdag</span>hele dag</div>
+      <div><span>zondag</span>hele dag</div>
+      <div><span>ma, di, wo, do</span>gesloten</div>
     </div>
     <div class="live-clock" id="liveClock"></div>
-    <div class="contact-note">questions? <a href="mailto:inquiries@spiekerbas.xyz">inquiries@spiekerbas.xyz</a></div>
+    <div class="contact-note">vragen? <a href="mailto:inquiries@spiekerbas.xyz">inquiries@spiekerbas.xyz</a></div>
   </div>
   ${CLOCK_SCRIPT}
 </body>
@@ -170,7 +160,7 @@ function closedHTML() {
 
 function welcomeHTML() {
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -182,30 +172,19 @@ function welcomeHTML() {
 </head>
 <body>
   <div id="stage">
-    <div class="status-pill open">open now</div>
-    <h1>we're open</h1>
-    <p>one visitor at a time. nothing starts until you actually step through.</p>
-    <button class="enter-btn" id="enterBtn">come on in</button>
-    <div class="timer-note">your 5 minutes starts once you enter — no matter what.</div>
+    <div class="status-pill open">open</div>
+    <h1>we zijn open</h1>
+    <p>kom binnen wanneer je klaar bent.</p>
+    <a class="enter-btn" href="/">kom binnen</a>
     <div class="hours-table">
-      <div><span>fri &ndash; sat</span>19:00 &ndash; 23:00</div>
-      <div><span>sun</span>14:00 &ndash; 18:00</div>
-      <div><span>wed</span>12:00 &ndash; 18:00</div>
+      <div><span>vrijdag</span>hele dag</div>
+      <div><span>zaterdag</span>hele dag</div>
+      <div><span>zondag</span>hele dag</div>
     </div>
     <div class="live-clock" id="liveClock"></div>
-    <div class="contact-note">questions? <a href="mailto:inquiries@spiekerbas.xyz">inquiries@spiekerbas.xyz</a></div>
+    <div class="contact-note">vragen? <a href="mailto:inquiries@spiekerbas.xyz">inquiries@spiekerbas.xyz</a></div>
   </div>
   ${CLOCK_SCRIPT}
-  <script>
-    document.getElementById('enterBtn').addEventListener('click', function(){
-      fetch('/api/enter', { method: 'POST', credentials: 'same-origin' })
-        .then(function(r){ return r.json(); })
-        .then(function(data){
-          window.location.href = '/';
-        })
-        .catch(function(){ window.location.href = '/'; });
-    });
-  </script>
 </body>
 </html>`;
 }
@@ -220,7 +199,15 @@ function queueHTML(position) {
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
-<style>${PAGE_STYLES}</style>
+<style>${PAGE_STYLES}
+  .status-pill.queue{ background:#ffd23f; color:#3a2c05; }
+  .queue-position{
+    font-size: clamp(40px,8vw,64px);
+    font-weight:300; font-style:italic;
+    color: #ffd23f;
+    margin: 0.4rem 0 1.2rem;
+  }
+</style>
 </head>
 <body>
   <div id="stage">
@@ -288,7 +275,7 @@ export default async function middleware(request) {
   a{ color:#a8e05f; }
 </style>
 </head><body>
-  <h1>owner status — raw queue state</h1>
+  <h1>owner status ${QUEUE_ENABLED ? '' : '— queue system OFF'}</h1>
   <pre>nextTicket:        ${nextTicket}
 nowServing:        ${nowServing}
 nowServingUntil:   ${nowServingUntil}  (${nowServingUntil ? Math.round((nowServingUntil - now)/1000) + 's remaining' : 'never set'})
@@ -320,6 +307,16 @@ visits total:      ${totalVisits}</pre>
     });
   }
 
+  // ── QUEUE SYSTEM OFF: hours are the only check. ──
+  if (!QUEUE_ENABLED) {
+    return new Response(welcomeHTML(), {
+      status: 200,
+      headers: { 'content-type': 'text/html; charset=utf-8' },
+    });
+  }
+
+  // ── everything below only runs if QUEUE_ENABLED is ever set back to true ──
+
   // ── ADMITTED? Check the signed cookie, then confirm it's still current ──
   const admitCookie = getCookie(request, 'admit');
   const admission = await verifyAdmission(admitCookie);
@@ -328,9 +325,6 @@ visits total:      ${totalVisits}</pre>
     if (admission.ticket === nowServing) {
       return; // still genuinely the current visitor
     }
-    // ticket no longer matches — someone else was promoted because this
-    // visitor's heartbeat went quiet. Clear the stale cookies and send
-    // them back through the gate fresh.
     const headers = new Headers({ Location: url.pathname + url.search });
     headers.append('Set-Cookie', clearCookieHeader('admit'));
     headers.append('Set-Cookie', clearCookieHeader('ticket'));
