@@ -2241,6 +2241,7 @@ function handleWheelPick(clientX, clientY) {
   if (!hsl) return;
 
   pickedHSL = hsl;
+  try { localStorage.setItem('pickedHSL', JSON.stringify(hsl)); } catch(e) {}
   setArrivalHueBackground(hsl);
   const hex = hslToHex(hsl.h, hsl.s, hsl.l);
 
@@ -3462,6 +3463,12 @@ document.getElementById('info-ui').addEventListener('touchmove', e => {
 
 // ── DIRECT LINK: #projects skips the intro and opens the projects split screen directly ──
 if(location.hash === '#projects'){
+  if(!pickedHSL){
+    try {
+      const saved = localStorage.getItem('pickedHSL');
+      if(saved) pickedHSL = JSON.parse(saved);
+    } catch(e) {}
+  }
   pickedHSL = pickedHSL || { h: 96, s: 35, l: 45 };
   const arrivalEl = document.getElementById('arrival');
   if(arrivalEl) arrivalEl.style.display = 'none';
