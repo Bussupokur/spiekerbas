@@ -683,13 +683,62 @@
     pointer-events: none;
     transition: opacity 1.6s ease;
     overflow: hidden;
-    background: var(--dark);
+    background: #060605;
     display: flex;
     align-items: center;
     justify-content: center;
   }
   #channelzero-page.visible { opacity: 1; pointer-events: auto; }
+  #channelzero-static {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    opacity: 0.22;
+    pointer-events: none;
+  }
+  #channelzero-wordmark {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    pointer-events: none;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-style: italic;
+    letter-spacing: 0.12em;
+    font-size: clamp(60px, 16vw, 220px);
+    color: rgba(235,220,195,0.06);
+    text-transform: lowercase;
+    white-space: nowrap;
+    user-select: none;
+  }
+  #channelzero-scanlines {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(0,0,0,0.18) 0px,
+      rgba(0,0,0,0.18) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  }
+  #channelzero-vignette {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    background: radial-gradient(120% 100% at 50% 50%, transparent 40%, rgba(0,0,0,0.65) 100%);
+  }
   #channelzero-inner {
+    position: relative;
+    z-index: 4;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -735,6 +784,7 @@
   }
   #channelzero-back {
     position: absolute;
+    z-index: 4;
     bottom: 7%;
     left: 50%;
     transform: translateX(-50%);
@@ -1293,7 +1343,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: clamp(1.4rem,3.8vh,3rem);
+    gap: clamp(1.1rem,3.2vh,2.4rem);
     z-index: 2;
   }
   #split-back {
@@ -1674,8 +1724,6 @@
     <div class="door" data-door="work">work</div>
     <div class="door-divider"></div>
     <div class="door" data-door="connect">connect</div>
-    <div class="door-divider"></div>
-    <div class="door" data-door="channelzero">channel zero tv</div>
   </div>
   <button id="back-btn" title="return to the beginning">
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1745,6 +1793,10 @@
 
 <!-- CHANNEL ZERO TV THRESHOLD PAGE -->
 <div id="channelzero-page">
+  <canvas id="channelzero-static"></canvas>
+  <div id="channelzero-wordmark">channel zero</div>
+  <div id="channelzero-scanlines"></div>
+  <div id="channelzero-vignette"></div>
   <div id="channelzero-inner">
     <div class="cz-line-nl">Dit is een portaal zonder terugweg.</div>
     <div class="cz-line-en">this is a one-way portal</div>
@@ -1965,6 +2017,8 @@
     <div class="split-option" data-split="second-nature-archive">second nature archives</div>
     <div class="split-divider"></div>
     <div class="split-option" data-split="antant">anti ant tank<span class="split-sub">a friendly garden sentry</span></div>
+    <div class="split-divider"></div>
+    <div class="split-option" data-split="channelzero">channel zero tv<span class="split-sub">a different kind of broadcast</span></div>
   </div>
   <button id="split-back"><svg width="16" height="16" viewBox="0 0 16 16" fill="none">
       <circle cx="8" cy="8" r="7" stroke="rgba(235,220,195,0.35)" stroke-width="0.8"/>
@@ -2757,21 +2811,50 @@ document.getElementById('connect-back').addEventListener('click', closeConnect);
 // ── CHANNEL ZERO TV PAGE ──
 const channelzeroPage = document.getElementById('channelzero-page');
 
-function openChannelZero(){
-  portal.style.transition='opacity 0.8s ease';
-  portal.style.opacity=0;
-  setTimeout(()=>{
-    portal.style.pointerEvents='none';
-    channelzeroPage.classList.add('visible');
-  },900);
-}
+// ── CHANNEL ZERO THRESHOLD: animated static, foreshadowing the broadcast ──
+(function initChannelZeroStatic(){
+  const canvas = document.getElementById('channelzero-static');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = 160, H = 90; // small internal resolution, scaled up via CSS for a chunky retro look
+  canvas.width = W; canvas.height = H;
+  canvas.style.width = '100%';
+  canvas.style.height = '100%';
+  canvas.style.imageRendering = 'pixelated';
+
+  const imageData = ctx.createImageData(W, H);
+  function drawNoiseFrame(){
+    const data = imageData.data;
+    for(let i = 0; i < data.length; i += 4){
+      const v = Math.random() * 255;
+      data[i] = v; data[i+1] = v; data[i+2] = v; data[i+3] = 255;
+    }
+    ctx.putImageData(imageData, 0, 0);
+  }
+
+  let running = false;
+  function tick(){
+    if(!running) return;
+    drawNoiseFrame();
+    setTimeout(tick, 90); // a handful of frames a second, not a smooth 60fps — feels more like real static
+  }
+
+  // only animate while the threshold screen is actually visible
+  const observer = new MutationObserver(() => {
+    const isVisible = channelzeroPage.classList.contains('visible');
+    if(isVisible && !running){ running = true; tick(); }
+    if(!isVisible && running){ running = false; }
+  });
+  observer.observe(channelzeroPage, { attributes: true, attributeFilter: ['class'] });
+})();
 
 function closeChannelZero(){
   channelzeroPage.classList.remove('visible');
   setTimeout(()=>{
-    portal.style.transition='opacity 1s ease';
-    portal.style.opacity=1;
-    portal.style.pointerEvents='auto';
+    if(sRaf){cancelAnimationFrame(sRaf);sRaf=null;}
+    sH=pickedHSL.h; sS=pickedHSL.s; sL=pickedHSL.l;
+    loopSplit();
+    splitPage.classList.add('visible');
   },400);
 }
 
@@ -3199,6 +3282,17 @@ document.querySelectorAll('.split-option').forEach(opt=>{
       },800);
     } else if(which==='antant'){
       window.location.href = 'anti-ant-tank.html';
+    } else if(which==='channelzero'){
+      // fade split out, fade the one-way-portal threshold screen in
+      splitPage.style.transition='opacity 0.8s ease';
+      splitPage.style.opacity='0';
+      setTimeout(()=>{
+        splitPage.classList.remove('visible');
+        splitPage.style.opacity='';
+        splitPage.style.transition='';
+        cancelAnimationFrame(sRaf); sRaf=null;
+        channelzeroPage.classList.add('visible');
+      },800);
     }
   });
 });
@@ -3366,7 +3460,6 @@ document.getElementById('portal-inner').addEventListener('click', e => {
   if (target === 'making') openMaking();
   if (target === 'connect') openConnect();
   if (target === 'work') openWork();
-  if (target === 'channelzero') openChannelZero();
 });
 
 // projects-back handled in split JS
