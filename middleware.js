@@ -9,7 +9,7 @@
 
 import {
   redis, isOpenNow, getCookie, verifyAdmission, OWNER_SECRET, setCookieHeader,
-  clearCookieHeader, getAmsterdamDateKey, QUEUE_ENABLED,
+  clearCookieHeader, getAmsterdamDateKey, QUEUE_ENABLED, getHoursTableRows,
 } from './lib/gate.js';
 
 export const config = {
@@ -154,10 +154,7 @@ function closedHTML() {
     <p>terug tijdens openingstijden — zie hieronder.</p>
     <div class="hours-label">opening times</div>
     <div class="hours-table">
-      <div><span>vrijdag</span>all day</div>
-      <div><span>zaterdag</span>all day</div>
-      <div><span>zondag</span>all day</div>
-      <div><span>ma, di, wo, do</span>closed</div>
+      ${getHoursTableRows()}
     </div>
     <div class="live-clock" id="liveClock"></div>
     <div class="contact-note">vragen? <a href="mailto:inquiries@spiekerbas.xyz">inquiries@spiekerbas.xyz</a></div>
@@ -187,9 +184,7 @@ function welcomeHTML() {
     <a class="enter-btn" href="/?enter=1">enter</a>
     <div class="hours-label">opening times</div>
     <div class="hours-table">
-      <div><span>vrijdag</span>all day</div>
-      <div><span>zaterdag</span>all day</div>
-      <div><span>zondag</span>all day</div>
+      ${getHoursTableRows()}
     </div>
     <div class="live-clock" id="liveClock"></div>
     <div class="contact-note">vragen? <a href="mailto:inquiries@spiekerbas.xyz">inquiries@spiekerbas.xyz</a></div>
