@@ -54,6 +54,39 @@
     transform-origin: center center;
     transition: background-image 0.4s ease, transform 3.2s cubic-bezier(0.25, 0.1, 0.25, 1);
   }
+  #zoom-welcome {
+    position: absolute;
+    inset: 0;
+    z-index: 6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    opacity: 0;
+    pointer-events: none;
+  }
+  #zoom-welcome-nl {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(24px, 3vw, 42px);
+    font-weight: 300;
+    font-style: italic;
+    letter-spacing: 0.06em;
+    color: var(--cream);
+    text-align: center;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.6);
+  }
+  #zoom-welcome-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(17px, 1.6vw, 24px);
+    font-weight: 300;
+    font-style: italic;
+    letter-spacing: 0.1em;
+    color: var(--cream-dim);
+    text-align: center;
+    opacity: 0;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.6);
+  }
 
   #name {
     position: absolute;
@@ -1641,6 +1674,10 @@
 
 <!-- ARRIVAL -->
 <div id="arrival">
+  <div id="zoom-welcome">
+    <div id="zoom-welcome-nl">Welkom in het portaal</div>
+    <div id="zoom-welcome-en">Choose your rabbithole</div>
+  </div>
   <div id="painting">
     <div id="paint-veil"></div>
   </div>
@@ -2312,41 +2349,53 @@ enterBtn.addEventListener('click', () => {
   if (!pickedHSL) return;
   phase = 'portal';
 
+  const zoomWelcome = document.getElementById('zoom-welcome');
+  const zoomWelcomeEn = document.getElementById('zoom-welcome-en');
+
   // step 1: the color wheel and its UI fade out first, on their own
   pickerWrap.style.transition = 'opacity 0.7s ease';
   pickerWrap.style.opacity = 0;
   pickerWrap.style.pointerEvents = 'none';
 
   setTimeout(() => {
-    // step 2: camera push — the landscape itself slowly zooms and turns,
-    // as if moving forward into the scene, before anything else happens
+    // step 2: camera push — the landscape slowly zooms and turns, as if
+    // moving forward into the scene
     paintVeil.style.transform = 'scale(1.35) rotate(-1.5deg)';
 
+    // step 3: while still zoomed in, "welkom in het portaal" appears
+    // over the landscape itself
     setTimeout(() => {
-      // step 3: now the existing arrival-to-portal handoff, unchanged
+      zoomWelcome.style.transition = 'opacity 1.2s ease';
+      zoomWelcome.style.opacity = 1;
+      setTimeout(() => {
+        zoomWelcomeEn.style.transition = 'opacity 1.2s ease';
+        zoomWelcomeEn.style.opacity = 1;
+      }, 800);
+    }, 1800);
+
+    // step 4: the welcome text fades, and the camera pulls back out to
+    // the normal, settled view
+    setTimeout(() => {
+      zoomWelcome.style.transition = 'opacity 1s ease';
+      zoomWelcome.style.opacity = 0;
+      paintVeil.style.transform = 'scale(1) rotate(0deg)';
+    }, 5500);
+
+    // step 5: once it's settled back to normal, hand off to the portal —
+    // doors reveal directly, no repeated welcome text on the portal side
+    setTimeout(() => {
       document.getElementById('arrival').style.transition = 'opacity 1.6s ease';
       document.getElementById('arrival').style.opacity = 0;
       setTimeout(() => {
         document.getElementById('arrival').style.display = 'none';
         portal.classList.add('visible');
         startPortal(pickedHSL);
-        // welcome text
-        const welcomeWrap = document.getElementById('welcome-wrap');
-        const welcomeEn   = document.getElementById('welcome-en');
-        welcomeWrap.style.transition = 'opacity 2.5s ease';
-        welcomeWrap.style.opacity = 1;
-        setTimeout(() => { welcomeEn.style.opacity = 1; }, 1400);
         setTimeout(() => {
-          welcomeWrap.style.transition = 'opacity 1.4s ease';
-          welcomeWrap.style.opacity = 0;
-          setTimeout(() => {
-            welcomeWrap.style.display = 'none';
-            animateDoors();
-            setTimeout(() => document.getElementById('back-btn').classList.add('visible'), 1200);
-          }, 1500);
-        }, 3500);
+          animateDoors();
+          setTimeout(() => document.getElementById('back-btn').classList.add('visible'), 1200);
+        }, 500);
       }, 1700);
-    }, 3000);
+    }, 8300);
   }, 700);
 });
 
@@ -2529,6 +2578,11 @@ document.getElementById('back-btn').addEventListener('click', () => {
     paintVeil.style.opacity = 0;
     paintVeil.style.transform = 'scale(1) rotate(0deg)';
     setTimeout(() => { paintVeil.style.transition = ''; }, 50);
+    const zoomWelcomeReset = document.getElementById('zoom-welcome');
+    zoomWelcomeReset.style.transition = 'none';
+    zoomWelcomeReset.style.opacity = 0;
+    document.getElementById('zoom-welcome-en').style.opacity = 0;
+    setTimeout(() => { zoomWelcomeReset.style.transition = ''; }, 50);
     sentenceWrap.style.opacity = 0;
     sentenceWrap.style.transition = '';
     lineEn.style.opacity = 0;
