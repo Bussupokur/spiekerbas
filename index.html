@@ -2382,14 +2382,20 @@ enterBtn.addEventListener('click', () => {
     }, 5500);
 
     // step 5: once it's settled back to normal, hand off to the portal —
-    // doors reveal directly, no repeated welcome text on the portal side
+    // a true crossfade: both fade at the same time, so there's never a
+    // moment where neither is visible
     setTimeout(() => {
-      document.getElementById('arrival').style.transition = 'opacity 1.6s ease';
-      document.getElementById('arrival').style.opacity = 0;
+      const arrivalEl = document.getElementById('arrival');
+      arrivalEl.style.transition = 'opacity 1.6s ease';
+      arrivalEl.style.opacity = 0;
+
+      portal.style.transition = 'opacity 1.6s ease';
+      portal.classList.add('visible');
+      startPortal(pickedHSL);
+
       setTimeout(() => {
-        document.getElementById('arrival').style.display = 'none';
-        portal.classList.add('visible');
-        startPortal(pickedHSL);
+        arrivalEl.style.display = 'none';
+        portal.style.transition = '';
         setTimeout(() => {
           animateDoors();
           setTimeout(() => document.getElementById('back-btn').classList.add('visible'), 1200);
