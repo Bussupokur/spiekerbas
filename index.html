@@ -49,8 +49,10 @@
     background-size: cover;
     background-position: center;
     opacity: 0;
-    will-change: opacity;
-    transition: background-image 0.4s ease;
+    will-change: opacity, transform;
+    transform: scale(1) rotate(0deg);
+    transform-origin: center center;
+    transition: background-image 0.4s ease, transform 3.2s cubic-bezier(0.25, 0.1, 0.25, 1);
   }
 
   #name {
@@ -2309,28 +2311,43 @@ function showPicker() {
 enterBtn.addEventListener('click', () => {
   if (!pickedHSL) return;
   phase = 'portal';
-  document.getElementById('arrival').style.transition = 'opacity 1.6s ease';
-  document.getElementById('arrival').style.opacity = 0;
+
+  // step 1: the color wheel and its UI fade out first, on their own
+  pickerWrap.style.transition = 'opacity 0.7s ease';
+  pickerWrap.style.opacity = 0;
+  pickerWrap.style.pointerEvents = 'none';
+
   setTimeout(() => {
-    document.getElementById('arrival').style.display = 'none';
-    portal.classList.add('visible');
-    startPortal(pickedHSL);
-    // welcome text
-    const welcomeWrap = document.getElementById('welcome-wrap');
-    const welcomeEn   = document.getElementById('welcome-en');
-    welcomeWrap.style.transition = 'opacity 2.5s ease';
-    welcomeWrap.style.opacity = 1;
-    setTimeout(() => { welcomeEn.style.opacity = 1; }, 1400);
+    // step 2: camera push — the landscape itself slowly zooms and turns,
+    // as if moving forward into the scene, before anything else happens
+    paintVeil.style.transform = 'scale(1.35) rotate(-1.5deg)';
+
     setTimeout(() => {
-      welcomeWrap.style.transition = 'opacity 1.4s ease';
-      welcomeWrap.style.opacity = 0;
+      // step 3: now the existing arrival-to-portal handoff, unchanged
+      document.getElementById('arrival').style.transition = 'opacity 1.6s ease';
+      document.getElementById('arrival').style.opacity = 0;
       setTimeout(() => {
-        welcomeWrap.style.display = 'none';
-        animateDoors();
-        setTimeout(() => document.getElementById('back-btn').classList.add('visible'), 1200);
-      }, 1500);
-    }, 3500);
-  }, 1700);
+        document.getElementById('arrival').style.display = 'none';
+        portal.classList.add('visible');
+        startPortal(pickedHSL);
+        // welcome text
+        const welcomeWrap = document.getElementById('welcome-wrap');
+        const welcomeEn   = document.getElementById('welcome-en');
+        welcomeWrap.style.transition = 'opacity 2.5s ease';
+        welcomeWrap.style.opacity = 1;
+        setTimeout(() => { welcomeEn.style.opacity = 1; }, 1400);
+        setTimeout(() => {
+          welcomeWrap.style.transition = 'opacity 1.4s ease';
+          welcomeWrap.style.opacity = 0;
+          setTimeout(() => {
+            welcomeWrap.style.display = 'none';
+            animateDoors();
+            setTimeout(() => document.getElementById('back-btn').classList.add('visible'), 1200);
+          }, 1500);
+        }, 3500);
+      }, 1700);
+    }, 3000);
+  }, 700);
 });
 
 // ── PORTAL LIQUID ──
@@ -2508,7 +2525,10 @@ document.getElementById('back-btn').addEventListener('click', () => {
     phase = 'scroll';
     currentSentence = null;
     pickedHSL = null;
+    paintVeil.style.transition = 'none';
     paintVeil.style.opacity = 0;
+    paintVeil.style.transform = 'scale(1) rotate(0deg)';
+    setTimeout(() => { paintVeil.style.transition = ''; }, 50);
     sentenceWrap.style.opacity = 0;
     sentenceWrap.style.transition = '';
     lineEn.style.opacity = 0;
